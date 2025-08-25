@@ -910,33 +910,6 @@ export default function Settings() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Quick Actions */}
-      <Card className="border-white/15 bg-black rounded-none">
-        <CardHeader className="border-b border-white/15">
-          <CardTitle className="text-white">Quick Actions</CardTitle>
-          <CardDescription>Common configuration tasks</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Button variant="outline" className="h-auto p-4 flex flex-col items-start space-y-2 border-gray-600 text-gray-300 hover:bg-gray-800">
-              <Upload className="w-5 h-5 text-white" />
-              <span className="font-medium">Import Config</span>
-              <span className="text-xs text-gray-400">Load configuration from file</span>
-            </Button>
-            <Button variant="outline" className="h-auto p-4 flex flex-col items-start space-y-2 border-gray-600 text-gray-300 hover:bg-gray-800">
-              <ExternalLink className="w-5 h-5 text-white" />
-              <span className="font-medium">Documentation</span>
-              <span className="text-xs text-gray-400">View Better Auth docs</span>
-            </Button>
-            <Button variant="outline" className="h-auto p-4 flex flex-col items-start space-y-2 border-gray-600 text-gray-300 hover:bg-gray-800">
-              <RefreshCw className="w-5 h-5 text-white" />
-              <span className="font-medium">Reset Config</span>
-              <span className="text-xs text-gray-400">Reset to defaults</span>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   )
 }
