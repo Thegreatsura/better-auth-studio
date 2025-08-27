@@ -42,4 +42,3 @@ export const auth = betterAuth({
     enabled: false
   }
 });
-

@@ -438,7 +438,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-2 gap-4">
 
         {/* Users */}
-        <div className="space-y-6 pt-6 border border-dashed rounded-none">
+        <div className="space-y-3 border border-dashed rounded-none">
           <div className="flex justify-between gap-4 items-center p-3 bg-white/5 rounded-none">
             <div className="flex items-center space-x-2">
               <Users className="w-4 h-4 text-white" />
@@ -463,7 +463,7 @@ export default function Dashboard() {
               {seedingStatus === 'seeding' ? 'Seeding...' : 'Seed'}
             </Button>
           </div>
-          <div className="bg-black border border-white/10 rounded-none p-3 pb-0 font-mono text-xs">
+          <div className="bg-black border border-white/10 rounded-none p-3 font-mono text-xs">
             <div className="flex items-center justify-between ">
               <div className="text-green-400">$ seed users {seedCount.users}</div>
               <Button
