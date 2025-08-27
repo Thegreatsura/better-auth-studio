@@ -435,9 +435,10 @@ export default function Dashboard() {
       </Card>
 
       {/* Seed Options */}
-      <div className="space-y-6 grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4">
+
         {/* Users */}
-        <div className="space-y-6 border border-dashed rounded-none">
+        <div className="space-y-6 pt-6 border border-dashed rounded-none">
           <div className="flex justify-between gap-4 items-center p-3 bg-white/5 rounded-none">
             <div className="flex items-center space-x-2">
               <Users className="w-4 h-4 text-white" />
@@ -490,7 +491,59 @@ export default function Dashboard() {
             )}
           </div>
         </div>
-
+        <div className="space-y-3 border border-dashed rounded-none">
+          <div className="flex justify-between gap-4 items-center p-3 bg-white/5 rounded-none">
+            <div className="flex items-center space-x-2">
+              <Building2 className="w-4 h-4 text-white" />
+              <span className="text-sm text-white font-light">Organizations</span>
+            </div>
+            <input
+              type="number"
+              value={seedCount.organizations}
+              onChange={(e) => setSeedCount({ ...seedCount, organizations: parseInt(e.target.value) || 0 })}
+              className="w-20 bg-white/10 flex justify-end border border-white/20 text-white text-sm px-2 py-1 rounded-none font-light"
+              placeholder="Count"
+              min="1"
+              max="100"
+            />
+          </div>
+          <div className="flex justify-end pr-3">
+            <Button
+              onClick={() => handleSeedData('organizations')}
+              disabled={seedingStatus === 'seeding'}
+              className="bg-white/10 hover:bg-white/20 text-white border border-white/20 font-light text-sm px-4"
+            >
+              {seedingStatus === 'seeding' ? 'Seeding...' : 'Seed'}
+            </Button>
+          </div>
+          <div className="bg-black border border-white/10 rounded-none p-3 font-mono text-xs">
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-green-400">$ seed organizations {seedCount.organizations}</div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowTerminal(!showTerminal)}
+                className="text-gray-400 hover:text-white p-0 h-auto font-light"
+              >
+                {showTerminal ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </Button>
+            </div>
+            {showTerminal && (
+              <div>
+                {logs.filter(log => log.message.includes('organizations')).slice(-1).map((log) => (
+                  <div key={log.id} className="flex items-center space-x-2">
+                    <span className="text-gray-500">[{log.timestamp}]</span>
+                    {getLogIcon(log.type)}
+                    <span className={`font-light ${getLogColor(log.type)}`}>{log.message}</span>
+                    {log.payload && (
+                      <span className="text-gray-400 ml-2">- {log.payload.message}</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
         {/* Organizations */}
         <div className="space-y-3 border border-dashed rounded-none">
           <div className="flex justify-between gap-4 items-center p-3 bg-white/5 rounded-none">
