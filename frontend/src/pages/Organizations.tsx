@@ -308,7 +308,7 @@ export default function Organizations() {
                 <div className="mt-4 bg-black/70 border border-dashed border-white/10 rounded-none p-3 overflow-x-auto">
                   <pre className="text-sm text-gray-300">
 <span className="text-blue-400">import</span> {`{ betterAuth }`} <span className="text-blue-400">from</span> <span className="text-green-400">"better-auth/plugin"</span> <br />
-<span className="text-blue-400">import</span> {`{ organization }`} <span className="text-blue-400">from</span> <span className="text-green-400">"better-auth/plugin"</span> <br />
+<span className="text-blue-400">import</span> {`{ organization }`} <span className="text-blue-400">from</span> <span className="text-green-400">"better-auth/plugins"</span> <br />
 
 <span className="text-blue-400">export const</span> <span className="text-yellow-300">auth</span> = <span className="text-yellow-300">betterAuth</span>({`{`} <br />
   <span className="text-gray-500 pl-10">// ... your existing configuration</span> <br />
@@ -319,7 +319,10 @@ export default function Organizations() {
                 </div>
                 
                 <div className="mt-4">
-                  <p className="text-gray-400 text-sm">2. Restart your application to apply the changes</p>
+                  <p className="text-gray-400 text-sm">2. Do migrations to create the organizations table</p>
+                </div>
+                <div className="mt-2">
+                  <p className="text-gray-400 text-sm">3. Restart your application to apply the changes</p>
                 </div>
               </div>
 
@@ -357,7 +360,7 @@ export default function Organizations() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

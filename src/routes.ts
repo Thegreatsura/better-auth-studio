@@ -331,7 +331,7 @@ export function createRoutes(authConfig: AuthConfig) {
       try {
         const authModule = await import(authConfigPath);
         const auth = authModule.auth || authModule.default;
-        
+        console.log({auth})
         if (!auth) {
           return res.json({ 
             enabled: false, 
@@ -340,10 +340,10 @@ export function createRoutes(authConfig: AuthConfig) {
           });
         }
 
-        // Check if organization plugin is enabled
         const hasOrganizationPlugin = auth.options?.plugins?.find((plugin: any) => 
-          plugin.id === "organization" || plugin.id === "organisations"
+          plugin.id === "organization"   
         );
+        console.log({hasOrganizationPlugin})
 
         res.json({
           enabled: !!hasOrganizationPlugin,

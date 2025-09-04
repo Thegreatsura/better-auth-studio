@@ -1,9 +1,60 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createRoutes = createRoutes;
 const express_1 = require("express");
 const data_1 = require("./data");
 const auth_adapter_1 = require("./auth-adapter");
+async function findAuthConfigPath() {
+    const { join, dirname } = await Promise.resolve().then(() => __importStar(require('path')));
+    const { existsSync } = await Promise.resolve().then(() => __importStar(require('fs')));
+    const possiblePaths = [
+        'test-project/src/auth.ts',
+        'test-project/src/auth.js',
+        'src/auth.ts',
+        'src/auth.js',
+        'auth.ts',
+        'auth.js'
+    ];
+    for (const path of possiblePaths) {
+        if (existsSync(path)) {
+            return join(process.cwd(), path);
+        }
+    }
+    return null;
+}
 function createRoutes(authConfig) {
     const router = (0, express_1.Router)();
     // Health check with comprehensive system info
@@ -267,6 +318,51 @@ function createRoutes(authConfig) {
             res.status(500).json({ error: 'Failed to delete user' });
         }
     });
+    // Check if organization plugin is enabled
+    router.get('/api/plugins/organization/status', async (req, res) => {
+        try {
+            const authConfigPath = await findAuthConfigPath();
+            if (!authConfigPath) {
+                return res.json({
+                    enabled: false,
+                    error: 'No auth config found',
+                    configPath: null
+                });
+            }
+            try {
+                const authModule = await Promise.resolve(`${authConfigPath}`).then(s => __importStar(require(s)));
+                const auth = authModule.auth || authModule.default;
+                console.log({ auth });
+                if (!auth) {
+                    return res.json({
+                        enabled: false,
+                        error: 'No auth export found',
+                        configPath: authConfigPath
+                    });
+                }
+                const hasOrganizationPlugin = auth.options?.plugins?.find((plugin) => plugin.id === "organization");
+                console.log({ hasOrganizationPlugin });
+                res.json({
+                    enabled: !!hasOrganizationPlugin,
+                    configPath: authConfigPath,
+                    availablePlugins: auth.options?.plugins?.map((p) => p.id) || [],
+                    organizationPlugin: hasOrganizationPlugin || null
+                });
+            }
+            catch (error) {
+                console.error('Error checking organization plugin:', error);
+                res.json({
+                    enabled: false,
+                    error: 'Failed to load auth config',
+                    configPath: authConfigPath
+                });
+            }
+        }
+        catch (error) {
+            console.error('Error checking plugin status:', error);
+            res.status(500).json({ error: 'Failed to check plugin status' });
+        }
+    });
     router.get('/api/organizations', async (req, res) => {
         try {
             const page = parseInt(req.query.page) || 1;
@@ -326,7 +422,6 @@ function createRoutes(authConfig) {
             res.status(500).json({ error: 'Failed to fetch organizations' });
         }
     });
-    // Create organization
     router.post('/api/organizations', async (req, res) => {
         try {
             const adapter = await (0, auth_adapter_1.getAuthAdapter)();
@@ -334,7 +429,6 @@ function createRoutes(authConfig) {
                 return res.status(500).json({ error: 'Auth adapter not available' });
             }
             const orgData = req.body;
-            // Generate slug from name if not provided
             if (!orgData.slug && orgData.name) {
                 orgData.slug = orgData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
             }

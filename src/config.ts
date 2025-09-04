@@ -331,7 +331,9 @@ function extractBetterAuthFields(config: any): AuthConfig {
   if (config.telemetry) {
     authConfig.telemetry = config.telemetry;
   }
-
+  if(config.plugins) {
+    authConfig.plugins = config.plugins.map((plugin: any) => plugin.id);
+  }
   console.log('Extracted auth config:', JSON.stringify(authConfig, null, 2));
   return authConfig;
 }

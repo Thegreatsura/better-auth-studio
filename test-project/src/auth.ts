@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth";
 import Database from "better-sqlite3";
+import { organization } from "better-auth/plugins";
 // Better Auth configuration
 export const auth = betterAuth({
   secret: process.env.AUTH_SECRET || "better-auth-secret-123456789",
@@ -24,6 +25,9 @@ export const auth = betterAuth({
     },
     resetPasswordTokenExpiresIn: 3600 // 1 hour
   },
+  plugins: [
+    organization()
+  ],
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 days
     updateAge: 60 * 60 * 24 // 1 day

@@ -146,7 +146,6 @@ async function getRealProviderStats(adapter) {
 }
 async function deleteRealUser(adapter, userId) {
     try {
-        // Use adapter's delete method if available
         if (adapter.delete) {
             await adapter.delete({ model: 'user', where: [{ field: 'id', value: userId }] });
         }
