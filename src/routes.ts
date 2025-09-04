@@ -421,6 +421,97 @@ export function createRoutes(authConfig: AuthConfig) {
     }
   });
 
+  // Check if teams plugin is enabled
+  router.get('/api/plugins/teams/status', async (req: Request, res: Response) => {
+    try {
+      const authConfigPath = await findAuthConfigPath();
+      if (!authConfigPath) {
+        return res.json({ 
+          enabled: false, 
+          error: 'No auth config found',
+          configPath: null 
+        });
+      }
+
+      try {
+        const authModule = await import(authConfigPath);
+        const auth = authModule.auth || authModule.default;
+        
+        if (!auth) {
+          return res.json({ 
+            enabled: false, 
+            error: 'No auth export found',
+            configPath: authConfigPath 
+          });
+        }
+
+        // Check if organization plugin has teams enabled
+        const organizationPlugin = auth.options?.plugins?.find((plugin: any) => 
+          plugin.id === "organization"
+        );
+
+        const teamsEnabled = organizationPlugin?.teams?.enabled === true;
+
+        res.json({
+          enabled: teamsEnabled,
+          configPath: authConfigPath,
+          organizationPlugin: organizationPlugin || null
+        });
+
+      } catch (error) {
+        console.error('Error checking teams plugin:', error);
+        res.json({ 
+          enabled: false, 
+          error: 'Failed to load auth config',
+          configPath: authConfigPath 
+        });
+      }
+    } catch (error) {
+      console.error('Error checking teams status:', error);
+      res.status(500).json({ error: 'Failed to check teams status' });
+    }
+  });
+
+  // Get teams for an organization
+  router.get('/api/organizations/:orgId/teams', async (req: Request, res: Response) => {
+    try {
+      const { orgId } = req.params;
+      const adapter = await getAuthAdapter();
+      
+      if (adapter && typeof adapter.findMany === 'function') {
+        try {
+          const teams = await adapter.findMany({ 
+            model: 'team', 
+            where: { organizationId: orgId },
+            limit: 10000 
+          });
+          
+          const transformedTeams = (teams || []).map((team: any) => ({
+            id: team.id,
+            name: team.name,
+            slug: team.slug,
+            organizationId: team.organizationId,
+            metadata: team.metadata,
+            createdAt: team.createdAt,
+            updatedAt: team.updatedAt,
+            memberCount: team.memberCount || 0
+          }));
+          
+          res.json({ success: true, teams: transformedTeams });
+          return;
+        } catch (error) {
+          console.error('Error fetching teams from adapter:', error);
+        }
+      }
+      
+      // Fallback to mock data or empty array
+      res.json({ success: true, teams: [] });
+    } catch (error) {
+      console.error('Error fetching teams:', error);
+      res.status(500).json({ error: 'Failed to fetch teams' });
+    }
+  });
+
   // Check if organization plugin is enabled
   router.get('/api/plugins/organization/status', async (req: Request, res: Response) => {
     try {
@@ -587,6 +678,38 @@ export function createRoutes(authConfig: AuthConfig) {
     } catch (error) {
       console.error('Error updating organization:', error);
       res.status(500).json({ error: 'Failed to update organization' });
+    }
+  });
+
+  // Get single organization
+  router.get('/api/organizations/:id', async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const adapter = await getAuthAdapter();
+      
+      if (adapter && typeof adapter.findMany === 'function') {
+        const organizations = await adapter.findMany({ model: 'organization', limit: 10000 });
+        const organization = organizations?.find((org: any) => org.id === id);
+        
+        if (organization) {
+          const transformedOrganization = {
+            id: organization.id,
+            name: organization.name,
+            slug: organization.slug,
+            metadata: organization.metadata,
+            createdAt: organization.createdAt,
+            updatedAt: organization.updatedAt,
+          };
+          
+          res.json({ success: true, organization: transformedOrganization });
+          return;
+        }
+      }
+      
+      res.status(404).json({ success: false, error: 'Organization not found' });
+    } catch (error) {
+      console.error('Error fetching organization:', error);
+      res.status(500).json({ error: 'Failed to fetch organization' });
     }
   });
 

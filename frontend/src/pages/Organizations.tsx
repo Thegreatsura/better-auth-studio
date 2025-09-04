@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import {
   Building2,
@@ -34,6 +35,7 @@ interface PluginStatus {
 }
 
 export default function Organizations() {
+  const navigate = useNavigate()
   const [organizations, setOrganizations] = useState<Organization[]>([])
   const [loading, setLoading] = useState(true)
   const [pluginStatus, setPluginStatus] = useState<PluginStatus | null>(null)
@@ -342,13 +344,18 @@ export default function Organizations() {
                 
                 <div className="mt-4 bg-black/70 border border-dashed border-white/10 rounded-none p-3 overflow-x-auto">
                   <pre className="text-sm text-gray-300">
-<span className="text-blue-400">import</span> {`{ betterAuth }`} <span className="text-blue-400">from</span> <span className="text-green-400">"better-auth/plugin"</span> <br />
-<span className="text-blue-400">import</span> {`{ organization }`} <span className="text-blue-400">from</span> <span className="text-green-400">"better-auth/plugins"</span> <br />
+<span className="text-blue-400">import</span> {`{ betterAuth }`} <span className="text-blue-400">from</span> <span className="text-green-400">"better-auth"</span> <br />
+<span className="text-blue-400">import</span> {`{ organization }`} <span className="text-blue-400">from</span> <span className="text-green-400">"better-auth/plugins/organization"</span> <br />
 
 <span className="text-blue-400">export const</span> <span className="text-yellow-300">auth</span> = <span className="text-yellow-300">betterAuth</span>({`{`} <br />
   <span className="text-gray-500 pl-10">// ... your existing configuration</span> <br />
-  <span className="text-red-300 pl-10">plugins</span>: [
-    <span className="text-yellow-300">organization</span>()] <br />
+  <span className="text-red-300 pl-10">plugins</span>: [ <br />
+    <span className="text-yellow-300 pl-12">organization</span>({`{`} <br />
+      <span className="text-red-300 pl-16">teams</span>: {`{`} <br />
+        <span className="text-red-300 pl-20">enabled</span>: <span className="text-blue-400">true</span> <br />
+      {`}`} <br />
+    {`}`}) <br />
+  ] <br />
 {`}`}) <br />
                   </pre>
                 </div>
@@ -456,7 +463,11 @@ export default function Organizations() {
             </thead>
             <tbody>
               {filteredOrganizations.map((organization) => (
-                <tr key={organization.id} className="border-b border-dashed border-white/5 hover:bg-white/5">
+                <tr 
+                  key={organization.id} 
+                  className="border-b border-dashed border-white/5 hover:bg-white/5 cursor-pointer"
+                  onClick={() => navigate(`/organizations/${organization.id}`)}
+                >
                   <td className="py-4 px-4">
                     <div className="flex items-center space-x-3">
                       <div className="w-10 h-10 rounded-none border border-dashed border-white/20 bg-white/10 flex items-center justify-center">
@@ -481,7 +492,10 @@ export default function Organizations() {
                         variant="ghost"
                         size="sm"
                         className="text-gray-400 hover:text-white rounded-none"
-                        onClick={() => openViewModal(organization)}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          openViewModal(organization)
+                        }}
                       >
                         <Eye className="w-4 h-4" />
                       </Button>
@@ -489,7 +503,10 @@ export default function Organizations() {
                         variant="ghost"
                         size="sm"
                         className="text-gray-400 hover:text-white rounded-none"
-                        onClick={() => openEditModal(organization)}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          openEditModal(organization)
+                        }}
                       >
                         <Edit className="w-4 h-4" />
                       </Button>
@@ -497,7 +514,10 @@ export default function Organizations() {
                         variant="ghost"
                         size="sm"
                         className="text-red-400 hover:text-red-300 rounded-none"
-                        onClick={() => openDeleteModal(organization)}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          openDeleteModal(organization)
+                        }}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>

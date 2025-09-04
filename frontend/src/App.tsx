@@ -4,6 +4,7 @@ import Layout from './components/Layout'
 import Dashboard from './pages/Dashboard'
 import Users from './pages/Users'
 import Organizations from './pages/Organizations'
+import OrganizationDetails from './pages/OrganizationDetails'
 import Sessions from './pages/Sessions'
 import Settings from './pages/Settings'
 
@@ -15,6 +16,7 @@ function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/users" element={<Users />} />
           <Route path="/organizations" element={<Organizations />} />
+          <Route path="/organizations/:orgId" element={<OrganizationDetails />} />
           <Route path="/sessions" element={<Sessions />} />
           <Route path="/settings" element={<Settings />} />
         </Routes>
