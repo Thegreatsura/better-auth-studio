@@ -17,10 +17,6 @@ let authInstance: any = null;
 let authAdapter: AuthAdapter | null = null;
 
 export async function getAuthAdapter(): Promise<AuthAdapter | null> {
-  if (authAdapter) {
-    return authAdapter;
-  }
-
   try {
     const authConfigPath = await findAuthConfigPath();
     if (!authConfigPath) {
@@ -92,9 +88,7 @@ export async function getAuthAdapter(): Promise<AuthAdapter | null> {
       console.log('Could not inspect adapter schema:', error);
     }
 
-    console.log('Auth adapter loaded successfully');
     
-    // Try to use the real adapter with the correct model names
     console.log('Using real adapter with model names');
     authAdapter = {
       createUser: async (data: any) => {
@@ -112,7 +106,6 @@ export async function getAuthAdapter(): Promise<AuthAdapter | null> {
             }
           });
           
-          // If password is provided, create a credential account
           if (data.password) {
             try {
               await adapter.create({
@@ -219,19 +212,16 @@ export async function getAuthAdapter(): Promise<AuthAdapter | null> {
       },
       getUsers: async () => {
         try {
-          // Try to use the adapter's findMany method if available
           if (typeof adapter.findMany === 'function') {
             const users = await adapter.findMany({ model: 'user' });
             console.log('Found users via findMany:', users?.length || 0);
             return users || [];
           }
-          // Try to use adapter.getUsers if available
           if (typeof adapter.getUsers === 'function') {
             const users = await adapter.getUsers();
             console.log('Found users via getUsers:', users?.length || 0);
             return users || [];
           }
-          // Fallback to mock data
           console.log('No read method available on adapter, returning mock data');
           return [];
         } catch (error) {
@@ -267,8 +257,8 @@ export async function getAuthAdapter(): Promise<AuthAdapter | null> {
         }
       }
     };
-
-    return authAdapter;
+    const adapters = {...adapter, ...authAdapter};
+    return adapters;
   } catch (error) {
     console.error('Error loading auth adapter:', error);
     console.log('Falling back to mock adapter due to error...');

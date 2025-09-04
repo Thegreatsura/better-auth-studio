@@ -111,8 +111,6 @@ async function getAuthAdapter() {
         catch (error) {
             console.log('Could not inspect adapter schema:', error);
         }
-        console.log('Auth adapter loaded successfully');
-        // Try to use the real adapter with the correct model names
         console.log('Using real adapter with model names');
         authAdapter = {
             createUser: async (data) => {
@@ -129,7 +127,6 @@ async function getAuthAdapter() {
                             image: data.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.email}`,
                         }
                     });
-                    // If password is provided, create a credential account
                     if (data.password) {
                         try {
                             await adapter.create({
@@ -241,19 +238,16 @@ async function getAuthAdapter() {
             },
             getUsers: async () => {
                 try {
-                    // Try to use the adapter's findMany method if available
                     if (typeof adapter.findMany === 'function') {
                         const users = await adapter.findMany({ model: 'user' });
                         console.log('Found users via findMany:', users?.length || 0);
                         return users || [];
                     }
-                    // Try to use adapter.getUsers if available
                     if (typeof adapter.getUsers === 'function') {
                         const users = await adapter.getUsers();
                         console.log('Found users via getUsers:', users?.length || 0);
                         return users || [];
                     }
-                    // Fallback to mock data
                     console.log('No read method available on adapter, returning mock data');
                     return [];
                 }
@@ -292,7 +286,8 @@ async function getAuthAdapter() {
                 }
             }
         };
-        return authAdapter;
+        const adapters = { ...adapter, ...authAdapter };
+        return adapters;
     }
     catch (error) {
         console.error('Error loading auth adapter:', error);

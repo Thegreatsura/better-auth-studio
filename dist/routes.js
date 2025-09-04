@@ -187,7 +187,6 @@ function createRoutes(authConfig) {
             const search = req.query.search;
             try {
                 const adapter = await (0, auth_adapter_1.getAuthAdapter)();
-                console.log({ adapter });
                 if (adapter && typeof adapter.findMany === 'function') {
                     const allUsers = await adapter.findMany({ model: 'user', limit: limit });
                     console.log('Found users via findMany:', allUsers?.length || 0);
@@ -215,9 +214,7 @@ function createRoutes(authConfig) {
             catch (adapterError) {
                 console.error('Error fetching users from adapter:', adapterError);
             }
-            // Fallback to getAuthData
             const result = await (0, data_1.getAuthData)(authConfig, 'users', { page, limit, search });
-            // Transform the data to match frontend expectations
             const transformedUsers = (result.data || []).map((user) => ({
                 id: user.id,
                 email: user.email,
@@ -226,9 +223,6 @@ function createRoutes(authConfig) {
                 emailVerified: user.emailVerified,
                 createdAt: user.createdAt,
                 updatedAt: user.updatedAt,
-                provider: user.provider || 'email',
-                lastSignIn: user.lastSignIn || user.updatedAt,
-                status: 'active' // Default status
             }));
             res.json({ users: transformedUsers });
         }
@@ -294,8 +288,6 @@ function createRoutes(authConfig) {
         try {
             const { id } = req.params;
             const userData = req.body;
-            // For now, we'll use the existing getAuthData function
-            // In a real implementation, you'd use the adapter to update the user
             const updatedUser = await (0, data_1.getAuthData)(authConfig, 'updateUser', { id, userData });
             res.json({ success: true, user: updatedUser });
         }

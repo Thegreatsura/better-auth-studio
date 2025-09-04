@@ -48,7 +48,7 @@ export async function getAuthData(
 ): Promise<any> {
   try {
     const adapter = await getAuthAdapter();
-    
+
     if (!adapter) {
       console.log('No adapter available, falling back to mock data');
       return getMockData(type, options);
@@ -66,6 +66,7 @@ export async function getAuthData(
       case 'deleteUser':
         return await deleteRealUser(adapter, options.id);
       case 'updateUser':
+        console.log({adapter})
         return await updateRealUser(adapter, options.id, options.userData);
       default:
         throw new Error(`Unknown data type: ${type}`);
@@ -82,7 +83,7 @@ async function getRealStats(adapter: any): Promise<AuthStats> {
     // Get users and sessions from adapter
     const users = adapter.getUsers ? await adapter.getUsers() : [];
     const sessions = adapter.getSessions ? await adapter.getSessions() : [];
-    
+
     const now = new Date();
     const activeSessions = sessions.filter((s: any) => new Date(s.expiresAt || s.expires) > now);
     const activeUsers = new Set(activeSessions.map((s: any) => s.userId)).size;
@@ -124,26 +125,24 @@ async function getRealStats(adapter: any): Promise<AuthStats> {
 
 async function getRealUsers(adapter: any, options: { page: number; limit: number; search?: string }): Promise<PaginatedResult<User>> {
   const { page, limit, search } = options;
-  
+
   try {
-    // Use the adapter's getUsers method if available
     if (adapter.getUsers) {
       const allUsers = await adapter.getUsers();
-      
-      // Apply search filter if provided
+
       let filteredUsers = allUsers;
       if (search) {
-        filteredUsers = allUsers.filter((user: any) => 
+        filteredUsers = allUsers.filter((user: any) =>
           user.email?.toLowerCase().includes(search.toLowerCase()) ||
           user.name?.toLowerCase().includes(search.toLowerCase())
         );
       }
-      
+
       // Apply pagination
       const startIndex = (page - 1) * limit;
       const endIndex = startIndex + limit;
       const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
-      
+
       return {
         data: paginatedUsers,
         total: filteredUsers.length,
@@ -152,7 +151,7 @@ async function getRealUsers(adapter: any, options: { page: number; limit: number
         totalPages: Math.ceil(filteredUsers.length / limit)
       };
     }
-    
+
     // Fallback to mock data if getUsers is not available
     return getMockData('users', options);
   } catch (error) {
@@ -163,17 +162,17 @@ async function getRealUsers(adapter: any, options: { page: number; limit: number
 
 async function getRealSessions(adapter: any, options: { page: number; limit: number }): Promise<PaginatedResult<Session>> {
   const { page, limit } = options;
-  
+
   try {
     // Use the adapter's getSessions method if available
     if (adapter.getSessions) {
       const allSessions = await adapter.getSessions();
-      
+
       // Apply pagination
       const startIndex = (page - 1) * limit;
       const endIndex = startIndex + limit;
       const paginatedSessions = allSessions.slice(startIndex, endIndex);
-      
+
       return {
         data: paginatedSessions,
         total: allSessions.length,
@@ -182,7 +181,7 @@ async function getRealSessions(adapter: any, options: { page: number; limit: num
         totalPages: Math.ceil(allSessions.length / limit)
       };
     }
-    
+
     // Fallback to mock data if getSessions is not available
     return getMockData('sessions', options);
   } catch (error) {
@@ -220,15 +219,21 @@ async function deleteRealUser(adapter: any, userId: string): Promise<void> {
 }
 
 async function updateRealUser(adapter: any, userId: string, userData: Partial<User>): Promise<User> {
+  console.log({userId, userData})
   try {
-    // Use adapter's update method if available
-    if (adapter.update) {
-      const updatedUser = await adapter.update({ model: 'user', where: { id: userId }, data: userData });
+      const updatedUser = await adapter.update({
+        model: 'user',
+        where: [
+          {
+            field: 'id',
+            value: userId
+          }
+        ],
+        update: {...userData}
+      });
+      console.log({updatedUser})
       return updatedUser;
-    } else {
-      console.warn('Update method not available on adapter');
-      throw new Error('Update method not available');
-    }
+   
   } catch (error) {
     console.error('Error updating user from adapter:', error);
     throw error;
@@ -274,10 +279,10 @@ function getMockStats(): AuthStats {
 function getMockUsers(options: { page: number; limit: number; search?: string }): PaginatedResult<User> {
   const { page, limit, search } = options;
   const allUsers = generateMockUsers(100);
-  
+
   let filteredUsers = allUsers;
   if (search) {
-    filteredUsers = allUsers.filter(user => 
+    filteredUsers = allUsers.filter(user =>
       user.email?.toLowerCase().includes(search.toLowerCase()) ||
       user.name?.toLowerCase().includes(search.toLowerCase())
     );
@@ -299,7 +304,7 @@ function getMockUsers(options: { page: number; limit: number; search?: string })
 function getMockSessions(options: { page: number; limit: number }): PaginatedResult<Session> {
   const { page, limit } = options;
   const allSessions = generateMockSessions(200);
-  
+
   const start = (page - 1) * limit;
   const end = start + limit;
   const data = allSessions.slice(start, end);
@@ -324,7 +329,7 @@ function getMockProviderStats() {
 function generateMockUsers(count: number): User[] {
   const users: User[] = [];
   const providers = ['google', 'github', 'email'];
-  
+
   for (let i = 0; i < count; i++) {
     const provider = providers[Math.floor(Math.random() * providers.length)];
     users.push({
@@ -339,13 +344,13 @@ function generateMockUsers(count: number): User[] {
       lastSignIn: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000)
     });
   }
-  
+
   return users;
 }
 
 function generateMockSessions(count: number): Session[] {
   const sessions: Session[] = [];
-  
+
   for (let i = 0; i < count; i++) {
     sessions.push({
       id: `session_${i + 1}`,
@@ -356,6 +361,6 @@ function generateMockSessions(count: number): Session[] {
       ip: `192.168.1.${Math.floor(Math.random() * 255)}`
     });
   }
-  
+
   return sessions;
 }

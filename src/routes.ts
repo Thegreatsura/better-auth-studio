@@ -317,8 +317,6 @@ export function createRoutes(authConfig: AuthConfig) {
       const { id } = req.params;
       const userData = req.body;
       
-      // For now, we'll use the existing getAuthData function
-      // In a real implementation, you'd use the adapter to update the user
       const updatedUser = await getAuthData(authConfig, 'updateUser', { id, userData });
       res.json({ success: true, user: updatedUser });
     } catch (error) {

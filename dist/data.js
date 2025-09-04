@@ -22,6 +22,7 @@ async function getAuthData(authConfig, type = 'stats', options) {
             case 'deleteUser':
                 return await deleteRealUser(adapter, options.id);
             case 'updateUser':
+                console.log({ adapter });
                 return await updateRealUser(adapter, options.id, options.userData);
             default:
                 throw new Error(`Unknown data type: ${type}`);
@@ -76,10 +77,8 @@ async function getRealStats(adapter) {
 async function getRealUsers(adapter, options) {
     const { page, limit, search } = options;
     try {
-        // Use the adapter's getUsers method if available
         if (adapter.getUsers) {
             const allUsers = await adapter.getUsers();
-            // Apply search filter if provided
             let filteredUsers = allUsers;
             if (search) {
                 filteredUsers = allUsers.filter((user) => user.email?.toLowerCase().includes(search.toLowerCase()) ||
@@ -161,16 +160,20 @@ async function deleteRealUser(adapter, userId) {
     }
 }
 async function updateRealUser(adapter, userId, userData) {
+    console.log({ userId, userData });
     try {
-        // Use adapter's update method if available
-        if (adapter.update) {
-            const updatedUser = await adapter.update({ model: 'user', where: { id: userId }, data: userData });
-            return updatedUser;
-        }
-        else {
-            console.warn('Update method not available on adapter');
-            throw new Error('Update method not available');
-        }
+        const updatedUser = await adapter.update({
+            model: 'user',
+            where: [
+                {
+                    field: 'id',
+                    value: userId
+                }
+            ],
+            update: { ...userData }
+        });
+        console.log({ updatedUser });
+        return updatedUser;
     }
     catch (error) {
         console.error('Error updating user from adapter:', error);

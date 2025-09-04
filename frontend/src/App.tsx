@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { Toaster } from 'sonner'
 import Layout from './components/Layout'
 import Dashboard from './pages/Dashboard'
 import Users from './pages/Users'
@@ -16,6 +17,12 @@ function App() {
           <Route path="/settings" element={<Settings />} />
         </Routes>
       </Layout>
+      <Toaster 
+        theme="dark" 
+        position="top-right"
+        richColors
+        closeButton
+      />
     </Router>
   )
 }

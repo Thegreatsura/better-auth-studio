@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { toast } from 'sonner'
 import {
   Users as UsersIcon,
   Search,
@@ -127,10 +128,12 @@ export default function Users() {
     const password = (document.getElementById('create-password') as HTMLInputElement)?.value
 
     if (!name || !email || !password) {
-      alert('Please fill in all fields')
+      toast.error('Please fill in all fields')
       return
     }
 
+    const toastId = toast.loading('Creating user...')
+    
     try {
       const response = await fetch('/api/users', {
         method: 'POST',
@@ -148,25 +151,85 @@ export default function Users() {
         ;(document.getElementById('create-name') as HTMLInputElement).value = ''
         ;(document.getElementById('create-email') as HTMLInputElement).value = ''
         ;(document.getElementById('create-password') as HTMLInputElement).value = ''
+        toast.success('User created successfully!', { id: toastId })
       } else {
-        alert(`Error creating user: ${result.error || 'Unknown error'}`)
+        toast.error(`Error creating user: ${result.error || 'Unknown error'}`, { id: toastId })
       }
     } catch (error) {
       console.error('Error creating user:', error)
-      alert('Error creating user')
+      toast.error('Error creating user', { id: toastId })
     }
   }
 
-  const handleUpdateUser = async (userData: any) => {
-    // Implementation for updating user
-    console.log('Updating user:', userData)
-    setShowEditModal(false)
+  const handleUpdateUser = async () => {
+    if (!selectedUser) {
+      toast.error('No user selected')
+      return
+    }
+
+    const name = (document.getElementById('edit-name') as HTMLInputElement)?.value
+    const email = (document.getElementById('edit-email') as HTMLInputElement)?.value
+
+    if (!name || !email) {
+      toast.error('Please fill in all fields')
+      return
+    }
+
+    const toastId = toast.loading('Updating user...')
+    
+    try {
+      const response = await fetch(`/api/users/${selectedUser.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email })
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        // Refresh the users list to show the updated user
+        await fetchUsers()
+        setShowEditModal(false)
+        setSelectedUser(null)
+        toast.success('User updated successfully!', { id: toastId })
+      } else {
+        toast.error(`Error updating user: ${result.error || 'Unknown error'}`, { id: toastId })
+      }
+    } catch (error) {
+      console.error('Error updating user:', error)
+      toast.error('Error updating user', { id: toastId })
+    }
   }
 
   const handleDeleteUser = async () => {
-    // Implementation for deleting user
-    console.log('Deleting user:', selectedUser?.id)
-    setShowDeleteModal(false)
+    if (!selectedUser) {
+      toast.error('No user selected')
+      return
+    }
+
+    const toastId = toast.loading('Deleting user...')
+    
+    try {
+      const response = await fetch(`/api/users/${selectedUser.id}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' }
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        // Refresh the users list to remove the deleted user
+        await fetchUsers()
+        setShowDeleteModal(false)
+        setSelectedUser(null)
+        toast.success('User deleted successfully!', { id: toastId })
+      } else {
+        toast.error(`Error deleting user: ${result.error || 'Unknown error'}`, { id: toastId })
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error)
+      toast.error('Error deleting user', { id: toastId })
+    }
   }
 
   const filteredUsers = users.filter(user => {
@@ -595,7 +658,7 @@ export default function Users() {
                 Cancel
               </Button>
               <Button
-                onClick={() => handleUpdateUser({})}
+                onClick={handleUpdateUser}
                 className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none"
               >
                 Update
