@@ -258,7 +258,7 @@ export default function Users() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -313,7 +313,7 @@ export default function Users() {
               <tr className="border-b border-dashed border-white/10">
                 <th className="text-left py-4 px-4 text-white font-light">User</th>
                 <th className="text-left py-4 px-4 text-white font-light">Email</th>
-                <th className="text-left py-4 px-4 text-white font-light">Status</th>
+                <th className="text-left py-4 px-4 text-white font-light">Email Verified</th>
                 <th className="text-left py-4 px-4 text-white font-light">Created</th>
                 <th className="text-right py-4 px-4 text-white font-light">Actions</th>
               </tr>
@@ -343,12 +343,15 @@ export default function Users() {
                         <Mail className="w-4 h-4 text-yellow-400" />
                       )}
                       <span className="text-sm text-gray-400">
-                        {user.emailVerified ? 'Verified' : 'Pending'}
+                        {user.emailVerified ? 'Verified' : 'Not Verified'}
                       </span>
                     </div>
                   </td>
                   <td className="py-4 px-4 text-sm text-gray-400">
+                   <div className='flex flex-col'>
                     {new Date(user.createdAt).toLocaleDateString()}
+                    <p className='text-xs'>{new Date(user.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                    </div> 
                   </td>
                   <td className="py-4 px-4 text-right">
                     <div className="flex items-center justify-end space-x-2">

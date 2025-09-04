@@ -43,9 +43,6 @@ const fs_1 = require("fs");
 let authInstance = null;
 let authAdapter = null;
 async function getAuthAdapter() {
-    if (authAdapter) {
-        return authAdapter;
-    }
     try {
         const authConfigPath = await findAuthConfigPath();
         if (!authConfigPath) {
