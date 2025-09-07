@@ -88,48 +88,48 @@ export default function Layout({ children }: LayoutProps) {
                 Docs
               </Button>
             </a>
-            <a href="https://better-auth.com/support" target="_blank"></a>
+            <a href="https://better-auth.com/support" target="_blank">
             <Button variant="ghost" className="text-gray-300 hover:bg-gray-900">
               Support
             </Button>
-          </a>
+            </a>
+          </div>
         </div>
       </div>
-    </div>
 
-      {/* Top Navigation Tabs */ }
-  <div className="bg-black/50 border-b border-white/10">
-    <div className="px-6">
-      <nav className="flex space-x-8">
-        {navigation.map((item) => {
-          const isActive = location.pathname === item.href
-          return (
-            <Link
-              key={item.name}
-              to={item.href}
-              className={`flex items-center space-x-2 px-3 py-4 text-sm font-medium border-b-2 transition-all duration-200 ${isActive
-                ? 'border-white text-white'
-                : 'border-transparent text-gray-400 hover:text-white hover:border-gray-300'
-                }`}
-            >
-              <item.icon className="w-4 h-4" />
-              <span>{item.name}</span>
-              {item.badge && (
-                <Badge variant="secondary" className="text-xs bg-white/10 border border-white/20 rounded-sm">
-                  {item.badge}
-                </Badge>
-              )}
-            </Link>
-          )
-        })}
-      </nav>
-    </div>
-  </div>
+      {/* Top Navigation Tabs */}
+      <div className="bg-black/50 border-b border-white/10">
+        <div className="px-6">
+          <nav className="flex space-x-8">
+            {navigation.map((item) => {
+              const isActive = location.pathname === item.href
+              return (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  className={`flex items-center space-x-2 px-3 py-4 text-sm font-medium border-b-2 transition-all duration-200 ${isActive
+                      ? 'border-white text-white'
+                      : 'border-transparent text-gray-400 hover:text-white hover:border-gray-300'
+                    }`}
+                >
+                  <item.icon className="w-4 h-4" />
+                  <span>{item.name}</span>
+                  {item.badge && (
+                    <Badge variant="secondary" className="text-xs bg-white/10 border border-white/20 rounded-sm">
+                      {item.badge}
+                    </Badge>
+                  )}
+                </Link>
+              )
+            })}
+          </nav>
+        </div>
+      </div>
 
-  {/* Main Content */ }
-  <div className="flex-1 p-0">
-    {children}
-  </div>
-    </div >
+      {/* Main Content */}
+      <div className="flex-1 p-0">
+        {children}
+      </div>
+    </div>
   )
 }
