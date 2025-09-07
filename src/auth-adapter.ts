@@ -43,6 +43,20 @@ export async function getAuthAdapter(): Promise<AuthAdapter | null> {
       return await createMockAdapter();
     }
 
+    // Check if organization plugin is enabled and get teams configuration
+    const organizationPlugin = auth.options?.plugins?.find((plugin: any) => plugin.id === "organization");
+    if (organizationPlugin) {
+      console.log('✅ Organization plugin is enabled');
+      console.log('Organization plugin options:', organizationPlugin.options);
+      if (organizationPlugin.options?.teams) {
+        console.log('✅ Teams are enabled:', organizationPlugin.options.teams);
+      } else {
+        console.log('ℹ️ Teams are not configured in organization plugin');
+      }
+    } else {
+      console.log('ℹ️ Organization plugin is not enabled');
+    }
+
     let adapter;
     try {
       const context = await auth.$context;

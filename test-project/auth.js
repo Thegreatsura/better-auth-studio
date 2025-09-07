@@ -1,17 +1,18 @@
-import { betterAuth } from "better-auth";
-import Database from "better-sqlite3";
-import { organization } from "better-auth/plugins";
-// Better Auth configuration
-import prisma from "./prisma.js";
-import { prismaAdapter } from "better-auth/adapters/prisma";
+const { betterAuth } = require("better-auth");
+const { organization } = require("better-auth/plugins");
+const { prismaAdapter } = require("better-auth/adapters/prisma");
 
-export const auth = betterAuth({
+// Import Prisma client from the generated location
+const { PrismaClient } = require("./src/generated/prisma");
+const prisma = new PrismaClient();
+
+const auth = betterAuth({
   secret: process.env.AUTH_SECRET || "better-auth-secret-123456789",
   database: prismaAdapter(prisma, { provider: "postgresql" }),
   socialProviders: {
     github: {
-      clientId: process.env.GITHUB_CLIENT_ID!,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+      clientId: process.env.GITHUB_CLIENT_ID,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET,
       redirectUri: "http://localhost:3000/api/auth/callback/github"
     }
   },
@@ -48,3 +49,5 @@ export const auth = betterAuth({
     enabled: false
   }
 });
+
+module.exports = { auth };

@@ -9,6 +9,8 @@ export interface AuthDatabase {
     url?: string;
     type?: string;
     dialect?: string;
+    adapter?: string;
+    provider?: string;
     [key: string]: any;
 }
 export interface AuthConfig {

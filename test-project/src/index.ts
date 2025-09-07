@@ -32,7 +32,7 @@ app.get('/', async (req, res) => {
 });
 
 // Better Auth routes
-app.use('/api/auth', auth);
+app.use('/api/auth', auth.handler);
 
 // Start server
 app.listen(PORT, () => {

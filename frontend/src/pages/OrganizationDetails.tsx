@@ -20,6 +20,7 @@ import { Button } from '../components/ui/button'
 import { Badge } from '../components/ui/badge'
 import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
+import { Select, SelectItem } from '../components/ui/select'
 
 interface Organization {
     id: string
@@ -102,8 +103,18 @@ export default function OrganizationDetails() {
     
     // Form states
     const [inviteEmail, setInviteEmail] = useState('')
+    const [selectedInviterId, setSelectedInviterId] = useState('')
+    const [availableUsers, setAvailableUsers] = useState<User[]>([])
     const [teamFormData, setTeamFormData] = useState({ name: '' })
     const [seedingLogs, setSeedingLogs] = useState<string[]>([])
+
+    interface User {
+        id: string
+        name: string
+        email: string
+        image?: string
+        emailVerified: boolean
+    }
 
     useEffect(() => {
         if (orgId) {
@@ -237,9 +248,32 @@ export default function OrganizationDetails() {
         }
     }
 
+    const fetchAvailableUsers = async () => {
+        try {
+            const response = await fetch('/api/users/all')
+            const data = await response.json()
+            
+            if (data.success) {
+                setAvailableUsers(data.users || [])
+            }
+        } catch (error) {
+            console.error('Failed to fetch users:', error)
+        }
+    }
+
+    const openInviteModal = () => {
+        fetchAvailableUsers()
+        setShowInviteModal(true)
+    }
+
     const handleInviteUser = async () => {
         if (!inviteEmail) {
             toast.error('Please enter an email address')
+            return
+        }
+
+        if (!selectedInviterId) {
+            toast.error('Please select an inviter')
             return
         }
 
@@ -251,7 +285,8 @@ export default function OrganizationDetails() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     email: inviteEmail,
-                    role: 'member'
+                    role: 'member',
+                    inviterId: selectedInviterId
                 })
             })
 
@@ -261,6 +296,7 @@ export default function OrganizationDetails() {
                 await fetchInvitations()
                 setShowInviteModal(false)
                 setInviteEmail('')
+                setSelectedInviterId('')
                 toast.success('Invitation sent successfully!', { id: toastId })
             } else {
                 toast.error(`Error sending invitation: ${result.error || 'Unknown error'}`, { id: toastId })
@@ -501,7 +537,7 @@ export default function OrganizationDetails() {
                         Seed Members
                     </Button>
                     <Button 
-                        onClick={() => setShowInviteModal(true)}
+                        onClick={openInviteModal}
                         className="border border-dashed border-white/20 text-white bg-transparent hover:bg-white/10 rounded-none"
                     >
                         <Mail className="w-4 h-4 mr-2" />
@@ -860,7 +896,7 @@ export default function OrganizationDetails() {
                                         Seed Members
                                     </Button>
                                     <Button 
-                                        onClick={() => setShowInviteModal(true)}
+                                        onClick={openInviteModal}
                                         className="bg-white hover:bg-white/90 bg-transparent text-black border border-white/20 rounded-none"
                                     >
                                         <Mail className="w-4 h-4 mr-2" />
@@ -969,7 +1005,7 @@ export default function OrganizationDetails() {
                                     Start inviting users to join this organization.
                                 </p>
                                 <Button 
-                                    onClick={() => setShowInviteModal(true)}
+                                    onClick={openInviteModal}
                                     className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none"
                                 >
                                     <Mail className="w-4 h-4 mr-2" />
@@ -993,6 +1029,7 @@ export default function OrganizationDetails() {
                                 onClick={() => {
                                     setShowInviteModal(false)
                                     setInviteEmail('')
+                                    setSelectedInviterId('')
                                 }}
                                 className="text-gray-400 hover:text-white rounded-none"
                             >
@@ -1011,6 +1048,29 @@ export default function OrganizationDetails() {
                                     className="mt-1 border border-dashed border-white/20 bg-black/30 text-white rounded-none"
                                 />
                             </div>
+                            <div>
+                                <Label htmlFor="inviter-select" className="text-sm text-gray-400 font-light">Inviter</Label>
+                                <Select
+                                    value={selectedInviterId}
+                                    onChange={(e) => setSelectedInviterId(e.target.value)}
+                                >
+                                    <SelectItem value="" className="text-gray-400">
+                                        Select an inviter...
+                                    </SelectItem>
+                                    {availableUsers.map((user) => (
+                                        <SelectItem key={user.id} value={user.id} className="text-white">
+                                            <div className="flex items-center space-x-2">
+                                                <img
+                                                    src={user.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`}
+                                                    alt={user.name}
+                                                    className="w-6 h-6 rounded-none border border-dashed border-white/20"
+                                                />
+                                                <span>{user.name} ({user.email})</span>
+                                            </div>
+                                        </SelectItem>
+                                    ))}
+                                </Select>
+                            </div>
                         </div>
                         <div className="flex justify-end space-x-3 mt-6">
                             <Button
@@ -1018,6 +1078,7 @@ export default function OrganizationDetails() {
                                 onClick={() => {
                                     setShowInviteModal(false)
                                     setInviteEmail('')
+                                    setSelectedInviterId('')
                                 }}
                                 className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none"
                             >

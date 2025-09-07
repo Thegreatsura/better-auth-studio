@@ -3,25 +3,152 @@ import { getAuthData } from './data';
 import { AuthConfig } from './config';
 import { getAuthAdapter, createMockUser, createMockSession, createMockAccount, createMockVerification } from './auth-adapter';
 
+// Helper function to properly resolve imports from the project's context
+export async function safeImportAuthConfig(authConfigPath: string): Promise<any> {
+  try {
+    // First try normal import
+    return await import(authConfigPath);
+  } catch (importError) {
+    console.log('Normal import failed, trying to resolve imports from project context...');
+    
+    try {
+      // Get the project directory from the auth config path
+      const { dirname, join } = await import('path');
+      const { existsSync, readFileSync, writeFileSync, mkdtempSync, unlinkSync, rmdirSync } = await import('fs');
+      const { tmpdir } = await import('os');
+      
+      const projectDir = dirname(authConfigPath);
+      const content = readFileSync(authConfigPath, 'utf-8');
+      
+      // Create a safe version of the auth config by ignoring problematic imports
+      let resolvedContent = content;
+      
+      // Look for node_modules in the project directory and parent directories
+      let currentDir = projectDir;
+      let nodeModulesPath = null;
+      
+      while (currentDir && currentDir !== dirname(currentDir)) {
+        const potentialNodeModules = join(currentDir, 'node_modules');
+        if (existsSync(potentialNodeModules)) {
+          nodeModulesPath = potentialNodeModules;
+          break;
+        }
+        currentDir = dirname(currentDir);
+      }
+      
+      // Replace problematic imports with safe alternatives
+      console.log('Creating safe auth config by replacing problematic imports...');
+      
+      // Replace prisma import with a mock
+      resolvedContent = resolvedContent.replace(
+        /import\s+prisma\s+from\s+["']\.\/prisma["'];/g,
+        `// Mock prisma client for studio
+const prisma = {
+  user: { findMany: () => [], create: () => ({}), update: () => ({}), delete: () => ({}) },
+  session: { findMany: () => [], create: () => ({}), update: () => ({}), delete: () => ({}) },
+  account: { findMany: () => [], create: () => ({}), update: () => ({}), delete: () => ({}) },
+  verification: { findMany: () => [], create: () => ({}), update: () => ({}), delete: () => ({}) },
+  organization: { findMany: () => [], create: () => ({}), update: () => ({}), delete: () => ({}) },
+  member: { findMany: () => [], create: () => ({}), update: () => ({}), delete: () => ({}) },
+  invitation: { findMany: () => [], create: () => ({}), update: () => ({}), delete: () => ({}) },
+  team: { findMany: () => [], create: () => ({}), update: () => ({}), delete: () => ({}) },
+  teamMember: { findMany: () => [], create: () => ({}), update: () => ({}), delete: () => ({}) }
+};`
+      );
+      
+      // Replace other problematic local imports with safe alternatives
+      resolvedContent = resolvedContent.replace(
+        /import\s+([^"']*)\s+from\s+["']\.\/[^"']*["'];/g,
+        '// Ignored local import for studio compatibility'
+      );
+      
+      // Replace magic-link import with a mock
+      resolvedContent = resolvedContent.replace(
+        /import\s+{\s*magicLink\s*}\s+from\s+["']\.\/magic-link["'];/g,
+        `// Mock magic link plugin
+const magicLink = () => ({ id: 'magic-link', name: 'Magic Link' });`
+      );
+      
+      // Now try to import the resolved content
+      
+      if (nodeModulesPath) {
+        console.log(`Found node_modules at: ${nodeModulesPath}`);
+        
+        // Create a temporary file with the resolved content
+        const tempDir = mkdtempSync(join(tmpdir(), 'better-auth-studio-'));
+        const tempFile = join(tempDir, 'resolved-auth-config.js');
+        
+        // Convert ES modules to CommonJS for easier import
+        let commonJsContent = resolvedContent
+          .replace(/export\s+const\s+(\w+)\s*=/g, 'const $1 =')
+          .replace(/export\s+default\s+/g, 'module.exports = ')
+          .replace(/export\s+type\s+.*$/gm, '// $&') // Comment out type exports
+          .replace(/import\s+type\s+.*$/gm, '// $&'); // Comment out type imports
+        
+        // Ensure we have a proper export
+        if (!commonJsContent.includes('module.exports')) {
+          commonJsContent += '\nmodule.exports = { auth };';
+        }
+        
+        writeFileSync(tempFile, commonJsContent);
+        console.log('Created temporary auth config file:', tempFile);
+        
+        // Try to import with the project's module resolution
+        const originalCwd = process.cwd();
+        const originalNodePath = process.env.NODE_PATH;
+        
+        try {
+          // Set NODE_PATH to include the project's node_modules
+          process.env.NODE_PATH = nodeModulesPath;
+          process.chdir(projectDir);
+          
+          // Try to import the resolved auth config
+          const authModule = await import(tempFile);
+          
+          // Clean up temp file
+          unlinkSync(tempFile);
+          rmdirSync(tempDir);
+          
+          return authModule;
+        } finally {
+          // Restore original environment
+          process.chdir(originalCwd);
+          if (originalNodePath) {
+            process.env.NODE_PATH = originalNodePath;
+          } else {
+            delete process.env.NODE_PATH;
+          }
+        }
+      } else {
+        console.log('No node_modules found in project directory');
+        throw new Error('No node_modules found');
+      }
+    } catch (resolveError) {
+      console.error('Import resolution also failed:', resolveError);
+      throw importError; // Throw original error
+    }
+  }
+}
+
 async function findAuthConfigPath(): Promise<string | null> {
   const { join, dirname } = await import('path');
   const { existsSync } = await import('fs');
 
   const possiblePaths = [
-    'src/auth.ts',
-    'src/auth.js',
-    'lib/auth.ts',
-    'lib/auth.js',
+    'auth.js',  // Prioritize the working CommonJS file
     'auth.ts',
-    'auth.js'
+    'src/auth.js',
+    'src/auth.ts',
+    'lib/auth.js',
+    'lib/auth.ts'
   ];
 
   for (const path of possiblePaths) {
-    if (existsSync(path)) {
-      return join(process.cwd(), path);
+    const fullPath = join(process.cwd(), path);
+    if (existsSync(fullPath)) {
+      return fullPath;
     }
   }
-
   return null;
 }
 
@@ -33,9 +160,9 @@ export function createRoutes(authConfig: AuthConfig) {
     const hours = Math.floor(uptime / 3600);
     const minutes = Math.floor((uptime % 3600) / 60);
     const seconds = Math.floor(uptime % 60);
-
-    res.json({
-      status: 'ok',
+    
+    res.json({ 
+      status: 'ok', 
       timestamp: new Date().toISOString(),
       system: {
         studioVersion: '1.0.0',
@@ -56,7 +183,7 @@ export function createRoutes(authConfig: AuthConfig) {
 
   router.get('/api/config', (req: Request, res: Response) => {
     console.log('Raw authConfig:', JSON.stringify(authConfig, null, 2));
-
+    
     const config = {
       appName: authConfig.appName || 'Better Auth',
       baseURL: authConfig.baseURL || process.env.BETTER_AUTH_URL,
@@ -89,14 +216,14 @@ export function createRoutes(authConfig: AuthConfig) {
         revokeSessionsOnPasswordReset: authConfig.emailAndPassword?.revokeSessionsOnPasswordReset ?? false
       },
 
-      socialProviders: authConfig.socialProviders ?
+      socialProviders: authConfig.socialProviders ? 
         Object.entries(authConfig.socialProviders).map(([provider, config]: [string, any]) => ({
           type: provider,
           clientId: config.clientId,
           clientSecret: config.clientSecret,
           redirectUri: config.redirectUri,
           ...config
-        })) :
+        })) : 
         (authConfig.providers || []),
 
       user: {
@@ -249,6 +376,26 @@ export function createRoutes(authConfig: AuthConfig) {
       res.status(500).json({ error: 'Failed to fetch counts' });
     }
   });
+  // Endpoint to fetch all users for selection (e.g., for inviter selection)
+  router.get('/api/users/all', async (req: Request, res: Response) => {
+    try {
+      const adapter = await getAuthAdapter();
+      if (!adapter) {
+        return res.status(500).json({ error: 'Auth adapter not available' });
+      }
+
+      if (adapter.getUsers) {
+        const users = await adapter.getUsers();
+        res.json({ success: true, users });
+      } else {
+        res.json({ success: true, users: [] });
+      }
+    } catch (error) {
+      console.error('Error fetching all users:', error);
+      res.status(500).json({ error: 'Failed to fetch users' });
+    }
+  });
+
   router.get('/api/users', async (req: Request, res: Response) => {
     try {
       const page = parseInt(req.query.page as string) || 1;
@@ -259,19 +406,19 @@ export function createRoutes(authConfig: AuthConfig) {
         if (adapter && typeof adapter.findMany === 'function') {
           const allUsers = await adapter.findMany({ model: 'user', limit: limit });
           console.log('Found users via findMany:', allUsers?.length || 0);
-
+          
           let filteredUsers = allUsers || [];
           if (search) {
-            filteredUsers = filteredUsers.filter((user: any) =>
+            filteredUsers = filteredUsers.filter((user: any) => 
               user.email?.toLowerCase().includes(search.toLowerCase()) ||
               user.name?.toLowerCase().includes(search.toLowerCase())
             );
           }
-
+          
           const startIndex = (page - 1) * limit;
           const endIndex = startIndex + limit;
           const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
-
+          
           const transformedUsers = paginatedUsers.map((user: any) => ({
             id: user.id,
             email: user.email,
@@ -281,7 +428,7 @@ export function createRoutes(authConfig: AuthConfig) {
             createdAt: user.createdAt,
             updatedAt: user.updatedAt,
           }));
-
+          
           res.json({ users: transformedUsers });
           return;
         }
@@ -290,7 +437,7 @@ export function createRoutes(authConfig: AuthConfig) {
       }
 
       const result = await getAuthData(authConfig, 'users', { page, limit, search });
-
+      
       const transformedUsers = (result.data || []).map((user: any) => ({
         id: user.id,
         email: user.email,
@@ -300,7 +447,7 @@ export function createRoutes(authConfig: AuthConfig) {
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       }));
-
+      
       res.json({ users: transformedUsers });
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -354,7 +501,7 @@ export function createRoutes(authConfig: AuthConfig) {
       }
 
       try {
-        const authModule = await import(authConfigPath);
+        const authModule = await safeImportAuthConfig(authConfigPath);
         const auth = authModule.auth || authModule.default;
 
         if (!auth) {
@@ -423,6 +570,69 @@ export function createRoutes(authConfig: AuthConfig) {
     }
   });
 
+  router.get('/api/database/info', async (req: Request, res: Response) => {
+    try {
+      const authConfigPath = await findAuthConfigPath();
+      if (!authConfigPath) {
+        return res.json({
+          database: null,
+          error: 'No auth config found',
+          configPath: null
+        });
+      }
+
+      try {
+        const authModule = await safeImportAuthConfig(authConfigPath);
+        const auth = authModule.auth || authModule.default;
+
+        if (!auth) {
+          return res.json({
+            database: null,
+            error: 'No auth export found',
+            configPath: authConfigPath
+          });
+        }
+
+        const database = auth.options?.database;
+        res.json({
+          database: database,
+          configPath: authConfigPath
+        });
+
+      } catch (error) {
+        console.error('Error getting database info:', error);
+        console.log('Falling back to regex extraction...');
+        
+        // Fallback to regex extraction when import fails
+        try {
+          const { readFileSync } = await import('fs');
+          const content = readFileSync(authConfigPath, 'utf-8');
+          const { extractBetterAuthConfig } = await import('./config');
+          
+          const config = extractBetterAuthConfig(content);
+          if (config && config.database) {
+            return res.json({
+              database: config.database,
+              configPath: authConfigPath,
+              fallback: true
+            });
+          }
+        } catch (fallbackError) {
+          console.error('Fallback extraction also failed:', fallbackError);
+        }
+        
+        res.json({
+          database: null,
+          error: 'Failed to load auth config - import failed and regex extraction unavailable',
+          configPath: authConfigPath
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching database info:', error);
+      res.status(500).json({ error: 'Failed to fetch database info' });
+    }
+  });
+
   router.get('/api/plugins/teams/status', async (req: Request, res: Response) => {
     try {
       const authConfigPath = await findAuthConfigPath();
@@ -435,7 +645,7 @@ export function createRoutes(authConfig: AuthConfig) {
       }
 
       try {
-        const authModule = await import(authConfigPath);
+        const authModule = await safeImportAuthConfig(authConfigPath);
         const auth = authModule.auth || authModule.default;
 
         if (!auth) {
@@ -460,9 +670,36 @@ export function createRoutes(authConfig: AuthConfig) {
 
       } catch (error) {
         console.error('Error checking teams plugin:', error);
+        console.log('Falling back to regex extraction...');
+        
+        // Fallback to regex extraction when import fails
+        try {
+          const { readFileSync } = await import('fs');
+          const content = readFileSync(authConfigPath, 'utf-8');
+          const { extractBetterAuthConfig } = await import('./config');
+          
+          const config = extractBetterAuthConfig(content);
+          if (config && config.plugins) {
+            const organizationPlugin = config.plugins.find((plugin: any) =>
+              plugin.id === "organization"
+            );
+            
+            const teamsEnabled = organizationPlugin?.teams?.enabled === true;
+
+            return res.json({
+              enabled: teamsEnabled,
+              configPath: authConfigPath,
+              organizationPlugin: organizationPlugin || null,
+              fallback: true
+            });
+          }
+        } catch (fallbackError) {
+          console.error('Fallback extraction also failed:', fallbackError);
+        }
+        
         res.json({
           enabled: false,
-          error: 'Failed to load auth config',
+          error: 'Failed to load auth config - import failed and regex extraction unavailable',
           configPath: authConfigPath
         });
       }
@@ -741,7 +978,11 @@ export function createRoutes(authConfig: AuthConfig) {
   router.post('/api/organizations/:orgId/invitations', async (req: Request, res: Response) => {
     try {
       const { orgId } = req.params;
-      const { email, role = 'member' } = req.body;
+      const { email, role = 'member', inviterId } = req.body;
+
+      if (!inviterId) {
+        return res.status(400).json({ error: 'Inviter ID is required' });
+      }
 
       const adapter = await getAuthAdapter();
       if (!adapter) {
@@ -755,17 +996,18 @@ export function createRoutes(authConfig: AuthConfig) {
         status: 'pending',
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
         createdAt: new Date(),
-        inviterId: 'admin' // In real app, get from session
+        inviterId: inviterId
       };
 
       const invitation = {
         id: `inv_${Date.now()}`,
         ...invitationData
       };
+      
       if(!adapter.create) {
         return res.status(500).json({ error: 'Adapter create method not available' });
       }
-      const adminId = "dQ2aAFgMwmRKvoqLiM1MCbjbka5g1Nzc"
+      
       await adapter.create({
         model: 'invitation',
         data: {
@@ -773,7 +1015,7 @@ export function createRoutes(authConfig: AuthConfig) {
           email: invitationData.email,
           role: invitationData.role,
           status: invitationData.status,
-          inviterId: adminId,
+          inviterId: invitationData.inviterId,
           expiresAt: invitationData.expiresAt,
           createdAt: invitationData.createdAt,
         }
@@ -1125,7 +1367,7 @@ export function createRoutes(authConfig: AuthConfig) {
       }
 
       try {
-        const authModule = await import(authConfigPath);
+        const authModule = await safeImportAuthConfig(authConfigPath);
         const auth = authModule.auth || authModule.default;
         console.log({ auth })
         if (!auth) {
@@ -1150,9 +1392,35 @@ export function createRoutes(authConfig: AuthConfig) {
 
       } catch (error) {
         console.error('Error checking organization plugin:', error);
+        console.log('Falling back to regex extraction...');
+        
+        // Fallback to regex extraction when import fails
+        try {
+          const { readFileSync } = await import('fs');
+          const content = readFileSync(authConfigPath, 'utf-8');
+          const { extractBetterAuthConfig } = await import('./config');
+          
+          const config = extractBetterAuthConfig(content);
+          if (config && config.plugins) {
+            const hasOrganizationPlugin = config.plugins.find((plugin: any) =>
+              plugin.id === "organization"
+            );
+
+            return res.json({
+              enabled: !!hasOrganizationPlugin,
+              configPath: authConfigPath,
+              availablePlugins: config.plugins.map((p: any) => p.id) || [],
+              organizationPlugin: hasOrganizationPlugin || null,
+              fallback: true
+            });
+          }
+        } catch (fallbackError) {
+          console.error('Fallback extraction also failed:', fallbackError);
+        }
+        
         res.json({
           enabled: false,
-          error: 'Failed to load auth config',
+          error: 'Failed to load auth config - import failed and regex extraction unavailable',
           configPath: authConfigPath
         });
       }
@@ -1351,7 +1619,7 @@ export function createRoutes(authConfig: AuthConfig) {
     try {
       const { id } = req.params;
       const userData = req.body;
-
+      
       const updatedUser = await getAuthData(authConfig, 'updateUser', { id, userData });
       res.json({ success: true, user: updatedUser });
     } catch (error) {
@@ -1375,7 +1643,7 @@ export function createRoutes(authConfig: AuthConfig) {
           if (typeof adapter.createUser !== 'function') {
             throw new Error('createUser method not available on adapter');
           }
-
+          
           const user = await createMockUser(adapter, i + 1);
           results.push({
             success: true,
@@ -1411,7 +1679,7 @@ export function createRoutes(authConfig: AuthConfig) {
     try {
       const { count = 1 } = req.body;
       const adapter = await getAuthAdapter();
-
+      
       if (!adapter) {
         return res.status(500).json({ error: 'Auth adapter not available' });
       }
@@ -1429,7 +1697,7 @@ export function createRoutes(authConfig: AuthConfig) {
           if (typeof adapter.createSession !== 'function') {
             throw new Error('createSession method not available on adapter');
           }
-
+          
           const session = await createMockSession(adapter, user.id, i + 1);
           results.push({
             success: true,
@@ -1464,7 +1732,7 @@ export function createRoutes(authConfig: AuthConfig) {
     try {
       const { count = 1 } = req.body;
       const adapter = await getAuthAdapter();
-
+      
       if (!adapter) {
         return res.status(500).json({ error: 'Auth adapter not available' });
       }
@@ -1482,7 +1750,7 @@ export function createRoutes(authConfig: AuthConfig) {
           if (typeof adapter.createAccount !== 'function') {
             throw new Error('createAccount method not available on adapter');
           }
-
+          
           const account = await createMockAccount(adapter, user.id, i + 1);
           results.push({
             success: true,
@@ -1518,7 +1786,7 @@ export function createRoutes(authConfig: AuthConfig) {
     try {
       const { count = 1 } = req.body;
       const adapter = await getAuthAdapter();
-
+      
       if (!adapter) {
         return res.status(500).json({ error: 'Auth adapter not available' });
       }
@@ -1529,7 +1797,7 @@ export function createRoutes(authConfig: AuthConfig) {
           if (typeof adapter.createVerification !== 'function') {
             throw new Error('createVerification method not available on adapter');
           }
-
+          
           const verification = await createMockVerification(adapter, `user${i + 1}@example.com`, i + 1);
           results.push({
             success: true,
@@ -1564,7 +1832,7 @@ export function createRoutes(authConfig: AuthConfig) {
     try {
       const { count = 1 } = req.body;
       const adapter = await getAuthAdapter();
-
+      
       if (!adapter) {
         return res.status(500).json({ error: 'Auth adapter not available' });
       }

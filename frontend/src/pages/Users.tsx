@@ -298,70 +298,109 @@ export default function Users() {
               </tr>
             </thead>
             <tbody>
-              {currentUsers.map((user) => (
-                <tr key={user.id} className="border-b border-dashed border-white/5 hover:bg-white/5">
-                  <td className="py-4 px-4">
-                    <div className="flex items-center space-x-3">
-                      <img
-                        src={user.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`}
-                        alt={user.name}
-                        className="w-10 h-10 rounded-none border border-dashed border-white/20"
-                      />
-                      <div>
-                        <div className="text-white font-light">{user.name}</div>
-                        <div className="text-sm text-gray-400">ID: {user.id}</div>
+              {currentUsers.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-12 px-4 text-center">
+                    <div className="flex flex-col items-center space-y-4">
+                      <div className="w-16 h-16 rounded-none border border-dashed border-white/20 bg-white/10 flex items-center justify-center">
+                        <UsersIcon className="w-8 h-8 text-white/50" />
                       </div>
-                    </div>
-                  </td>
-                  <td className="py-4 px-4 text-white">{user.email}</td>
-                  <td className="py-4 px-4">
-                    <div className="flex items-center space-x-2">
-                      {user.emailVerified ? (
-                        <Check className="w-4 h-4 text-green-400" />
-                       ) : (
-                        <Mail className="w-4 h-4 text-yellow-400" />
+                      <div>
+                        <h3 className="text-white font-medium text-lg">No users found</h3>
+                        <p className="text-gray-400 text-sm mt-1">
+                          {searchTerm || filter !== 'all' 
+                            ? 'Try adjusting your search or filter criteria'
+                            : 'Get started by creating your first user or seeding some data'
+                          }
+                        </p>
+                      </div>
+                      {!searchTerm && filter === 'all' && (
+                        <div className="flex items-center space-x-3">
+                          <Button
+                            onClick={() => setShowCreateModal(true)}
+                            className="bg-white text-black hover:bg-gray-200 rounded-none"
+                          >
+                            <UserPlus className="w-4 h-4 mr-2" />
+                            Create User
+                          </Button>
+                          <Button
+                            onClick={() => setShowSeedModal(true)}
+                            className="border border-dashed border-white/20 text-white hover:bg-white/10 bg-transparent rounded-none"
+                          >
+                            <Database className="w-4 h-4 mr-2" />
+                            Seed Data
+                          </Button>
+                        </div>
                       )}
-                      <span className="text-sm text-gray-400">
-                        {user.emailVerified ? 'Verified' : 'Not Verified'}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="py-4 px-4 text-sm text-gray-400">
-                   <div className='flex flex-col'>
-                    {new Date(user.createdAt).toLocaleDateString()}
-                    <p className='text-xs'>{new Date(user.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
-                    </div> 
-                  </td>
-                  <td className="py-4 px-4 text-right">
-                    <div className="flex items-center justify-end space-x-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-gray-400 hover:text-white rounded-none"
-                        onClick={() => openViewModal(user)}
-                      >
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-gray-400 hover:text-white rounded-none"
-                        onClick={() => openEditModal(user)}
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-red-400 hover:text-red-300 rounded-none"
-                        onClick={() => openDeleteModal(user)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
                     </div>
                   </td>
                 </tr>
-              ))}
+              ) : (
+                currentUsers.map((user) => (
+                  <tr key={user.id} className="border-b border-dashed border-white/5 hover:bg-white/5">
+                    <td className="py-4 px-4">
+                      <div className="flex items-center space-x-3">
+                        <img
+                          src={user.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`}
+                          alt={user.name}
+                          className="w-10 h-10 rounded-none border border-dashed border-white/20"
+                        />
+                        <div>
+                          <div className="text-white font-light">{user.name}</div>
+                          <div className="text-sm text-gray-400">ID: {user.id}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-4 px-4 text-white">{user.email}</td>
+                    <td className="py-4 px-4">
+                      <div className="flex items-center space-x-2">
+                        {user.emailVerified ? (
+                          <Check className="w-4 h-4 text-green-400" />
+                         ) : (
+                          <Mail className="w-4 h-4 text-yellow-400" />
+                        )}
+                        <span className="text-sm text-gray-400">
+                          {user.emailVerified ? 'Verified' : 'Not Verified'}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="py-4 px-4 text-sm text-gray-400">
+                     <div className='flex flex-col'>
+                      {new Date(user.createdAt).toLocaleDateString()}
+                      <p className='text-xs'>{new Date(user.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                      </div> 
+                    </td>
+                    <td className="py-4 px-4 text-right">
+                      <div className="flex items-center justify-end space-x-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-gray-400 hover:text-white rounded-none"
+                          onClick={() => openViewModal(user)}
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-gray-400 hover:text-white rounded-none"
+                          onClick={() => openEditModal(user)}
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-red-400 hover:text-red-300 rounded-none"
+                          onClick={() => openDeleteModal(user)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

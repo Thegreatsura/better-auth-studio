@@ -458,69 +458,108 @@ export default function Organizations() {
               </tr>
             </thead>
             <tbody>
-              {filteredOrganizations.map((organization) => (
-                <tr 
-                  key={organization.id} 
-                  className="border-b border-dashed border-white/5 hover:bg-white/5 cursor-pointer"
-                  onClick={() => navigate(`/organizations/${organization.id}`)}
-                >
-                  <td className="py-4 px-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 rounded-none border border-dashed border-white/20 bg-white/10 flex items-center justify-center">
-                        <Building2 className="w-5 h-5 text-white" />
+              {filteredOrganizations.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="py-12 px-4 text-center">
+                    <div className="flex flex-col items-center space-y-4">
+                      <div className="w-16 h-16 rounded-none border border-dashed border-white/20 bg-white/10 flex items-center justify-center">
+                        <Building2 className="w-8 h-8 text-white/50" />
                       </div>
                       <div>
-                        <div className="text-white font-light">{organization.name}</div>
-                        <div className="text-sm text-gray-400">ID: {organization.id}</div>
+                        <h3 className="text-white font-medium text-lg">No organizations found</h3>
+                        <p className="text-gray-400 text-sm mt-1">
+                          {searchTerm || filter !== 'all' 
+                            ? 'Try adjusting your search or filter criteria'
+                            : 'Get started by creating your first organization'
+                          }
+                        </p>
                       </div>
-                    </div>
-                  </td>
-                  <td className="py-4 px-4 text-white">{organization.slug}</td>
-                  <td className="py-4 px-4 text-sm text-gray-400">
-                   <div className="flex flex-col">
-                    {new Date(organization.createdAt).toLocaleDateString()}
-                    <p className="text-xs">{new Date(organization.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
-                    </div>
-                  </td>
-                  <td className="py-4 px-4 text-right">
-                    <div className="flex items-center justify-end space-x-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-gray-400 hover:text-white rounded-none"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          openViewModal(organization)
-                        }}
-                      >
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-gray-400 hover:text-white rounded-none"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          openEditModal(organization)
-                        }}
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-red-400 hover:text-red-300 rounded-none"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          openDeleteModal(organization)
-                        }}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                      {!searchTerm && filter === 'all' && (
+                        <div className="flex items-center space-x-3">
+                          <Button
+                            onClick={() => setShowCreateModal(true)}
+                            className="bg-white text-black hover:bg-gray-200 rounded-none"
+                          >
+                            <Plus className="w-4 h-4 mr-2" />
+                            Create Organization
+                          </Button>
+                          <Button
+                            onClick={() => setShowSeedModal(true)}
+                            className="border border-dashed border-white/20 text-white hover:bg-white/10 bg-transparent rounded-none"
+                          >
+                            <Database className="w-4 h-4 mr-2" />
+                            Seed Data
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   </td>
                 </tr>
-              ))}
+              ) : (
+                filteredOrganizations.map((organization) => (
+                  <tr 
+                    key={organization.id} 
+                    className="border-b border-dashed border-white/5 hover:bg-white/5 cursor-pointer"
+                    onClick={() => navigate(`/organizations/${organization.id}`)}
+                  >
+                    <td className="py-4 px-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 rounded-none border border-dashed border-white/20 bg-white/10 flex items-center justify-center">
+                          <Building2 className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <div className="text-white font-light">{organization.name}</div>
+                          <div className="text-sm text-gray-400">ID: {organization.id}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-4 px-4 text-white">{organization.slug}</td>
+                    <td className="py-4 px-4 text-sm text-gray-400">
+                     <div className="flex flex-col">
+                      {new Date(organization.createdAt).toLocaleDateString()}
+                      <p className="text-xs">{new Date(organization.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                      </div>
+                    </td>
+                    <td className="py-4 px-4 text-right">
+                      <div className="flex items-center justify-end space-x-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-gray-400 hover:text-white rounded-none"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            openViewModal(organization)
+                          }}
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-gray-400 hover:text-white rounded-none"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            openEditModal(organization)
+                          }}
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-red-400 hover:text-red-300 rounded-none"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            openDeleteModal(organization)
+                          }}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

@@ -13,6 +13,8 @@ export interface AuthDatabase {
   url?: string;
   type?: string;
   dialect?: string;
+  adapter?: string;
+  provider?: string;
   [key: string]: any;
 }
 
@@ -26,6 +28,7 @@ export interface AuthConfig {
   rateLimit?: any;
   [key: string]: any;
 }
+
 
 export async function findAuthConfig(): Promise<AuthConfig | null> {
   const possibleConfigFiles = [
@@ -130,12 +133,98 @@ async function loadTypeScriptConfig(configPath: string): Promise<AuthConfig | nu
   }
 }
 
+function detectDatabaseAdapter(content: string): AuthDatabase {
+  const database: AuthDatabase = {};
+  
+  // Detect Prisma adapter
+  if (content.includes('prismaAdapter')) {
+    database.adapter = 'prisma';
+    database.type = 'prisma';
+    
+    // Try to extract provider from prismaAdapter call
+    const prismaMatch = content.match(/prismaAdapter\s*\(\s*\w+\s*,\s*\{[^}]*provider[^}]*\}/);
+    if (prismaMatch) {
+      const providerMatch = prismaMatch[0].match(/provider\s*:\s*["']([^"']+)["']/);
+      if (providerMatch) {
+        database.provider = providerMatch[1];
+        database.type = providerMatch[1]; // Set type to the provider (e.g., postgresql)
+      }
+    } else {
+      // If no provider specified, default to postgresql
+      database.provider = 'postgresql';
+      database.type = 'postgresql';
+    }
+  }
+  
+  // Detect Drizzle adapter
+  else if (content.includes('drizzleAdapter')) {
+    database.adapter = 'drizzle';
+    database.type = 'drizzle';
+    
+    // Try to extract dialect from drizzleAdapter call
+    const drizzleMatch = content.match(/drizzleAdapter\s*\(\s*\w+\s*,\s*\{[^}]*dialect[^}]*\}/);
+    if (drizzleMatch) {
+      const dialectMatch = drizzleMatch[0].match(/dialect\s*:\s*["']([^"']+)["']/);
+      if (dialectMatch) {
+        database.dialect = dialectMatch[1];
+      }
+    }
+  }
+  
+  // Detect SQLite (better-sqlite3)
+  else if (content.includes('better-sqlite3') || content.includes('Database')) {
+    database.adapter = 'sqlite';
+    database.type = 'sqlite';
+    database.dialect = 'sqlite';
+  }
+  
+  // Detect PostgreSQL
+  else if (content.includes('postgres') || content.includes('pg')) {
+    database.adapter = 'postgres';
+    database.type = 'postgres';
+    database.dialect = 'postgres';
+  }
+  
+  // Detect MySQL
+  else if (content.includes('mysql') || content.includes('mysql2')) {
+    database.adapter = 'mysql';
+    database.type = 'mysql';
+    database.dialect = 'mysql';
+  }
+  
+  // Detect Bun SQLite
+  else if (content.includes('bun:sqlite')) {
+    database.adapter = 'bun-sqlite';
+    database.type = 'bun-sqlite';
+    database.dialect = 'sqlite';
+  }
+  
+  // Try to extract database URL from environment variables
+  const urlMatch = content.match(/DATABASE_URL|DB_URL|DB_CONNECTION_STRING/);
+  if (urlMatch) {
+    database.url = `process.env.${urlMatch[0]}`;
+  }
+  
+  return database;
+}
+
 function cleanConfigString(configStr: string): string {
   // First, let's handle the specific problematic patterns
   let cleaned = configStr;
   
-  // Handle prismaAdapter calls specifically
+  // Handle prismaAdapter calls specifically - be more comprehensive
   cleaned = cleaned.replace(/:\s*prismaAdapter\s*\(\s*\w+\s*,\s*\{[^}]*\}\s*\)/g, ':"prisma-adapter"');
+  cleaned = cleaned.replace(/:\s*prismaAdapter\s*\(\s*\w+\s*\)/g, ':"prisma-adapter"');
+  
+  // Handle drizzleAdapter calls
+  cleaned = cleaned.replace(/:\s*drizzleAdapter\s*\(\s*\w+\s*,\s*\{[^}]*\}\s*\)/g, ':"drizzle-adapter"');
+  cleaned = cleaned.replace(/:\s*drizzleAdapter\s*\(\s*\w+\s*\)/g, ':"drizzle-adapter"');
+  
+  // Handle other database adapters
+  cleaned = cleaned.replace(/:\s*betterSqlite3\s*\(\s*[^)]*\)/g, ':"better-sqlite3"');
+  cleaned = cleaned.replace(/:\s*postgres\s*\(\s*[^)]*\)/g, ':"postgres"');
+  cleaned = cleaned.replace(/:\s*mysql2\s*\(\s*[^)]*\)/g, ':"mysql2"');
+  cleaned = cleaned.replace(/:\s*bun:sqlite\s*\(\s*[^)]*\)/g, ':"bun-sqlite"');
   
   // Handle other function calls
   cleaned = cleaned.replace(/:\s*(\w+)\s*\(\s*[^)]*\)/g, ':"$1-function"');
@@ -202,22 +291,35 @@ export function extractBetterAuthConfig(content: string): AuthConfig | null {
       if (pluginMatches) {
         for (const pluginMatch of pluginMatches) {
           const pluginName = pluginMatch.replace(/\(\)/, '');
-          plugins.push({
+          const plugin: any = {
             id: pluginName,
             name: pluginName,
             version: 'unknown',
             description: `${pluginName} plugin for Better Auth`,
             enabled: true
-          });
+          };
+          
+          // Check if this is the organization plugin and look for teams configuration
+          if (pluginName === 'organization') {
+            // Look for organization({teams: {enabled: true}}) pattern
+            const orgConfigMatch = content.match(/organization\s*\(\s*\{[^}]*teams[^}]*enabled[^}]*\}/);
+            if (orgConfigMatch) {
+              plugin.teams = { enabled: true };
+            }
+          }
+          
+          plugins.push(plugin);
         }
       }
       
       if (plugins.length > 0) {
         console.log('Extracted plugins from content:', plugins);
+        const database = detectDatabaseAdapter(content);
+        console.log('Detected database:', database);
         return {
           plugins: plugins,
           baseURL: 'http://localhost:3000', // Default fallback
-          database: { type: 'unknown' }
+          database: database
         };
       }
     }
@@ -234,22 +336,35 @@ export function extractBetterAuthConfig(content: string): AuthConfig | null {
     if (pluginMatches) {
       for (const pluginMatch of pluginMatches) {
         const pluginName = pluginMatch.replace(/\(\)/, '');
-        plugins.push({
+        const plugin: any = {
           id: pluginName,
           name: pluginName,
           version: 'unknown',
           description: `${pluginName} plugin for Better Auth`,
           enabled: true
-        });
+        };
+        
+        // Check if this is the organization plugin and look for teams configuration
+        if (pluginName === 'organization') {
+          // Look for organization({teams: {enabled: true}}) pattern
+          const orgConfigMatch = content.match(/organization\s*\(\s*\{[^}]*teams[^}]*enabled[^}]*\}/);
+          if (orgConfigMatch) {
+            plugin.teams = { enabled: true };
+          }
+        }
+        
+        plugins.push(plugin);
       }
     }
     
     if (plugins.length > 0) {
       console.log('Extracted plugins from content:', plugins);
+      const database = detectDatabaseAdapter(content);
+      console.log('Detected database:', database);
       return {
         plugins: plugins,
         baseURL: 'http://localhost:3000', // Default fallback
-        database: { type: 'unknown' }
+        database: database
       };
     }
   }
@@ -329,7 +444,15 @@ export function extractBetterAuthConfig(content: string): AuthConfig | null {
           return null;
         }
         
-        return extractBetterAuthFields(config);
+        const authConfig = extractBetterAuthFields(config);
+        if (authConfig) {
+          // Enhance with database detection from original content
+          const detectedDatabase = detectDatabaseAdapter(content);
+          if (detectedDatabase.adapter) {
+            authConfig.database = { ...authConfig.database, ...detectedDatabase };
+          }
+        }
+        return authConfig;
       } catch (error) {
         console.warn(`Failed to parse config pattern: ${error instanceof Error ? error.message : 'Unknown error'}`);
         continue;
@@ -348,23 +471,41 @@ function extractBetterAuthFields(config: any): AuthConfig {
   if (config.database) {
     let dbType = 'postgresql'; // default
     let dbName = config.database.name;
+    let adapter = 'unknown';
     
+    // Check if it's a Prisma adapter (function call result)
     if (config.database.constructor && config.database.constructor.name === 'Database') {
       dbType = 'sqlite';
       dbName = config.database.name || './better-auth.db';
+      adapter = 'sqlite';
     } else if (config.database.name && config.database.name.endsWith('.db')) {
       dbType = 'sqlite';
+      adapter = 'sqlite';
     } else if (config.database.type) {
       dbType = config.database.type;
+      adapter = config.database.type;
     } else if (config.database.dialect) {
       dbType = config.database.dialect;
+      adapter = config.database.dialect;
+    } else if (config.database.provider) {
+      // This is likely a Prisma adapter with provider specified
+      dbType = config.database.provider;
+      adapter = 'prisma';
+    } else {
+      // Try to detect from the database object structure
+      if (config.database.provider) {
+        dbType = config.database.provider;
+        adapter = 'prisma';
+      }
     }
     
     authConfig.database = {
       url: config.database.url || config.database.connectionString,
       name: dbName,
       type: dbType,
+      adapter: adapter,
       dialect: config.database.dialect,
+      provider: config.database.provider,
       casing: config.database.casing
     };
   }
@@ -423,6 +564,13 @@ function extractBetterAuthFields(config: any): AuthConfig {
 async function evaluateJSConfig(configPath: string): Promise<AuthConfig | null> {
   try {
     const config = require(configPath);
+    
+    // Handle CommonJS exports like { auth }
+    if (config.auth) {
+      console.log('Found auth export in CommonJS module, extracting configuration...');
+      const authConfig = config.auth.options || config.auth;
+      return extractBetterAuthFields(authConfig);
+    }
     
     if (config.default) {
       return extractBetterAuthFields(config.default);

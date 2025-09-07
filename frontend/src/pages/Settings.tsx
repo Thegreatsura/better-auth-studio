@@ -978,11 +978,10 @@ export default function Settings() {
                       </div>
                     </div>
                     <div className="text-right flex items-center space-x-2">
-                      <Badge variant="secondary" className="text-xs bg-green-900/50 border border-green-500/30 text-green-400 rounded-sm flex items-center gap-1">
+                      <Badge variant="secondary" className="text-xs bg-green-900/50 border border-dashed rounded-none border-green-500/30 text-green-400 flex items-center gap-1">
                         <CheckCircle className="w-3 h-3" />
                         Enabled
                       </Badge>
-                      <p className="text-xs text-gray-400">v{plugin.version}</p>
                     </div>
                   </div>
                 ))}
