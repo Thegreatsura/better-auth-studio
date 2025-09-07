@@ -173,7 +173,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Navigation */}
-      <div className="border-b border-dashed border-white/10">
+      {/* <div className="border-b border-dashed border-white/10">
         <div className="px-6 py-4">
           <div className="flex items-center space-x-8">
             <button
@@ -218,7 +218,7 @@ export default function Dashboard() {
             </button>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Tab Content */}
       {activeTab === 'overview' ? renderOverview() : 

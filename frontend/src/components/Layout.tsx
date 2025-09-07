@@ -53,7 +53,7 @@ export default function Layout({ children }: LayoutProps) {
     { name: 'Dashboard', href: '/', icon: LayoutDashboard },
     { name: 'Users', href: '/users', icon: Users, badge: loading ? '...' : formatCount(counts.users) },
     { name: 'Organizations', href: '/organizations', icon: Building2, badge: loading ? '...' : formatCount(counts.organizations) },
-    { name: 'Sessions', href: '/sessions', icon: Shield, badge: loading ? '...' : formatCount(counts.sessions) },
+    // { name: 'Sessions', href: '/sessions', icon: Shield, badge: loading ? '...' : formatCount(counts.sessions) },
     { name: 'Settings', href: '/settings', icon: Settings },
   ]
 
