@@ -205,7 +205,6 @@ export default function Settings() {
     try {
       const response = await fetch('/api/plugins')
       const data = await response.json()
-      console.log('Plugins data:', data)
       setPlugins(data)
     } catch (error) {
       console.error('Failed to fetch plugins:', error)
@@ -259,7 +258,7 @@ export default function Settings() {
     <div className="space-y-8 animate-fade-in">
       <div className="flex items-center justify-between p-5 pt-7">
         <div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">Settings</h1>
+          <h1 className="text-3xl font-normal text-white tracking-tight">Settings</h1>
           <p className="text-gray-300 mt-2">Configure your Better Auth application</p>
         </div>
         

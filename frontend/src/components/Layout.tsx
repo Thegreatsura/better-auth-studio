@@ -4,7 +4,6 @@ import {
   LayoutDashboard,
   Users,
   Building2,
-  Shield,
   Settings,
   Search
 } from 'lucide-react'
@@ -89,9 +88,9 @@ export default function Layout({ children }: LayoutProps) {
               </Button>
             </a>
             <a href="https://better-auth.com/support" target="_blank">
-            <Button variant="ghost" className="text-gray-300 hover:bg-gray-900">
-              Support
-            </Button>
+              <Button variant="ghost" className="text-gray-300 hover:bg-gray-900">
+                Support
+              </Button>
             </a>
           </div>
         </div>
@@ -108,8 +107,8 @@ export default function Layout({ children }: LayoutProps) {
                   key={item.name}
                   to={item.href}
                   className={`flex items-center space-x-2 px-3 py-4 text-sm font-medium border-b-2 transition-all duration-200 ${isActive
-                      ? 'border-white text-white'
-                      : 'border-transparent text-gray-400 hover:text-white hover:border-gray-300'
+                    ? 'border-white text-white'
+                    : 'border-transparent text-gray-400 hover:text-white hover:border-gray-300'
                     }`}
                 >
                   <item.icon className="w-4 h-4" />
