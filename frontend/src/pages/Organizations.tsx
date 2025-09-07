@@ -323,7 +323,7 @@ export default function Organizations() {
         </div>
 
         {/* Plugin Setup Card */}
-        <div className="bg-black/30 border border-dashed border-white/50 rounded-none p-8">
+        <div className="bg-black/30 border border-dashed border-white/20 rounded-none p-8">
           <div className="flex items-start space-x-4">
             <div className="flex-shrink-0">
               <Building2 className="w-12 h-12 text-white" />
@@ -350,12 +350,8 @@ export default function Organizations() {
 <span className="text-blue-400">export const</span> <span className="text-yellow-300">auth</span> = <span className="text-yellow-300">betterAuth</span>({`{`} <br />
   <span className="text-gray-500 pl-10">// ... your existing configuration</span> <br />
   <span className="text-red-300 pl-10">plugins</span>: [ <br />
-    <span className="text-yellow-300 pl-12">organization</span>({`{`} <br />
-      <span className="text-red-300 pl-16">teams</span>: {`{`} <br />
-        <span className="text-red-300 pl-20">enabled</span>: <span className="text-blue-400">true</span> <br />
-      {`}`} <br />
-    {`}`}) <br />
-  ] <br />
+    <span className="text-yellow-300 pl-12">organization({})</span><br />
+        <span className="pl-10">]</span> <br />
 {`}`}) <br />
                   </pre>
                 </div>

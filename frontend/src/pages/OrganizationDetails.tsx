@@ -504,14 +504,14 @@ export default function OrganizationDetails() {
                 <div className="flex items-center space-x-3">
                     <Button 
                         onClick={() => setShowSeedMembersModal(true)}
-                        className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none"
+                        className="border border-dashed border-white/20 text-white hover:bg-transparent rounded-none"
                     >
                         <Users className="w-4 h-4 mr-2" />
                         Seed Members
                     </Button>
                     <Button 
                         onClick={() => setShowInviteModal(true)}
-                        className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none"
+                        className="border border-dashed border-white/20 text-white hover:bg-transparent rounded-none"
                     >
                         <Mail className="w-4 h-4 mr-2" />
                         Invite User
