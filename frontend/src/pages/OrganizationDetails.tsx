@@ -15,13 +15,15 @@ import {
     Send,
     Clock,
     CheckCircle,
-    Loader
+    Loader,
+    Database
 } from 'lucide-react'
 import { Button } from '../components/ui/button'
 import { Badge } from '../components/ui/badge'
 import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select'
+import { Terminal } from '../components/Terminal'
 
 interface Organization {
     id: string
@@ -97,6 +99,7 @@ export default function OrganizationDetails() {
     // Modal states
     const [showInviteModal, setShowInviteModal] = useState(false)
     const [showSeedMembersModal, setShowSeedMembersModal] = useState(false)
+    const [showSeedTeamsModal, setShowSeedTeamsModal] = useState(false)
     const [showCreateTeamModal, setShowCreateTeamModal] = useState(false)
     const [showEditTeamModal, setShowEditTeamModal] = useState(false)
     const [showDeleteTeamModal, setShowDeleteTeamModal] = useState(false)
@@ -108,7 +111,22 @@ export default function OrganizationDetails() {
     const [availableUsers, setAvailableUsers] = useState<User[]>([])
     const [teamFormData, setTeamFormData] = useState({ name: '' })
     const [inviting, setInviting] = useState(false)
-    const [seedingLogs, setSeedingLogs] = useState<string[]>([])
+    const [seedingLogs, setSeedingLogs] = useState<Array<{
+        id: string
+        type: 'info' | 'success' | 'error' | 'progress'
+        message: string
+        timestamp: Date
+        status?: 'pending' | 'running' | 'completed' | 'failed'
+    }>>([])
+    const [isSeeding, setIsSeeding] = useState(false)
+    const [teamSeedingLogs, setTeamSeedingLogs] = useState<Array<{
+        id: string
+        type: 'info' | 'success' | 'error' | 'progress'
+        message: string
+        timestamp: Date
+        status?: 'pending' | 'running' | 'completed' | 'failed'
+    }>>([])
+    const [isTeamSeeding, setIsTeamSeeding] = useState(false)
 
     interface User {
         id: string
@@ -223,6 +241,15 @@ export default function OrganizationDetails() {
 
     const handleSeedMembers = async (count: number) => {
         setSeedingLogs([])
+        setIsSeeding(true)
+        
+        // Add initial info message
+        setSeedingLogs([{
+            id: 'start',
+            type: 'info',
+            message: `Starting member seeding process for ${count} members...`,
+            timestamp: new Date()
+        }])
         
         try {
             const response = await fetch(`/api/organizations/${orgId}/seed-members`, {
@@ -234,19 +261,135 @@ export default function OrganizationDetails() {
             const result = await response.json()
             
             if (result.success) {
-                setSeedingLogs(result.results.map((r: any) =>
-                    r.success 
-                        ? `✅ Added member: ${r.member.user.name} (${r.member.user.email})`
-                        : `❌ Failed: ${r.error}`
-                ))
+                // Add progress messages for each member
+                const progressLogs = result.results.map((r: any, index: number) => {
+                    if (r.success) {
+                        return {
+                            id: `member-${index}`,
+                            type: 'progress' as const,
+                            message: `Adding member: ${r.member.user.name} (${r.member.user.email})`,
+                            timestamp: new Date(),
+                            status: 'completed' as const
+                        }
+                    } else {
+                        return {
+                            id: `member-${index}`,
+                            type: 'error' as const,
+                            message: `Failed to add member ${index + 1}: ${r.error}`,
+                            timestamp: new Date()
+                        }
+                    }
+                })
+                
+                setSeedingLogs(prev => [...prev, ...progressLogs])
+                
+                // Add completion message
+                const successCount = result.results.filter((r: any) => r.success).length
+                setSeedingLogs(prev => [...prev, {
+                    id: 'complete',
+                    type: 'success',
+                    message: `✅ Seeding completed! Added ${successCount}/${count} members successfully`,
+                    timestamp: new Date()
+                }])
+                
                 await fetchMembers()
-                toast.success(`Successfully added ${result.results.filter((r: any) => r.success).length} members!`)
+                toast.success(`Successfully added ${successCount} members!`)
             } else {
-                setSeedingLogs([`❌ Error: ${result.error || 'Failed to seed members'}`])
+                setSeedingLogs(prev => [...prev, {
+                    id: 'error',
+                    type: 'error',
+                    message: `❌ Seeding failed: ${result.error || 'Unknown error'}`,
+                    timestamp: new Date()
+                }])
                 toast.error(result.error || 'Failed to seed members')
             }
         } catch (error) {
-            setSeedingLogs([`❌ Error: ${error}`])
+            setSeedingLogs(prev => [...prev, {
+                id: 'error',
+                type: 'error',
+                message: `❌ Network error: ${error}`,
+                timestamp: new Date()
+            }])
+            toast.error('Failed to seed members')
+        } finally {
+            setIsSeeding(false)
+        }
+    }
+
+    const handleSeedTeams = async (count: number) => {
+        setTeamSeedingLogs([])
+        setIsTeamSeeding(true)
+        
+        // Add initial info message
+        setTeamSeedingLogs([{
+            id: 'start',
+            type: 'info',
+            message: `Starting team seeding process for ${count} teams...`,
+            timestamp: new Date()
+        }])
+        
+        try {
+            const response = await fetch(`/api/organizations/${orgId}/seed-teams`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ count })
+            })
+            
+            const result = await response.json()
+            
+            if (result.success) {
+                // Add progress messages for each team
+                const progressLogs = result.results.map((r: any, index: number) => {
+                    if (r.success) {
+                        return {
+                            id: `team-${index}`,
+                            type: 'progress' as const,
+                            message: `Creating team: ${r.team.name}`,
+                            timestamp: new Date(),
+                            status: 'completed' as const
+                        }
+                    } else {
+                        return {
+                            id: `team-${index}`,
+                            type: 'error' as const,
+                            message: `Failed to create team ${index + 1}: ${r.error}`,
+                            timestamp: new Date()
+                        }
+                    }
+                })
+                
+                setTeamSeedingLogs(prev => [...prev, ...progressLogs])
+                
+                // Add completion message
+                const successCount = result.results.filter((r: any) => r.success).length
+                setTeamSeedingLogs(prev => [...prev, {
+                    id: 'complete',
+                    type: 'success',
+                    message: `✅ Seeding completed! Created ${successCount}/${count} teams successfully`,
+                    timestamp: new Date()
+                }])
+                
+                await fetchTeams()
+                toast.success(`Successfully created ${successCount} teams!`)
+            } else {
+                setTeamSeedingLogs(prev => [...prev, {
+                    id: 'error',
+                    type: 'error',
+                    message: `❌ Seeding failed: ${result.error || 'Unknown error'}`,
+                    timestamp: new Date()
+                }])
+                toast.error(result.error || 'Failed to seed teams')
+            }
+        } catch (error) {
+            setTeamSeedingLogs(prev => [...prev, {
+                id: 'error',
+                type: 'error',
+                message: `❌ Network error: ${error}`,
+                timestamp: new Date()
+            }])
+            toast.error('Failed to seed teams')
+        } finally {
+            setIsTeamSeeding(false)
         }
     }
 
@@ -721,6 +864,14 @@ export default function OrganizationDetails() {
                             <h3 className="text-lg text-white font-light">Teams ({teams.length})</h3>
                             <p className="text-gray-400 mt-1">Manage teams within this organization</p>
                         </div>
+                        <div className="flex items-center space-x-3">
+                        <Button
+                            onClick={() => setShowSeedTeamsModal(true)}
+                            className="border border-dashed border-white/20 text-white hover:bg-white/10 bg-transparent rounded-none"
+                        >
+                            <Database className="w-4 h-4 mr-2" />
+                            Seed Teams
+                        </Button>
                         <Button 
                             onClick={() => setShowCreateTeamModal(true)}
                             className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none"
@@ -728,6 +879,7 @@ export default function OrganizationDetails() {
                             <UserPlus className="w-4 h-4 mr-2" />
                             Create Team
                         </Button>
+                        </div>
                     </div>
 
                     {/* Teams List */}
@@ -1308,35 +1460,35 @@ export default function OrganizationDetails() {
                                             const count = parseInt((document.getElementById('member-count') as HTMLInputElement)?.value || '5')
                                             handleSeedMembers(count)
                                         }}
-                                        className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none mt-6"
+                                        disabled={isSeeding}
+                                        className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none mt-6 disabled:opacity-50"
                                     >
-                                        Seed Members
+                                        {isSeeding ? (
+                                            <>
+                                                <Loader className="w-3 h-3 mr-2 animate-spin" />
+                                                Seeding...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Users className="w-3 h-3 mr-2" />
+                                                Seed Members
+                                            </>
+                                        )}
                                     </Button>
                                 </div>
                             </div>
 
+
                             {/* Seeding Logs */}
                             {seedingLogs.length > 0 && (
                                 <div className="mt-6">
-                                    <h5 className="text-sm text-white font-light">Seeding Log</h5>
-                                    <br />
-                                    <div className="flex w-full mb-3">
-                                        <details className="group w-full">
-                                            <summary className="cursor-pointer text-sm text-gray-400 font-light hover:text-white">
-                                                View Details ({seedingLogs.length} items)
-                                            </summary>
-                                            <div className="mt-3 p-4 bg-black/50 border border-dashed border-white/20 rounded-none">
-                                                <div className="space-y-2 max-h-48 overflow-y-auto">
-                                                    {seedingLogs.map((log, index) => (
-                                                        <div key={index} className="text-xs font-mono text-gray-300 flex items-start space-x-2">
-                                                            <span className="text-green-400">✓</span>
-                                                            <span>{log}</span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </details>
-                                    </div>
+                                    <Terminal 
+                                        title="Member Seeding Terminal"
+                                        lines={seedingLogs}
+                                        isRunning={isSeeding}
+                                        className="w-full"
+                                        defaultCollapsed={true}
+                                    />
                                 </div>
                             )}
                         </div>
@@ -1344,6 +1496,88 @@ export default function OrganizationDetails() {
                             <Button
                                 variant="outline"
                                 onClick={() => setShowSeedMembersModal(false)}
+                                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none"
+                            >
+                                Close
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Seed Teams Modal */}
+            {showSeedTeamsModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                    <div className="bg-black/90 border border-dashed border-white/20 p-6 w-full max-w-2xl rounded-none">
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-lg text-white font-light">Seed Teams</h3>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setShowSeedTeamsModal(false)}
+                                className="text-gray-400 hover:text-white rounded-none"
+                            >
+                                <X className="w-4 h-4" />
+                            </Button>
+                        </div>
+                        <div className="space-y-6">
+                            <div className="space-y-4">
+                                <div className="flex items-center space-x-2">
+                                    <Building2 className="w-5 h-5 text-white" />
+                                    <h4 className="text-white font-light">Create Teams</h4>
+                                </div>
+                                <div className="flex items-center space-x-3">
+                                    <div className="flex-1">
+                                        <Label htmlFor="team-count" className="text-sm text-gray-400 font-light">Number of teams to create</Label>
+                                        <Input
+                                            id="team-count"
+                                            type="number"
+                                            min="1"
+                                            max="20"
+                                            defaultValue="3"
+                                            className="mt-1 border border-dashed border-white/20 bg-black/30 text-white rounded-none"
+                                        />
+                                    </div>
+                                    <Button
+                                        onClick={() => {
+                                            const count = parseInt((document.getElementById('team-count') as HTMLInputElement)?.value || '3')
+                                            handleSeedTeams(count)
+                                        }}
+                                        disabled={isTeamSeeding}
+                                        className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none mt-6 disabled:opacity-50"
+                                    >
+                                        {isTeamSeeding ? (
+                                            <>
+                                                <Loader className="w-3 h-3 mr-2 animate-spin" />
+                                                Seeding...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Building2 className="w-3 h-3 mr-2" />
+                                                Seed Teams
+                                            </>
+                                        )}
+                                    </Button>
+                                </div>
+                            </div>
+
+                            {/* Team Seeding Logs */}
+                            {teamSeedingLogs.length > 0 && (
+                                <div className="mt-6">
+                                    <Terminal 
+                                        title="Team Seeding Terminal"
+                                        lines={teamSeedingLogs}
+                                        isRunning={isTeamSeeding}
+                                        className="w-full"
+                                        defaultCollapsed={true}
+                                    />
+                                </div>
+                            )}
+                        </div>
+                        <div className="flex justify-end mt-6 pt-6 border-t border-dashed border-white/10">
+                            <Button
+                                variant="outline"
+                                onClick={() => setShowSeedTeamsModal(false)}
                                 className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none"
                             >
                                 Close

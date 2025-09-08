@@ -891,6 +891,78 @@ export function createRoutes(authConfig: AuthConfig) {
     }
   });
 
+  router.post('/api/organizations/:orgId/seed-teams', async (req: Request, res: Response) => {
+    try {
+      const { orgId } = req.params;
+      const { count = 3 } = req.body;
+      const adapter = await getAuthAdapter();
+
+      if (!adapter) {
+        return res.status(500).json({ error: 'Auth adapter not available' });
+      }
+
+      if (!adapter.create) {
+        return res.status(500).json({ error: 'Adapter create method not available' });
+      }
+
+      const generateRandomString = (length: number) => {
+        const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+        let result = '';
+        for (let i = 0; i < length; i++) {
+          result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return result;
+      };
+
+      const teamNames = [
+        'Engineering', 'Design', 'Marketing', 'Sales', 'Support', 'Product', 'Operations', 'Finance', 'HR', 'Legal'
+      ];
+
+      const results = [];
+
+      for (let i = 0; i < count; i++) {
+        try {
+          const randomString = generateRandomString(6);
+          const teamName = `${teamNames[i % teamNames.length]} ${randomString}`;
+
+          const teamData = {
+            name: teamName,
+            organizationId: orgId,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          };
+
+          const team = await adapter.create({
+            model: 'team',
+            data: teamData
+          });
+
+          results.push({
+            success: true,
+            team: {
+              id: team.id,
+              name: teamName
+            }
+          });
+        } catch (error) {
+          results.push({
+            success: false,
+            error: error instanceof Error ? error.message : 'Unknown error'
+          });
+        }
+      }
+
+      res.json({
+        success: true,
+        message: `Created ${results.filter(r => r.success).length} teams`,
+        results
+      });
+    } catch (error) {
+      console.error('Error seeding teams:', error);
+      res.status(500).json({ error: 'Failed to seed teams' });
+    }
+  });
+
   router.delete('/api/members/:id', async (req: Request, res: Response) => {
     try {
       const { id } = req.params;

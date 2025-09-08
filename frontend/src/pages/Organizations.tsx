@@ -44,6 +44,7 @@ export default function Organizations() {
   const [searchTerm, setSearchTerm] = useState('')
   const [filter, setFilter] = useState('all')
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showCreateTeamModal, setShowCreateTeamModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [showViewModal, setShowViewModal] = useState(false)
@@ -58,6 +59,7 @@ export default function Organizations() {
   }>>([])
   const [isSeeding, setIsSeeding] = useState(false)
   const [createFormData, setCreateFormData] = useState({ name: '', slug: '' })
+  const [createTeamFormData, setCreateTeamFormData] = useState({ name: '', organizationId: '' })
   const [editFormData, setEditFormData] = useState({ name: '', slug: '' })
 
   useEffect(() => {
@@ -330,6 +332,45 @@ export default function Organizations() {
     }
   }
 
+  const handleCreateTeam = async () => {
+    if (!createTeamFormData.name) {
+      toast.error('Please fill in the team name')
+      return
+    }
+
+    if (!createTeamFormData.organizationId) {
+      toast.error('Please select an organization')
+      return
+    }
+
+    const toastId = toast.loading('Creating team...')
+    
+    try {
+      const response = await fetch('/api/teams', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          name: createTeamFormData.name, 
+          organizationId: createTeamFormData.organizationId 
+        })
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        setShowCreateTeamModal(false)
+        // Clear the form
+        setCreateTeamFormData({ name: '', organizationId: '' })
+        toast.success('Team created successfully!', { id: toastId })
+      } else {
+        toast.error(`Error creating team: ${result.error || 'Unknown error'}`, { id: toastId })
+      }
+    } catch (error) {
+      console.error('Error creating team:', error)
+      toast.error('Error creating team', { id: toastId })
+    }
+  }
+
   const handleUpdateOrganization = async () => {
     if (!selectedOrganization) {
       toast.error('No organization selected')
@@ -522,6 +563,13 @@ export default function Organizations() {
           >
             <Database className="w-4 h-4 mr-2" />
             Seed
+          </Button>
+          <Button
+            className="border border-dashed border-white/20 text-white hover:bg-white/10 bg-transparent rounded-none"
+            onClick={() => setShowCreateTeamModal(true)}
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Create Team
           </Button>
           <Button
             className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none"
@@ -798,6 +846,73 @@ export default function Organizations() {
                 className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none"
               >
                 Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Team Modal */}
+      {showCreateTeamModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-black/90 border border-dashed border-white/20 p-6 w-full max-w-md rounded-none">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg text-white font-light">Create Team</h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowCreateTeamModal(false)}
+                className="text-gray-400 hover:text-white rounded-none"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="team-name" className="text-sm text-gray-400 font-light">Team Name</Label>
+                <Input
+                  id="team-name"
+                  value={createTeamFormData.name}
+                  onChange={(e) => setCreateTeamFormData(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="Enter team name"
+                  className="mt-1 border border-dashed border-white/20 bg-black/30 text-white rounded-none"
+                />
+              </div>
+              <div>
+                <Label htmlFor="team-organization" className="text-sm text-gray-400 font-light">Organization</Label>
+                <Select
+                  value={createTeamFormData.organizationId}
+                  onValueChange={(value) => setCreateTeamFormData(prev => ({ ...prev, organizationId: value }))}
+                >
+                  <SelectTrigger className="mt-1 border border-dashed border-white/20 bg-black/30 text-white rounded-none">
+                    <SelectValue placeholder="Select organization" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {organizations.map((org) => (
+                      <SelectItem key={org.id} value={org.id}>
+                        {org.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="flex justify-end space-x-3 mt-6">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowCreateTeamModal(false)
+                  setCreateTeamFormData({ name: '', organizationId: '' })
+                }}
+                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleCreateTeam}
+                className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none"
+              >
+                Create
               </Button>
             </div>
           </div>
