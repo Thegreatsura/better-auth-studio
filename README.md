@@ -192,13 +192,6 @@ npm run dev
 4. Add tests if applicable
 5. Submit a pull request
 
-## 📚 Additional Resources
-
-- **Better Auth Documentation**: https://better-auth.com
-- **GitHub Repository**: https://github.com/better-auth/better-auth-studio
-- **Issues & Support**: https://github.com/better-auth/better-auth-studio/issues
-- **Discord Community**: https://discord.gg/better-auth
-
 ## 📄 License
 
 MIT License - see [LICENSE](LICENSE) file for details.
@@ -207,7 +200,6 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 If you encounter any issues or have questions:
 
-1. **Check the troubleshooting section** above
 2. **Search existing issues** on GitHub
 3. **Create a new issue** with detailed information
 4. **Join our Discord** for community support
