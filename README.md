@@ -6,16 +6,16 @@ A powerful web-based studio interface for managing Better Auth applications. Bet
 
 ### Installation
 
-Install Better Auth Studio globally using npm:
+Install Better Auth Studio globally using pnpm:
 
 ```bash
-npm install -g better-auth-studio
+pnpm add -g better-auth-studio
 ```
 
-Or use npx to run it without installation:
+Or use pnpx to run it without installation:
 
 ```bash
-npx better-auth-studio
+pnpx better-auth-studio
 ```
 
 ### Basic Usage
@@ -27,7 +27,7 @@ npx better-auth-studio
 
 2. **Start the studio**
    ```bash
-   npx better-auth-studio start
+   pnpx better-auth-studio start
    ```
 
 3. **Open your browser**
@@ -137,7 +137,7 @@ export const auth = betterAuth({
 
 ### Start Studio
 ```bash
-npx better-auth-studio start [options]
+pnpx better-auth-studio start [options]
 ```
 
 **Options:**
@@ -149,23 +149,22 @@ npx better-auth-studio start [options]
 **Examples:**
 ```bash
 # Start on custom port
-npx better-auth-studio start --port 3001
+pnpx better-auth-studio start --port 3001
 
 # Start without opening browser
-npx better-auth-studio start --no-open
+pnpx better-auth-studio start --no-open
 
 # Use custom config file
-npx better-auth-studio start --config ./custom-auth.ts
+pnpx better-auth-studio start --config ./custom-auth.ts
 ```
 
 ### Other Commands
 ```bash
 # Check version
-npx better-auth-studio --version
+pnpx better-auth-studio --version
 
 # Show help
-npx better-auth-studio --help
-```
+pnpx better-auth-studio --help
 
 ## 📝 Development
 
@@ -176,13 +175,13 @@ git clone https://github.com/better-auth/better-auth-studio.git
 cd better-auth-studio
 
 # Install dependencies
-npm install
+pnpm install
 
 # Build the project
-npm run build
+pnpm run build
 
 # Start development server
-npm run dev
+pnpm run dev
 ```
 
 ### Contributing
