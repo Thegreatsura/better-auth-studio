@@ -2,8 +2,51 @@
 
 import { Command } from 'commander';
 import chalk from 'chalk';
+import { readFileSync, existsSync } from 'fs';
+import { join, dirname } from 'path';
 import { startStudio } from './studio.js';
 import { findAuthConfig } from './config.js';
+
+async function findAuthConfigPath(): Promise<string | null> {
+  const possibleConfigFiles = [
+    'auth.ts',
+    'auth.js',
+    'src/auth.ts',
+    'src/auth.js',
+    'lib/auth.ts',
+    'lib/auth.js',
+    'better-auth.config.ts',
+    'better-auth.config.js',
+    'better-auth.config.json',
+    'auth.config.ts',
+    'auth.config.js',
+    'auth.config.json',
+    'studio-config.json'
+  ];
+
+  let currentDir = process.cwd();
+  const maxDepth = 10;
+  let depth = 0;
+
+  while (currentDir && depth < maxDepth) {
+    for (const configFile of possibleConfigFiles) {
+      const configPath = join(currentDir, configFile);
+      
+      if (existsSync(configPath)) {
+        return configPath;
+      }
+    }
+
+    const parentDir = dirname(currentDir);
+    if (parentDir === currentDir) {
+      break;
+    }
+    currentDir = parentDir;
+    depth++;
+  }
+
+  return null;
+}
 
 const program = new Command();
 
@@ -13,7 +56,7 @@ program
   .version('1.0.0');
 
 program
-  .command('studio')
+  .command('start')
   .description('Start Better Auth Studio')
   .option('-p, --port <port>', 'Port to run the studio on', '3001')
   .option('-h, --host <host>', 'Host to run the studio on', 'localhost')
@@ -36,12 +79,35 @@ program
       // Display database information
       let databaseInfo = 'Not configured';
       if (authConfig.database) {
-        if (authConfig.database.adapter && authConfig.database.provider) {
-          databaseInfo = `${authConfig.database.provider} (${authConfig.database.adapter})`;
-        } else if (authConfig.database.type) {
-          databaseInfo = authConfig.database.type;
-        } else if (authConfig.database.adapter) {
-          databaseInfo = authConfig.database.adapter;
+        // Try to detect adapter from the raw config content
+        const configPath = await findAuthConfigPath();
+        if (configPath) {
+          const content = readFileSync(configPath, 'utf-8');
+          if (content.includes('drizzleAdapter')) {
+            databaseInfo = 'Drizzle';
+          } else if (content.includes('prismaAdapter')) {
+            databaseInfo = 'Prisma';
+          } else if (authConfig.database.adapter && authConfig.database.provider) {
+            // Fallback to existing logic
+            let adapter = authConfig.database.adapter;
+            const adapterName = adapter.charAt(0).toUpperCase() + adapter.slice(1);
+            databaseInfo = adapterName;
+          } else if (authConfig.database.type) {
+            databaseInfo = authConfig.database.type;
+          } else if (authConfig.database.adapter) {
+            databaseInfo = authConfig.database.adapter;
+          }
+        } else {
+          // Fallback if no config file found
+          if (authConfig.database.adapter && authConfig.database.provider) {
+            let adapter = authConfig.database.adapter;
+            const adapterName = adapter.charAt(0).toUpperCase() + adapter.slice(1);
+            databaseInfo = adapterName;
+          } else if (authConfig.database.type) {
+            databaseInfo = authConfig.database.type;
+          } else if (authConfig.database.adapter) {
+            databaseInfo = authConfig.database.adapter;
+          }
         }
       }
       

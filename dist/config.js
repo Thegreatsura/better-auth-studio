@@ -199,63 +199,36 @@ async function loadTypeScriptConfig(configPath) {
 }
 function detectDatabaseAdapter(content) {
     const database = {};
-    // Detect Prisma adapter
-    if (content.includes('prismaAdapter')) {
-        database.adapter = 'prisma';
-        database.type = 'prisma';
-        // Try to extract provider from prismaAdapter call
-        const prismaMatch = content.match(/prismaAdapter\s*\(\s*\w+\s*,\s*\{[^}]*provider[^}]*\}/);
-        if (prismaMatch) {
-            const providerMatch = prismaMatch[0].match(/provider\s*:\s*["']([^"']+)["']/);
-            if (providerMatch) {
-                database.provider = providerMatch[1];
-                database.type = providerMatch[1]; // Set type to the provider (e.g., postgresql)
-            }
+    if (content.includes('drizzleAdapter')) {
+        database.adapter = 'drizzle';
+        const providerMatch = content.match(/drizzleAdapter\s*\(\s*\w+\s*,\s*\{[^}]*provider\s*:\s*["']([^"']+)["'][^}]*\}/);
+        if (providerMatch) {
+            const provider = providerMatch[1];
+            database.provider = provider;
+            database.type = provider === 'pg' ? 'postgresql' : provider;
         }
         else {
-            // If no provider specified, default to postgresql
             database.provider = 'postgresql';
             database.type = 'postgresql';
         }
     }
-    // Detect Drizzle adapter
-    else if (content.includes('drizzleAdapter')) {
-        database.adapter = 'drizzle';
-        database.type = 'drizzle';
-        // Try to extract dialect from drizzleAdapter call
-        const drizzleMatch = content.match(/drizzleAdapter\s*\(\s*\w+\s*,\s*\{[^}]*dialect[^}]*\}/);
-        if (drizzleMatch) {
-            const dialectMatch = drizzleMatch[0].match(/dialect\s*:\s*["']([^"']+)["']/);
-            if (dialectMatch) {
-                database.dialect = dialectMatch[1];
-            }
+    else if (content.includes('prismaAdapter')) {
+        database.adapter = 'prisma';
+        const providerMatch = content.match(/prismaAdapter\s*\(\s*\w+\s*,\s*\{[^}]*provider\s*:\s*["']([^"']+)["'][^}]*\}/);
+        if (providerMatch) {
+            database.provider = providerMatch[1];
+            database.type = providerMatch[1];
+        }
+        else {
+            database.provider = 'postgresql';
+            database.type = 'postgresql';
         }
     }
-    // Detect SQLite (better-sqlite3)
-    else if (content.includes('better-sqlite3') || content.includes('Database')) {
+    else if (content.includes('better-sqlite3')) {
         database.adapter = 'sqlite';
         database.type = 'sqlite';
-        database.dialect = 'sqlite';
+        database.provider = 'sqlite';
     }
-    // Detect PostgreSQL
-    else if (content.includes('postgres') || content.includes('pg')) {
-        database.adapter = 'postgres';
-        database.type = 'postgres';
-        database.dialect = 'postgres';
-    }
-    // Detect MySQL
-    else if (content.includes('mysql') || content.includes('mysql2')) {
-        database.adapter = 'mysql';
-        database.type = 'mysql';
-        database.dialect = 'mysql';
-    }
-    // Detect Bun SQLite
-    else if (content.includes('bun:sqlite')) {
-        database.adapter = 'bun-sqlite';
-        database.type = 'bun-sqlite';
-        database.dialect = 'sqlite';
-    }
-    // Try to extract database URL from environment variables
     const urlMatch = content.match(/DATABASE_URL|DB_URL|DB_CONNECTION_STRING/);
     if (urlMatch) {
         database.url = `process.env.${urlMatch[0]}`;
@@ -309,8 +282,8 @@ function cleanConfigString(configStr) {
 }
 export function extractBetterAuthConfig(content) {
     console.log('Extracting config from content:', content.substring(0, 500) + '...');
-    // Try to extract plugins information directly from the content
-    // First, look for plugins: runtime or plugins: [runtime]
+    console.log('Looking for drizzleAdapter in content:', content.includes('drizzleAdapter'));
+    console.log('Looking for prismaAdapter in content:', content.includes('prismaAdapter'));
     const pluginsMatch = content.match(/plugins\s*:\s*(?:\[)?(\w+)(?:\])?/);
     if (pluginsMatch) {
         const pluginsVar = pluginsMatch[1];
@@ -486,53 +459,98 @@ export function extractBetterAuthConfig(content) {
     return null;
 }
 function extractBetterAuthFields(config) {
-    console.log('Extracting fields from config:', JSON.stringify(config, null, 2));
-    console.log('Database type:', typeof config.database);
-    console.log('Database constructor:', config.database?.constructor?.name);
-    console.log('Database keys:', config.database ? Object.keys(config.database) : 'no database');
     const authConfig = {};
     if (config.database) {
-        let dbType = 'postgresql'; // default
+        let dbType = 'postgresql';
         let dbName = config.database.name;
         let adapter = 'unknown';
-        // Check if it's a Prisma adapter instance (function)
         if (typeof config.database === 'function') {
-            // This is likely a Prisma adapter function
-            adapter = 'prisma';
-            dbType = 'postgresql'; // Default for Prisma
-            console.log('Detected Prisma adapter function');
-            // Try to extract provider from the adapter options if available
-            if (config.database.options && config.database.options.provider) {
-                dbType = config.database.options.provider;
-                console.log('Found provider in adapter options:', dbType);
+            if (config.database.options?.adapterId) {
+                adapter = config.database.options.adapterId;
+                if (config.database.options.provider) {
+                    const provider = config.database.options.provider;
+                    dbType = provider === 'pg' ? 'postgresql' : provider;
+                }
+            }
+            else if (config.database.options?.provider) {
+                const provider = config.database.options.provider;
+                if (provider === 'pg' || provider === 'mysql' || provider === 'sqlite') {
+                    adapter = 'drizzle';
+                    dbType = provider === 'pg' ? 'postgresql' : provider;
+                }
+                else {
+                    adapter = 'prisma';
+                    dbType = 'postgresql';
+                }
+            }
+            else if (config.database.provider) {
+                const provider = config.database.provider;
+                if (provider === 'pg' || provider === 'mysql' || provider === 'sqlite') {
+                    adapter = 'drizzle';
+                    dbType = provider === 'pg' ? 'postgresql' : provider;
+                }
+                else {
+                    adapter = 'prisma';
+                    dbType = 'postgresql';
+                }
+            }
+            else {
+                adapter = 'prisma';
+                dbType = 'postgresql';
             }
         }
-        else if (config.database.constructor && config.database.constructor.name === 'Database') {
+        else if (config.database.constructor?.name === 'Database') {
             dbType = 'sqlite';
             dbName = config.database.name || './better-auth.db';
             adapter = 'sqlite';
         }
-        else if (config.database.name && config.database.name.endsWith('.db')) {
+        else if (config.database.name?.endsWith('.db')) {
             dbType = 'sqlite';
             adapter = 'sqlite';
         }
         else if (config.database.provider) {
-            // This is likely a Prisma adapter with provider specified
-            dbType = config.database.provider;
-            adapter = 'prisma';
+            const provider = config.database.provider;
+            if (provider === 'pg' || provider === 'postgresql' || provider === 'mysql' || provider === 'sqlite') {
+                adapter = 'drizzle';
+                dbType = provider === 'pg' ? 'postgresql' : provider;
+            }
+            else {
+                adapter = 'prisma';
+                dbType = provider;
+            }
+        }
+        else if (config.database.adapter) {
+            adapter = config.database.adapter;
+            if (config.database.provider) {
+                const provider = config.database.provider;
+                if (provider === 'pg' || provider === 'postgresql' || provider === 'mysql' || provider === 'sqlite') {
+                    adapter = 'drizzle';
+                    dbType = provider === 'pg' ? 'postgresql' : provider;
+                }
+                else {
+                    dbType = provider;
+                }
+            }
+            else {
+                dbType = adapter;
+            }
         }
         else if (config.database.type) {
             dbType = config.database.type;
             adapter = config.database.type;
         }
-        else if (config.database.dialect) {
-            dbType = config.database.dialect;
-            adapter = config.database.dialect;
+        // Override adapter detection for Drizzle - check if we have drizzleAdapter in the original content
+        console.log('Before override - adapter:', adapter, 'provider:', config.database.provider);
+        if (config.database.provider && (config.database.provider === 'postgresql' || config.database.provider === 'pg' || config.database.provider === 'mysql' || config.database.provider === 'sqlite')) {
+            // For now, assume any adapter with these providers is Drizzle since Prisma would have different provider values
+            adapter = 'drizzle';
+            dbType = config.database.provider === 'pg' ? 'postgresql' : config.database.provider;
+            console.log('After override - adapter:', adapter, 'dbType:', dbType);
         }
         authConfig.database = {
             url: config.database.url || config.database.connectionString,
             name: dbName,
-            type: dbType,
+            type: adapter === 'drizzle' ? `${dbType} (${adapter})` : dbType,
             adapter: adapter,
             dialect: config.database.dialect,
             provider: config.database.provider,
@@ -587,7 +605,6 @@ function extractBetterAuthFields(config) {
 async function evaluateJSConfig(configPath) {
     try {
         const config = require(configPath);
-        // Handle CommonJS exports like { auth }
         if (config.auth) {
             console.log('Found auth export in CommonJS module, extracting configuration...');
             const authConfig = config.auth.options || config.auth;

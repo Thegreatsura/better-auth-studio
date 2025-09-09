@@ -7,9 +7,7 @@ import { readFileSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { pathToFileURL } from 'url';
 
-// Custom module resolver that tries both .js and .ts extensions
 function resolveModuleWithExtensions(id: string, parent: string): string {
-  // If it's not a relative import, return as is
   if (!id.startsWith('./') && !id.startsWith('../')) {
     return id;
   }
@@ -17,17 +15,11 @@ function resolveModuleWithExtensions(id: string, parent: string): string {
   const parentDir = dirname(parent);
   const basePath = join(parentDir, id);
   
-  console.log(`Resolving ${id} from ${parent}`);
-  console.log(`Base path: ${basePath}`);
-  
-  // Try different extensions in order of preference
   const extensions = ['.ts', '.js', '.mjs', '.cjs'];
   
   for (const ext of extensions) {
     const fullPath = basePath + ext;
-    console.log(`Trying: ${fullPath}`);
     if (existsSync(fullPath)) {
-      console.log(`✅ Found: ${fullPath}`);
       return pathToFileURL(fullPath).href;
     }
   }
@@ -311,8 +303,30 @@ export function createRoutes(authConfig: AuthConfig) {
     });
   });
 
-  router.get('/api/config', (req: Request, res: Response) => {
+  router.get('/api/config', async (req: Request, res: Response) => {
     console.log('Raw authConfig:', JSON.stringify(authConfig, null, 2));
+    
+    // Try to detect adapter from the raw config content
+    let databaseType = 'unknown';
+    const configPath = await findAuthConfigPath();
+    if (configPath) {
+      const content = readFileSync(configPath, 'utf-8');
+      if (content.includes('drizzleAdapter')) {
+        databaseType = 'Drizzle';
+      } else if (content.includes('prismaAdapter')) {
+        databaseType = 'Prisma';
+      }
+    }
+    
+    // Fallback to existing logic
+    if (databaseType === 'unknown') {
+      let type = authConfig.database?.type || authConfig.database?.adapter || 'unknown';
+      if (type && type !== 'unknown') {
+        type = type.charAt(0).toUpperCase() + type.slice(1);
+      }
+      databaseType = type;
+    }
+    
     const config = {
       appName: authConfig.appName || 'Better Auth',
       baseURL: authConfig.baseURL || process.env.BETTER_AUTH_URL,
@@ -320,7 +334,7 @@ export function createRoutes(authConfig: AuthConfig) {
       secret: authConfig.secret ? 'Configured' : 'Not set',
 
       database: {
-        type: authConfig.database?.type || authConfig.database?.adapter || 'unknown',
+        type: databaseType,
         dialect: authConfig.database?.dialect || authConfig.database?.provider || 'unknown',
         casing: authConfig.database?.casing || 'camel',
         debugLogs: authConfig.database?.debugLogs || false,
