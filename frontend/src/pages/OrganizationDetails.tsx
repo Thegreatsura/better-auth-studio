@@ -897,7 +897,11 @@ export default function OrganizationDetails() {
                                     </thead>
                                     <tbody>
                                         {teams.map((team) => (
-                                            <tr key={team.id} className="border-b border-dashed border-white/5 hover:bg-white/5">
+                                            <tr 
+                                                key={team.id} 
+                                                className="border-b border-dashed border-white/5 hover:bg-white/5 cursor-pointer"
+                                                onClick={() => navigate(`/teams/${team.id}`)}
+                                            >
                                                 <td className="py-4 px-4">
                                                     <div className="flex items-center space-x-3">
                                                         <div className="w-10 h-10 bg-white/10 border border-dashed border-white/20 rounded-none flex items-center justify-center">
@@ -919,16 +923,10 @@ export default function OrganizationDetails() {
                                                             variant="outline"
                                                             size="sm"
                                                             className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none"
-                                                            onClick={() => navigate(`/teams/${team.id}`)}
-                                                        >
-                                                            <Eye className="w-4 h-4 mr-1" />
-                                                            View
-                                                        </Button>
-                                                        <Button
-                                                            variant="outline"
-                                                            size="sm"
-                                                            className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none"
-                                                            onClick={() => openEditTeamModal(team)}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation()
+                                                                openEditTeamModal(team)
+                                                            }}
                                                         >
                                                             <Edit className="w-4 h-4 mr-1" />
                                                             Edit
@@ -937,7 +935,10 @@ export default function OrganizationDetails() {
                                                             variant="outline"
                                                             size="sm"
                                                             className="border border-dashed border-red-400/50 text-red-400 hover:bg-red-400/10 rounded-none"
-                                                            onClick={() => openDeleteTeamModal(team)}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation()
+                                                                openDeleteTeamModal(team)
+                                                            }}
                                                         >
                                                             <Trash2 className="w-4 h-4 mr-1" />
                                                             Delete
