@@ -204,10 +204,7 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 If you encounter any issues or have questions:
 
-2. **Search existing issues** on GitHub
-3. **Create a new issue** with detailed information
-4. **Join our Discord** for community support
+**Search existing issues** on GitHub
+**Create a new issue** with detailed information
 
 ---
-
-**Happy coding with Better Auth Studio! 🚀**
