@@ -5,7 +5,7 @@
 > Better Auth Studio is currently in **alpha** and in early development. You may encounter bugs or incomplete features. Please report any issues you find on our GitHub repository to help us improve the project. Your feedback is greatly appreciated!
 
 
-A web-based studio interface for managing Better Auth applications. Better Auth Studio provides a comprehensive dashboard for managing users, organizations, teams, sessions, and more.
+A web-based studio interface for managing Better Auth applications. Better Auth Studio provides a comprehensive dashboard for managing users, organizations, teams, and more.
 
 ## 🚀 Quick Start
 
@@ -116,7 +116,7 @@ export const auth = betterAuth({
 - **Edit users** - Update user information, email verification status
 - **Delete users** - Remove users from the system
 - **Bulk operations** - Seed multiple test users
-- **User details** - View user profiles, sessions, and accounts
+- **User details** - View user profiles, and accounts
 
 ### 🏢 Organization Management
 - **View organizations** - List all organizations with pagination
