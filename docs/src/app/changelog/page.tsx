@@ -14,11 +14,11 @@ export default function Changelog() {
           <h2 className="text-2xl font-light tracking-tight mb-6 text-white">LATEST RELEASE</h2>
           <PixelCard variant="highlight">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-light tracking-tight text-white">v1.0.0-alpha</h3>
+              <h3 className="text-lg font-light tracking-tight text-white">v1.0.16</h3>
               <span className="text-sm font-light tracking-tight text-white/50">2025-01-27</span>
             </div>
             <p className="text-sm font-light tracking-tight text-white/70 mb-4">
-              Initial alpha release of Better Auth Studio with core functionality and pixel-perfect design.
+              Latest stable release of Better Auth Studio with enhanced functionality and pixel-perfect design.
             </p>
             <div className="space-y-3">
               <h4 className="font-light tracking-tight text-white">✨ New Features</h4>
@@ -249,31 +249,31 @@ export default function Changelog() {
           <div className="space-y-4">
             <PixelCard>
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-lg font-light tracking-tight text-white">v0.9.0-beta</h3>
+                <h3 className="text-lg font-light tracking-tight text-white">v1.0.15</h3>
+                <span className="text-sm font-light tracking-tight text-white/50">2025-01-25</span>
+              </div>
+              <p className="text-sm font-light tracking-tight text-white/70">
+                Enhanced user interface with improved navigation and performance optimizations.
+              </p>
+            </PixelCard>
+            
+            <PixelCard>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-lg font-light tracking-tight text-white">v1.0.14</h3>
                 <span className="text-sm font-light tracking-tight text-white/50">2025-01-20</span>
               </div>
               <p className="text-sm font-light tracking-tight text-white/70">
-                Beta release with core user and organization management features.
+                Added comprehensive session management and organization features.
               </p>
             </PixelCard>
             
             <PixelCard>
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-lg font-light tracking-tight text-white">v0.8.0-alpha</h3>
+                <h3 className="text-lg font-light tracking-tight text-white">v1.0.13</h3>
                 <span className="text-sm font-light tracking-tight text-white/50">2025-01-15</span>
               </div>
               <p className="text-sm font-light tracking-tight text-white/70">
-                Initial alpha release with basic authentication management.
-              </p>
-            </PixelCard>
-            
-            <PixelCard>
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-lg font-light tracking-tight text-white">v0.1.0-dev</h3>
-                <span className="text-sm font-light tracking-tight text-white/50">2025-01-10</span>
-              </div>
-              <p className="text-sm font-light tracking-tight text-white/70">
-                Development preview with proof of concept implementation.
+                Initial stable release with core authentication management capabilities.
               </p>
             </PixelCard>
           </div>
