@@ -515,8 +515,8 @@ export function createRoutes(authConfig: AuthConfig) {
 
       const user = await adapter.update({ 
         model: 'user', 
-        id: userId,
-        data: { name, email }
+        where: [{ field: 'id', value: userId }],
+        update: { name, email }
       });
 
       res.json({ success: true, user });
