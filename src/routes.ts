@@ -534,7 +534,7 @@ export function createRoutes(authConfig: AuthConfig) {
         return res.status(500).json({ error: 'Auth adapter not available' });
       }
 
-      await adapter.delete({ model: 'user', id: userId });
+      await adapter.delete({ model: 'user', where: [{ field: 'id', value: userId }] });
       res.json({ success: true });
     } catch (error) {
       console.error('Error deleting user:', error);

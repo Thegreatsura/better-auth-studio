@@ -453,8 +453,8 @@ export function createRoutes(authConfig) {
             }
             const user = await adapter.update({
                 model: 'user',
-                id: userId,
-                data: { name, email }
+                where: [{ field: 'id', value: userId }],
+                update: { name, email }
             });
             res.json({ success: true, user });
         }
@@ -470,7 +470,7 @@ export function createRoutes(authConfig) {
             if (!adapter || !adapter.delete) {
                 return res.status(500).json({ error: 'Auth adapter not available' });
             }
-            await adapter.delete({ model: 'user', id: userId });
+            await adapter.delete({ model: 'user', where: [{ field: 'id', value: userId }] });
             res.json({ success: true });
         }
         catch (error) {

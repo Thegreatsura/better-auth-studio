@@ -1085,7 +1085,7 @@ export default function OrganizationDetails() {
                                                         </div>
                                                         <div>
                                                             <div className="text-white font-light">{invitation.email}</div>
-                                                            <div className="text-sm text-gray-400">Invited {new Date(invitation.createdAt).toLocaleDateString()}</div>
+                                                            <div className="text-sm text-gray-400">Expires on {new Date(invitation.expiresAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</div>
                                                         </div>
                                                     </div>
                                                 </td>
