@@ -103,7 +103,12 @@ export default function Organizations() {
       const response = await fetch('/api/plugins')
       const pluginLists: any[] = await response.json()
       const orgEnabled = pluginLists.find((plugin) => plugin.name === 'organization')
-      setPluginStatus(orgEnabled)
+      setPluginStatus({
+        enabled:!!orgEnabled,
+        availablePlugins: pluginLists.map((plugin) => plugin.name),
+        configPath: (pluginLists as any).configPath,
+        organizationPlugin:  pluginLists.find((plugin) => plugin.name === 'organization')
+      })
       if (orgEnabled) {
         await fetchOrganizations()
       } else {
