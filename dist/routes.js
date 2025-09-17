@@ -830,7 +830,23 @@ export function createRoutes(authConfig, configPath) {
                 });
             }
             try {
-                const authModule = await safeImportAuthConfig(authConfigPath);
+                let authModule;
+                try {
+                    authModule = await safeImportAuthConfig(authConfigPath);
+                }
+                catch (importError) {
+                    // Fallback: read file content directly
+                    console.log('🔍 Debug: safeImportAuthConfig failed, using readFileSync fallback');
+                    const content = readFileSync(authConfigPath, 'utf-8');
+                    authModule = {
+                        auth: {
+                            options: {
+                                _content: content,
+                                plugins: []
+                            }
+                        }
+                    };
+                }
                 const auth = authModule.auth || authModule.default;
                 if (!auth) {
                     return res.json({
@@ -957,7 +973,23 @@ export function createRoutes(authConfig, configPath) {
                 });
             }
             try {
-                const authModule = await safeImportAuthConfig(authConfigPath);
+                let authModule;
+                try {
+                    authModule = await safeImportAuthConfig(authConfigPath);
+                }
+                catch (importError) {
+                    // Fallback: read file content directly
+                    console.log('🔍 Debug: safeImportAuthConfig failed, using readFileSync fallback');
+                    const content = readFileSync(authConfigPath, 'utf-8');
+                    authModule = {
+                        auth: {
+                            options: {
+                                _content: content,
+                                plugins: []
+                            }
+                        }
+                    };
+                }
                 const auth = authModule.auth || authModule.default;
                 if (!auth) {
                     return res.json({
@@ -1619,7 +1651,23 @@ export function createRoutes(authConfig, configPath) {
                 });
             }
             try {
-                const authModule = await safeImportAuthConfig(authConfigPath);
+                let authModule;
+                try {
+                    authModule = await safeImportAuthConfig(authConfigPath);
+                }
+                catch (importError) {
+                    // Fallback: read file content directly
+                    console.log('🔍 Debug: safeImportAuthConfig failed, using readFileSync fallback');
+                    const content = readFileSync(authConfigPath, 'utf-8');
+                    authModule = {
+                        auth: {
+                            options: {
+                                _content: content,
+                                plugins: []
+                            }
+                        }
+                    };
+                }
                 const auth = authModule.auth || authModule.default;
                 if (!auth) {
                     return res.json({
@@ -1628,6 +1676,8 @@ export function createRoutes(authConfig, configPath) {
                         configPath: authConfigPath
                     });
                 }
+                const result = auth.options.plugins;
+                console.log({ result });
                 const hasOrganizationPlugin = auth.options?.plugins?.find((plugin) => plugin.id === "organization");
                 res.json({
                     enabled: !!hasOrganizationPlugin,

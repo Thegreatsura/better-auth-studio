@@ -933,7 +933,22 @@ export function createRoutes(authConfig: AuthConfig, configPath?: string) {
       }
 
       try {
-        const authModule = await safeImportAuthConfig(authConfigPath);
+        let authModule;
+        try {
+          authModule = await safeImportAuthConfig(authConfigPath);
+        } catch (importError) {
+          // Fallback: read file content directly
+          console.log('🔍 Debug: safeImportAuthConfig failed, using readFileSync fallback');
+          const content = readFileSync(authConfigPath, 'utf-8');
+          authModule = {
+            auth: {
+              options: {
+                _content: content,
+                plugins: []
+              }
+            }
+          };
+        }
         const auth = authModule.auth || authModule.default;
         
         if (!auth) {
@@ -1071,7 +1086,22 @@ export function createRoutes(authConfig: AuthConfig, configPath?: string) {
       }
 
       try {
-        const authModule = await safeImportAuthConfig(authConfigPath);
+        let authModule;
+        try {
+          authModule = await safeImportAuthConfig(authConfigPath);
+        } catch (importError) {
+          // Fallback: read file content directly
+          console.log('🔍 Debug: safeImportAuthConfig failed, using readFileSync fallback');
+          const content = readFileSync(authConfigPath, 'utf-8');
+          authModule = {
+            auth: {
+              options: {
+                _content: content,
+                plugins: []
+              }
+            }
+          };
+        }
         const auth = authModule.auth || authModule.default;
 
         if (!auth) {
@@ -1805,7 +1835,22 @@ export function createRoutes(authConfig: AuthConfig, configPath?: string) {
       }
 
       try {
-        const authModule = await safeImportAuthConfig(authConfigPath);
+        let authModule;
+        try {
+          authModule = await safeImportAuthConfig(authConfigPath);
+        } catch (importError) {
+          // Fallback: read file content directly
+          console.log('🔍 Debug: safeImportAuthConfig failed, using readFileSync fallback');
+          const content = readFileSync(authConfigPath, 'utf-8');
+          authModule = {
+            auth: {
+              options: {
+                _content: content,
+                plugins: []
+              }
+            }
+          };
+        }
         const auth = authModule.auth || authModule.default;
         if (!auth) {
           return res.json({
@@ -1814,7 +1859,8 @@ export function createRoutes(authConfig: AuthConfig, configPath?: string) {
             configPath: authConfigPath
           });
         }
-
+        const result = auth.options.plugins
+        console.log({result})
         const hasOrganizationPlugin = auth.options?.plugins?.find((plugin: any) =>
           plugin.id === "organization"
         );
