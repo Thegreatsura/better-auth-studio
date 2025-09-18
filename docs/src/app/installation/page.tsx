@@ -1,6 +1,7 @@
 import PixelLayout from "@/components/PixelLayout";
 import PixelCard from "@/components/PixelCard";
 import CodeHighlighter from "@/components/SyntaxHighlighter";
+import CodeBlock from "@/components/CodeBlock";
 
 export default function Installation() {
   return (
@@ -35,9 +36,10 @@ export default function Installation() {
                   Experience the latest features, patches, and improvements by installing the beta version. The beta includes recent bug fixes, performance enhancements, and new functionality that may not be available in the stable release yet.
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  <PixelCard variant="code" className="flex-1 min-w-0">
-                    <code className="text-sm font-mono text-white/90">pnpm add -g better-auth-studio@beta</code>
-                  </PixelCard>
+                  <CodeBlock 
+                    code="pnpm add -g better-auth-studio@beta"
+                    className="flex-1 min-w-0"
+                  />
                 </div>
                 <p className="text-xs font-light tracking-tight text-white/60 mt-2">
                   <strong>Note:</strong> The beta version may include experimental features. 
@@ -60,9 +62,7 @@ export default function Installation() {
               <p className="text-sm font-light tracking-tight text-white/70 mb-2">
                 <strong>Stable version:</strong>
               </p>
-              <PixelCard variant="code">
-                <code className="text-sm font-mono text-white/90">pnpm add -g better-auth-studio</code>
-              </PixelCard>
+              <CodeBlock code="pnpm add -g better-auth-studio" />
             </div>
 
             {/* Beta Version */}
@@ -70,17 +70,13 @@ export default function Installation() {
               <p className="text-sm font-light tracking-tight text-white/70 mb-2">
                 <strong>Beta version (recommended):</strong>
               </p>
-              <PixelCard variant="code">
-                <code className="text-sm font-mono text-white/90">pnpm add -g better-auth-studio@beta</code>
-              </PixelCard>
+              <CodeBlock code="pnpm add -g better-auth-studio@beta" />
             </div>
 
             <p className="text-sm font-light tracking-tight text-white/70 mt-4 mb-4">
               Or use pnpx to run it without installation:
             </p>
-            <PixelCard variant="code">
-              <code className="text-sm font-mono text-white/90">pnpx better-auth-studio@beta</code>
-            </PixelCard>
+            <CodeBlock code="pnpx better-auth-studio@beta" />
           </PixelCard>
 
           {/* Basic Usage */}
@@ -91,18 +87,14 @@ export default function Installation() {
                 <p className="text-sm font-light tracking-tight text-white/70 mb-2">
                   <strong>1. Navigate to your Better Auth project directory</strong>
                 </p>
-                <PixelCard variant="code">
-                  <code className="text-sm font-mono text-white/90">cd your-better-auth-project</code>
-                </PixelCard>
+                <CodeBlock code="cd your-better-auth-project" />
               </div>
               
               <div>
                 <p className="text-sm font-light tracking-tight text-white/70 mb-2">
                   <strong>2. Start the studio</strong>
                 </p>
-                <PixelCard variant="code">
-                  <code className="text-sm font-mono text-white/90">pnpx better-auth-studio start</code>
-                </PixelCard>
+                <CodeBlock code="pnpx better-auth-studio start" />
               </div>
               
               <div>
@@ -362,9 +354,7 @@ export const auth = betterAuth({
           {/* Start Studio */}
           <PixelCard className="mb-6">
             <h3 className="text-lg font-light tracking-tight mb-4 text-white">Start Studio</h3>
-            <PixelCard variant="code" className="mb-4">
-              <code className="text-sm font-mono text-white/90">pnpx better-auth-studio start [options]</code>
-            </PixelCard>
+            <CodeBlock code="pnpx better-auth-studio start [options]" className="mb-4" />
             
             <h4 className="font-light tracking-tight mb-3 text-white">Options:</h4>
             <ul className="list-none space-y-2 text-sm font-light tracking-tight text-white/70 mb-4">
@@ -392,27 +382,21 @@ export const auth = betterAuth({
                 <p className="text-sm font-light tracking-tight text-white/70 mb-2">
                   Start on custom port:
                 </p>
-                <PixelCard variant="code">
-                  <code className="text-sm font-mono text-white/90">pnpx better-auth-studio start --port 3001</code>
-                </PixelCard>
+                <CodeBlock code="pnpx better-auth-studio start --port 3001" />
               </div>
               
               <div>
                 <p className="text-sm font-light tracking-tight text-white/70 mb-2">
                   Start without opening browser:
                 </p>
-                <PixelCard variant="code">
-                  <code className="text-sm font-mono text-white/90">pnpx better-auth-studio start --no-open</code>
-                </PixelCard>
+                <CodeBlock code="pnpx better-auth-studio start --no-open" />
               </div>
               
               <div>
                 <p className="text-sm font-light tracking-tight text-white/70 mb-2">
                   Use custom config file:
                 </p>
-                <PixelCard variant="code">
-                  <code className="text-sm font-mono text-white/90">pnpx better-auth-studio start --config ./custom-auth.ts</code>
-                </PixelCard>
+                <CodeBlock code="pnpx better-auth-studio start --config ./custom-auth.ts" />
               </div>
             </div>
           </PixelCard>
@@ -425,18 +409,14 @@ export const auth = betterAuth({
                 <p className="text-sm font-light tracking-tight text-white/70 mb-2">
                   Check version:
                 </p>
-                <PixelCard variant="code">
-                  <code className="text-sm font-mono text-white/90">pnpx better-auth-studio --version</code>
-                </PixelCard>
+                <CodeBlock code="pnpx better-auth-studio --version" />
               </div>
               
               <div>
                 <p className="text-sm font-light tracking-tight text-white/70 mb-2">
                   Show help:
                 </p>
-                <PixelCard variant="code">
-                  <code className="text-sm font-mono text-white/90">pnpx better-auth-studio --help</code>
-                </PixelCard>
+                <CodeBlock code="pnpx better-auth-studio --help" />
               </div>
             </div>
           </PixelCard>
@@ -454,39 +434,29 @@ export const auth = betterAuth({
                 <p className="text-sm font-light tracking-tight text-white/70 mb-2">
                   Clone the repository:
                 </p>
-                <PixelCard variant="code">
-                  <code className="text-sm font-mono text-white/90">git clone https://github.com/better-auth/better-auth-studio.git</code>
-                </PixelCard>
-                <PixelCard variant="code" className="mt-2">
-                  <code className="text-sm font-mono text-white/90">cd better-auth-studio</code>
-                </PixelCard>
+                <CodeBlock code="git clone https://github.com/better-auth/better-auth-studio.git" />
+                <CodeBlock code="cd better-auth-studio" className="mt-2" />
               </div>
               
               <div>
                 <p className="text-sm font-light tracking-tight text-white/70 mb-2">
                   Install dependencies:
                 </p>
-                <PixelCard variant="code">
-                  <code className="text-sm font-mono text-white/90">pnpm install</code>
-                </PixelCard>
+                <CodeBlock code="pnpm install" />
               </div>
               
               <div>
                 <p className="text-sm font-light tracking-tight text-white/70 mb-2">
                   Build the project:
                 </p>
-                <PixelCard variant="code">
-                  <code className="text-sm font-mono text-white/90">pnpm run build</code>
-                </PixelCard>
+                <CodeBlock code="pnpm run build" />
               </div>
               
               <div>
                 <p className="text-sm font-light tracking-tight text-white/70 mb-2">
                   Start development server:
                 </p>
-                <PixelCard variant="code">
-                  <code className="text-sm font-mono text-white/90">pnpm run dev</code>
-                </PixelCard>
+                <CodeBlock code="pnpm run dev" />
               </div>
             </div>
           </PixelCard>

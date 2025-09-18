@@ -29,7 +29,6 @@ export async function getAuthAdapter(configPath?: string): Promise<AuthAdapter |
     let authModule: any;
     try {
       let importPath = authConfigPath;
-      console.log({importPath})
       if (!authConfigPath.startsWith('/')) {
         importPath = join(process.cwd(), authConfigPath);
       }
@@ -41,9 +40,7 @@ export async function getAuthAdapter(configPath?: string): Promise<AuthAdapter |
         interopDefault: true
       });
       authModule = await jitiInstance.import(importPath);
-      console.log({authModule})
     } catch (error: any) {
-      console.log({error})
       console.warn('🔍 Debug: Failed to import auth module in adapter:', error.message);
       return null;
     }
