@@ -1,660 +1,280 @@
-import { existsSync, readFileSync } from 'fs';
-import { createJiti } from 'jiti';
-import { dirname, join } from 'path';
-import { pathToFileURL } from 'url';
-function resolveModuleWithExtensions(id, parent) {
-    if (!id.startsWith('./') && !id.startsWith('../')) {
-        return id;
+import { loadConfig } from "c12";
+import { logger } from "better-auth";
+import path from "path";
+// @ts-expect-error
+import babelPresetTypeScript from "@babel/preset-typescript";
+// @ts-expect-error
+import babelPresetReact from "@babel/preset-react";
+import fs, { existsSync } from "fs";
+import { BetterAuthError } from "better-auth";
+import { addSvelteKitEnvModules } from "./add-svelte-kit-env-modules.js";
+import { getTsconfigInfo } from "./get-tsconfig-info.js";
+let possiblePaths = [
+    "auth.ts",
+    "auth.tsx",
+    "auth.js",
+    "auth.jsx",
+    "auth.server.js",
+    "auth.server.ts",
+];
+possiblePaths = [
+    ...possiblePaths,
+    ...possiblePaths.map((it) => `lib/server/${it}`),
+    ...possiblePaths.map((it) => `server/${it}`),
+    ...possiblePaths.map((it) => `lib/${it}`),
+    ...possiblePaths.map((it) => `utils/${it}`),
+];
+possiblePaths = [
+    ...possiblePaths,
+    ...possiblePaths.map((it) => `src/${it}`),
+    ...possiblePaths.map((it) => `app/${it}`),
+];
+function resolveReferencePath(configDir, refPath) {
+    const resolvedPath = path.resolve(configDir, refPath);
+    // If it ends with .json, treat as direct file reference
+    if (refPath.endsWith(".json")) {
+        return resolvedPath;
     }
-    const parentDir = dirname(parent);
-    const basePath = join(parentDir, id);
-    const extensions = ['.ts', '.js', '.mjs', '.cjs'];
-    for (const ext of extensions) {
-        const fullPath = basePath + ext;
-        if (existsSync(fullPath)) {
-            return pathToFileURL(fullPath).href;
+    // If the exact path exists and is a file, use it
+    if (fs.existsSync(resolvedPath)) {
+        try {
+            const stats = fs.statSync(resolvedPath);
+            if (stats.isFile()) {
+                return resolvedPath;
+            }
+        }
+        catch {
+            // Fall through to directory handling
         }
     }
-    return id;
+    // Otherwise, assume directory reference
+    return path.resolve(configDir, refPath, "tsconfig.json");
+}
+function getPathAliasesRecursive(tsconfigPath, visited = new Set()) {
+    if (visited.has(tsconfigPath)) {
+        return {};
+    }
+    visited.add(tsconfigPath);
+    if (!fs.existsSync(tsconfigPath)) {
+        logger.warn(`Referenced tsconfig not found: ${tsconfigPath}`);
+        return {};
+    }
+    try {
+        const tsConfig = getTsconfigInfo(undefined, tsconfigPath);
+        const { paths = {}, baseUrl = "." } = tsConfig.compilerOptions || {};
+        const result = {};
+        const configDir = path.dirname(tsconfigPath);
+        const obj = Object.entries(paths);
+        for (const [alias, aliasPaths] of obj) {
+            for (const aliasedPath of aliasPaths) {
+                const resolvedBaseUrl = path.resolve(configDir, baseUrl);
+                const finalAlias = alias.slice(-1) === "*" ? alias.slice(0, -1) : alias;
+                const finalAliasedPath = aliasedPath.slice(-1) === "*"
+                    ? aliasedPath.slice(0, -1)
+                    : aliasedPath;
+                result[finalAlias || ""] = path.join(resolvedBaseUrl, finalAliasedPath);
+            }
+        }
+        if (tsConfig.references) {
+            for (const ref of tsConfig.references) {
+                const refPath = resolveReferencePath(configDir, ref.path);
+                const refAliases = getPathAliasesRecursive(refPath, visited);
+                for (const [alias, aliasPath] of Object.entries(refAliases)) {
+                    if (!(alias in result)) {
+                        result[alias] = aliasPath;
+                    }
+                }
+            }
+        }
+        return result;
+    }
+    catch (error) {
+        logger.warn(`Error parsing tsconfig at ${tsconfigPath}: ${error}`);
+        return {};
+    }
+}
+function getPathAliases(cwd) {
+    const tsConfigPath = path.join(cwd, "tsconfig.json");
+    if (!fs.existsSync(tsConfigPath)) {
+        return null;
+    }
+    try {
+        const result = getPathAliasesRecursive(tsConfigPath);
+        addSvelteKitEnvModules(result);
+        return result;
+    }
+    catch (error) {
+        console.error(error);
+        throw new BetterAuthError("Error parsing tsconfig.json");
+    }
+}
+/**
+ * .tsx files are not supported by Jiti.
+ */
+const jitiOptions = (cwd) => {
+    const alias = getPathAliases(cwd) || {};
+    return {
+        transformOptions: {
+            babel: {
+                presets: [
+                    [
+                        babelPresetTypeScript,
+                        {
+                            isTSX: true,
+                            allExtensions: true,
+                        },
+                    ],
+                    [babelPresetReact, { runtime: "automatic" }],
+                ],
+            },
+        },
+        extensions: [".ts", ".tsx", ".js", ".jsx"],
+        alias,
+    };
+};
+const isDefaultExport = (object) => {
+    return (typeof object === "object" &&
+        object !== null &&
+        !Array.isArray(object) &&
+        Object.keys(object).length > 0 &&
+        "options" in object);
+};
+export async function getConfig({ cwd, configPath, shouldThrowOnError = false, }) {
+    try {
+        let configFile = null;
+        if (configPath) {
+            let resolvedPath = path.join(cwd, configPath);
+            if (existsSync(configPath))
+                resolvedPath = configPath; // If the configPath is a file, use it as is, as it means the path wasn't relative.
+            const { config } = await loadConfig({
+                configFile: resolvedPath,
+                dotenv: true,
+                jitiOptions: jitiOptions(cwd),
+            });
+            if (!("auth" in config) && !isDefaultExport(config)) {
+                if (shouldThrowOnError) {
+                    throw new Error(`Couldn't read your auth config in ${resolvedPath}. Make sure to default export your auth instance or to export as a variable named auth.`);
+                }
+                logger.error(`[#better-auth]: Couldn't read your auth config in ${resolvedPath}. Make sure to default export your auth instance or to export as a variable named auth.`);
+                process.exit(1);
+            }
+            configFile = "auth" in config ? config.auth?.options : config.options;
+        }
+        if (!configFile) {
+            for (const possiblePath of possiblePaths) {
+                try {
+                    const { config } = await loadConfig({
+                        configFile: possiblePath,
+                        jitiOptions: jitiOptions(cwd),
+                    });
+                    const hasConfig = Object.keys(config).length > 0;
+                    if (hasConfig) {
+                        configFile =
+                            config.auth?.options || config.default?.options || null;
+                        if (!configFile) {
+                            if (shouldThrowOnError) {
+                                throw new Error("Couldn't read your auth config. Make sure to default export your auth instance or to export as a variable named auth.");
+                            }
+                            logger.error("[#better-auth]: Couldn't read your auth config.");
+                            console.log("");
+                            logger.info("[#better-auth]: Make sure to default export your auth instance or to export as a variable named auth.");
+                            process.exit(1);
+                        }
+                        break;
+                    }
+                }
+                catch (e) {
+                    if (typeof e === "object" &&
+                        e &&
+                        "message" in e &&
+                        typeof e.message === "string" &&
+                        e.message.includes("This module cannot be imported from a Client Component module")) {
+                        if (shouldThrowOnError) {
+                            throw new Error(`Please remove import 'server-only' from your auth config file temporarily. The CLI cannot resolve the configuration with it included. You can re-add it after running the CLI.`);
+                        }
+                        logger.error(`Please remove import 'server-only' from your auth config file temporarily. The CLI cannot resolve the configuration with it included. You can re-add it after running the CLI.`);
+                        process.exit(1);
+                    }
+                    if (shouldThrowOnError) {
+                        throw e;
+                    }
+                    logger.error("[#better-auth]: Couldn't read your auth config.", e);
+                    process.exit(1);
+                }
+            }
+        }
+        return configFile;
+    }
+    catch (e) {
+        if (typeof e === "object" &&
+            e &&
+            "message" in e &&
+            typeof e.message === "string" &&
+            e.message.includes("This module cannot be imported from a Client Component module")) {
+            if (shouldThrowOnError) {
+                throw new Error(`Please remove import 'server-only' from your auth config file temporarily. The CLI cannot resolve the configuration with it included. You can re-add it after running the CLI.`);
+            }
+            logger.error(`Please remove import 'server-only' from your auth config file temporarily. The CLI cannot resolve the configuration with it included. You can re-add it after running the CLI.`);
+            process.exit(1);
+        }
+        if (shouldThrowOnError) {
+            throw e;
+        }
+        logger.error("Couldn't read your auth config.", e);
+        process.exit(1);
+    }
+}
+export { possiblePaths };
+// Legacy function for backward compatibility - kept for routes.ts
+export function extractBetterAuthConfig(content) {
+    // This is a simplified version that returns null
+    // The actual config loading is now handled by the better-auth getConfig function
+    return null;
 }
 export async function findAuthConfig(configPath) {
-    if (configPath) {
-        // Handle both relative and absolute paths
-        let resolvedPath;
-        if (configPath.startsWith('/')) {
-            // Absolute path
-            resolvedPath = configPath;
-        }
-        else {
-            // Relative path - try multiple resolution strategies
-            const cwd = process.cwd();
-            const possiblePaths = [
-                join(cwd, configPath), // Direct relative to cwd
-                join(cwd, '..', configPath), // One level up
-                join(cwd, '../..', configPath), // Two levels up
-                configPath, // Try as-is (in case it's already resolved)
-            ];
-            resolvedPath = possiblePaths.find((path) => existsSync(path)) || join(cwd, configPath);
-        }
-        if (existsSync(resolvedPath)) {
-            try {
-                const config = await loadConfig(resolvedPath);
-                if (config) {
-                    return config;
-                }
-            }
-            catch (error) {
-                console.warn(`Failed to load config from ${resolvedPath}:`, error);
-            }
-        }
-        else {
-            console.warn(`Config file not found: ${resolvedPath}`);
-            // Try to find the file in common monorepo locations
-            const cwd = process.cwd();
-            const commonPaths = [
-                join(cwd, 'apps', 'backend', 'src', 'auth.ts'),
-                join(cwd, 'apps', 'backend', 'auth.ts'),
-                join(cwd, 'packages', 'backend', 'src', 'auth.ts'),
-                join(cwd, 'packages', 'backend', 'auth.ts'),
-                join(cwd, 'src', 'auth.ts'),
-                join(cwd, 'auth.ts'),
-            ];
-            for (const path of commonPaths) {
-                if (existsSync(path)) {
-                    // Found config file
-                    try {
-                        const config = await loadConfig(path);
-                        if (config) {
-                            return config;
-                        }
-                    }
-                    catch (error) {
-                        console.warn(`Failed to load config from ${path}:`, error);
-                    }
-                }
-            }
-        }
-        return null;
-    }
-    const possibleConfigFiles = [
-        'studio-config.json',
-        'auth.ts',
-        'auth.js',
-        'src/auth.ts',
-        'src/auth.js',
-        'lib/auth.ts',
-        'lib/auth.js',
-        'better-auth.config.ts',
-        'better-auth.config.js',
-        'better-auth.config.json',
-        'auth.config.ts',
-        'auth.config.js',
-        'auth.config.json',
-    ];
-    let currentDir = process.cwd();
-    const maxDepth = 10;
-    let depth = 0;
-    while (currentDir && depth < maxDepth) {
-        for (const configFile of possibleConfigFiles) {
-            const configPath = join(currentDir, configFile);
-            if (existsSync(configPath)) {
-                try {
-                    const config = await loadConfig(configPath);
-                    if (config) {
-                        return config;
-                    }
-                }
-                catch (error) {
-                    console.warn(`Failed to load config from ${configPath}:`, error);
-                }
-            }
-        }
-        const parentDir = dirname(currentDir);
-        if (parentDir === currentDir) {
-            break;
-        }
-        currentDir = parentDir;
-        depth++;
-    }
-    return null;
-}
-async function loadConfig(configPath) {
-    const ext = configPath.split('.').pop();
     try {
-        if (ext === 'json') {
-            const content = readFileSync(configPath, 'utf-8');
-            return JSON.parse(content);
-        }
-        else if (ext === 'js' || ext === 'ts') {
-            return await loadTypeScriptConfig(configPath);
-        }
-    }
-    catch (error) {
-        console.warn(`Error loading config from ${configPath}:`, error);
-    }
-    return null;
-}
-async function loadTypeScriptConfig(configPath) {
-    try {
-        if (configPath.endsWith('.ts')) {
-            try {
-                const aliases = {};
-                const configDir = dirname(configPath);
-                const content = readFileSync(configPath, 'utf-8');
-                const relativeImportRegex = /import\s+.*?\s+from\s+['"](\.\/[^'"]+)['"]/g;
-                const dynamicImportRegex = /import\s*\(\s*['"](\.\/[^'"]+)['"]\s*\)/g;
-                const foundImports = new Set();
-                let match;
-                while ((match = relativeImportRegex.exec(content)) !== null) {
-                    foundImports.add(match[1]);
-                }
-                while ((match = dynamicImportRegex.exec(content)) !== null) {
-                    foundImports.add(match[1]);
-                }
-                for (const importPath of foundImports) {
-                    const importName = importPath.replace('./', '');
-                    const possiblePaths = [
-                        join(configDir, importName + '.ts'),
-                        join(configDir, importName + '.js'),
-                        join(configDir, importName + '.mjs'),
-                        join(configDir, importName + '.cjs'),
-                        join(configDir, importName, 'index.ts'),
-                        join(configDir, importName, 'index.js'),
-                        join(configDir, importName, 'index.mjs'),
-                        join(configDir, importName, 'index.cjs'),
-                    ];
-                    for (const path of possiblePaths) {
-                        if (existsSync(path)) {
-                            aliases[importPath] = pathToFileURL(path).href;
-                            break;
-                        }
-                    }
-                }
-                try {
-                    let importPath = configPath;
-                    if (!configPath.startsWith('/')) {
-                        importPath = join(process.cwd(), configPath);
-                    }
-                    const jitiInstance = createJiti(importPath, {
-                        debug: false,
-                        fsCache: true,
-                        moduleCache: true,
-                        interopDefault: true,
-                    });
-                    const authModule = await jitiInstance.import(importPath);
-                    const auth = authModule.auth || authModule.default || authModule;
-                    if (auth && typeof auth === 'object') {
-                        try {
-                            if (auth.$context) {
-                                const context = await auth.$context;
-                                const options = context.options;
-                                if (!options) {
-                                    console.warn('No options found in auth context');
-                                    return null;
-                                }
-                                const config = {
-                                    database: {
-                                        type: options.database ? 'drizzle' : 'unknown',
-                                        adapter: 'drizzle-adapter',
-                                        ...options.database,
-                                    },
-                                    emailAndPassword: {
-                                        enabled: options.emailAndPassword?.enabled || false,
-                                        ...options.emailAndPassword,
-                                    },
-                                    socialProviders: options.socialProviders
-                                        ? Object.keys(options.socialProviders).map((provider) => ({
-                                            id: provider,
-                                            name: provider,
-                                            enabled: true,
-                                        }))
-                                        : [],
-                                    trustedOrigins: options.trustedOrigins || ['http://localhost:3000'],
-                                    advanced: {
-                                        defaultCookieAttributes: options.advanced?.defaultCookieAttributes || {
-                                            sameSite: 'none',
-                                            secure: true,
-                                            httpOnly: true,
-                                        },
-                                        ...options.advanced,
-                                    },
-                                };
-                                return config;
-                            }
-                        }
-                        catch (contextError) {
-                            console.warn('Failed to await auth.$context:', contextError.message);
-                        }
-                    }
-                }
-                catch (importError) {
-                    console.warn(`Failed to import auth config from ${configPath}:`, importError.message);
-                }
-                const config = {
-                    database: {
-                        type: 'drizzle',
-                        adapter: 'drizzle-adapter',
-                    },
-                    emailAndPassword: {
+        const betterAuthConfig = await getConfig({
+            cwd: process.cwd(),
+            configPath,
+            shouldThrowOnError: false,
+        });
+        if (betterAuthConfig) {
+            // Convert BetterAuthOptions to AuthConfig format
+            const authConfig = {
+                database: {
+                    type: betterAuthConfig.database ? 'drizzle' : 'unknown',
+                    adapter: 'drizzle-adapter',
+                    ...betterAuthConfig.database,
+                },
+                emailAndPassword: {
+                    enabled: betterAuthConfig.emailAndPassword?.enabled || false,
+                    ...betterAuthConfig.emailAndPassword,
+                },
+                socialProviders: betterAuthConfig.socialProviders
+                    ? Object.keys(betterAuthConfig.socialProviders).map((provider) => ({
+                        id: provider,
+                        name: provider,
                         enabled: true,
+                    }))
+                    : [],
+                trustedOrigins: Array.isArray(betterAuthConfig.trustedOrigins)
+                    ? betterAuthConfig.trustedOrigins
+                    : ['http://localhost:3000'],
+                advanced: {
+                    defaultCookieAttributes: betterAuthConfig.advanced?.defaultCookieAttributes || {
+                        sameSite: 'none',
+                        secure: true,
+                        httpOnly: true,
                     },
-                    trustedOrigins: ['http://localhost:3000'],
-                    advanced: {
-                        defaultCookieAttributes: {
-                            sameSite: 'none',
-                            secure: true,
-                            httpOnly: true,
-                        },
-                    },
-                };
-                return config;
-            }
-            catch (importError) {
-                console.warn(`Failed to import auth config from ${configPath}:`, importError.message);
-            }
-        }
-        const content = readFileSync(configPath, 'utf-8');
-        const authConfig = extractBetterAuthConfig(content);
-        if (authConfig) {
+                    ...betterAuthConfig.advanced,
+                },
+            };
             return authConfig;
         }
-        if (configPath.endsWith('.js')) {
-            return await evaluateJSConfig(configPath);
-        }
         return null;
     }
     catch (error) {
-        console.warn(`Error loading TypeScript config from ${configPath}:`, error);
-        return null;
-    }
-}
-function detectDatabaseAdapter(content) {
-    const database = {};
-    if (content.includes('drizzleAdapter')) {
-        database.adapter = 'drizzle';
-        const providerMatch = content.match(/drizzleAdapter\s*\(\s*\w+\s*,\s*\{[^}]*provider\s*:\s*["']([^"']+)["'][^}]*\}/);
-        if (providerMatch) {
-            const provider = providerMatch[1];
-            database.provider = provider;
-            database.type = provider === 'pg' ? 'postgresql' : provider;
-        }
-        else {
-            database.provider = 'postgresql';
-            database.type = 'postgresql';
-        }
-    }
-    else if (content.includes('prismaAdapter')) {
-        database.adapter = 'prisma';
-        const providerMatch = content.match(/prismaAdapter\s*\(\s*\w+\s*,\s*\{[^}]*provider\s*:\s*["']([^"']+)["'][^}]*\}/);
-        if (providerMatch) {
-            database.provider = providerMatch[1];
-            database.type = providerMatch[1];
-        }
-        else {
-            database.provider = 'postgresql';
-            database.type = 'postgresql';
-        }
-    }
-    else if (content.includes('better-sqlite3') || content.includes('new Database(')) {
-        database.adapter = 'sqlite';
-        database.type = 'sqlite';
-        database.provider = 'sqlite';
-        const dbPathMatch = content.match(/new\s+Database\s*\(\s*["']([^"']+)["']\s*\)/);
-        if (dbPathMatch) {
-            database.name = dbPathMatch[1];
-        }
-    }
-    const urlMatch = content.match(/DATABASE_URL|DB_URL|DB_CONNECTION_STRING/);
-    if (urlMatch) {
-        database.url = `process.env.${urlMatch[0]}`;
-    }
-    return database;
-}
-function cleanConfigString(configStr) {
-    let cleaned = configStr;
-    cleaned = cleaned.replace(/:\s*prismaAdapter\s*\(\s*\w+\s*,\s*\{[^}]*\}\s*\)/g, ':"prisma-adapter"');
-    cleaned = cleaned.replace(/:\s*prismaAdapter\s*\(\s*\w+\s*\)/g, ':"prisma-adapter"');
-    cleaned = cleaned.replace(/:\s*drizzleAdapter\s*\(\s*\w+\s*,\s*\{[^}]*\}\s*\)/g, ':"drizzle-adapter"');
-    cleaned = cleaned.replace(/:\s*drizzleAdapter\s*\(\s*\w+\s*\)/g, ':"drizzle-adapter"');
-    cleaned = cleaned.replace(/:\s*betterSqlite3\s*\(\s*[^)]*\)/g, ':"better-sqlite3"');
-    cleaned = cleaned.replace(/:\s*postgres\s*\(\s*[^)]*\)/g, ':"postgres"');
-    cleaned = cleaned.replace(/:\s*mysql2\s*\(\s*[^)]*\)/g, ':"mysql2"');
-    cleaned = cleaned.replace(/:\s*bun:sqlite\s*\(\s*[^)]*\)/g, ':"bun-sqlite"');
-    cleaned = cleaned.replace(/:\s*new\s+Database\s*\(\s*[^)]*\)/g, ':"sqlite-database"');
-    cleaned = cleaned.replace(/new\s+Database\s*\(\s*[^)]*\)/g, '"sqlite-database"');
-    cleaned = cleaned.replace(/:\s*(\w+)\s*\(\s*[^)]*\)/g, ':"$1-function"');
-    cleaned = cleaned.replace(/:\s*\[[^\]]*\]/g, ':"array"');
-    cleaned = cleaned.replace(/:\s*\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/g, ':"object"');
-    cleaned = cleaned.replace(/:\s*process\.env\.(\w+)(\s*\|\|\s*"[^"]*")?/g, ':"$1"');
-    cleaned = cleaned.replace(/:\s*`([^`]*)`/g, ':"$1"');
-    cleaned = cleaned.replace(/:\s*"([^"]*)"/g, ':"$1"');
-    cleaned = cleaned.replace(/:\s*'([^']*)'/g, ':"$1"');
-    cleaned = cleaned.replace(/:\s*([a-zA-Z_][a-zA-Z0-9_]*)(?=\s*[,}])/g, ':"$1"');
-    cleaned = cleaned.replace(/([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '"$1":');
-    cleaned = cleaned.replace(/,\s*}/g, '}');
-    cleaned = cleaned.replace(/,\s*]/g, ']');
-    cleaned = cleaned.replace(/\/\/.*$/gm, '');
-    cleaned = cleaned.replace(/\/\*[\s\S]*?\*\//g, '');
-    cleaned = cleaned.replace(/\s+/g, ' ');
-    cleaned = cleaned.replace(/:\s*(\d+\.?\d*)/g, ':$1');
-    cleaned = cleaned.replace(/:\s*(true|false)/g, ':$1');
-    cleaned = cleaned.replace(/:\s*null/g, ':null');
-    return cleaned.trim();
-}
-export function extractBetterAuthConfig(content) {
-    const pluginsMatch = content.match(/plugins\s*:\s*(?:\[)?(\w+)(?:\])?/);
-    if (pluginsMatch) {
-        const pluginsVar = pluginsMatch[1];
-        const varMatch = content.match(new RegExp(`const\\s+${pluginsVar}\\s*=\\s*[^\\[]*\\[([^\\]]*)\\]`));
-        if (varMatch) {
-            const pluginsContent = varMatch[1];
-            const plugins = [];
-            const pluginMatches = pluginsContent.match(/(\w+)\(\)/g);
-            if (pluginMatches) {
-                for (const pluginMatch of pluginMatches) {
-                    const pluginName = pluginMatch.replace(/\(\)/, '');
-                    const plugin = {
-                        id: pluginName,
-                        name: pluginName,
-                        version: 'unknown',
-                        description: `${pluginName} plugin for Better Auth`,
-                        enabled: true,
-                    };
-                    if (pluginName === 'organization') {
-                        const orgConfigMatch = content.match(/organization\s*\(\s*\{[^}]*teams[^}]*enabled[^}]*\}/);
-                        if (orgConfigMatch) {
-                            plugin.teams = { enabled: true };
-                        }
-                    }
-                    plugins.push(plugin);
-                }
-            }
-            if (plugins.length > 0) {
-                const database = detectDatabaseAdapter(content);
-                return {
-                    plugins: plugins,
-                    baseURL: 'http://localhost:3000',
-                    database: database,
-                };
-            }
-        }
-    }
-    const directPluginsMatch = content.match(/plugins\s*:\s*\[([^\]]*)\]/);
-    if (directPluginsMatch) {
-        const pluginsContent = directPluginsMatch[1];
-        const plugins = [];
-        const pluginMatches = pluginsContent.match(/(\w+)\(\)/g);
-        if (pluginMatches) {
-            for (const pluginMatch of pluginMatches) {
-                const pluginName = pluginMatch.replace(/\(\)/, '');
-                const plugin = {
-                    id: pluginName,
-                    name: pluginName,
-                    version: 'unknown',
-                    description: `${pluginName} plugin for Better Auth`,
-                    enabled: true,
-                };
-                if (pluginName === 'organization') {
-                    const orgConfigMatch = content.match(/organization\s*\(\s*\{[^}]*teams[^}]*enabled[^}]*\}/);
-                    if (orgConfigMatch) {
-                        plugin.teams = { enabled: true };
-                    }
-                }
-                plugins.push(plugin);
-            }
-        }
-        if (plugins.length > 0) {
-            const database = detectDatabaseAdapter(content);
-            return {
-                plugins: plugins,
-                baseURL: 'http://localhost:3000',
-                database: database,
-            };
-        }
-    }
-    const patterns = [
-        /export\s+const\s+\w+\s*=\s*betterAuth\s*\(\s*({[^{}]*(?:{[^{}]*}[^{}]*)*})\s*\)/,
-        /export\s+const\s+\w+\s*=\s*BetterAuth\s*\(\s*({[^{}]*(?:{[^{}]*}[^{}]*)*})\s*\)/,
-        /const\s+\w+\s*=\s*betterAuth\s*\(\s*({[^{}]*(?:{[^{}]*}[^{}]*)*})\s*\)/,
-        /const\s+\w+\s*=\s*BetterAuth\s*\(\s*({[^{}]*(?:{[^{}]*}[^{}]*)*})\s*\)/,
-        /export\s+default\s+betterAuth\s*\(\s*({[^{}]*(?:{[^{}]*}[^{}]*)*})\s*\)/,
-        /export\s+default\s+BetterAuth\s*\(\s*({[^{}]*(?:{[^{}]*}[^{}]*)*})\s*\)/,
-        /module\.exports\s*=\s*betterAuth\s*\(\s*({[^{}]*(?:{[^{}]*}[^{}]*)*})\s*\)/,
-        /module\.exports\s*=\s*BetterAuth\s*\(\s*({[^{}]*(?:{[^{}]*}[^{}]*)*})\s*\)/,
-        /betterAuth\s*\(\s*({[^{}]*(?:{[^{}]*}[^{}]*)*})\s*\)/,
-        /BetterAuth\s*\(\s*({[^{}]*(?:{[^{}]*}[^{}]*)*})\s*\)/,
-        /betterAuth\s*\(\s*({[\s\S]*?})\s*\)/,
-        /BetterAuth\s*\(\s*({[\s\S]*?})\s*\)/,
-        /betterAuth\s*\(\s*({[^{}]*baseURL[^{}]*database[^{}]*})\s*\)/,
-        /BetterAuth\s*\(\s*({[^{}]*baseURL[^{}]*database[^{}]*})\s*\)/,
-    ];
-    for (let i = 0; i < patterns.length; i++) {
-        const pattern = patterns[i];
-        const match = content.match(pattern);
-        if (match) {
-            try {
-                let configStr = match[1];
-                configStr = configStr
-                    .replace(/(\d+\s*\*\s*\d+\s*\*\s*\d+\s*\*\s*\d+)/g, (match) => {
-                    try {
-                        return eval(match).toString();
-                    }
-                    catch {
-                        return match;
-                    }
-                })
-                    .replace(/(\d+\s*\*\s*\d+\s*\*\s*\d+)/g, (match) => {
-                    try {
-                        return eval(match).toString();
-                    }
-                    catch {
-                        return match;
-                    }
-                })
-                    .replace(/(\d+\s*\*\s*\d+)/g, (match) => {
-                    try {
-                        return eval(match).toString();
-                    }
-                    catch {
-                        return match;
-                    }
-                });
-                configStr = cleanConfigString(configStr);
-                let config;
-                try {
-                    config = JSON.parse(configStr);
-                }
-                catch (error) {
-                    console.warn(`Failed to parse config: ${error instanceof Error ? error.message : 'Unknown error'}`);
-                    console.warn('Config string that failed:', configStr.substring(0, 200) + '...');
-                    return null;
-                }
-                const authConfig = extractBetterAuthFields(config);
-                if (authConfig) {
-                    const detectedDatabase = detectDatabaseAdapter(content);
-                    if (detectedDatabase.adapter) {
-                        authConfig.database = { ...authConfig.database, ...detectedDatabase };
-                    }
-                }
-                return authConfig;
-            }
-            catch (error) {
-                console.warn(`Failed to parse config pattern: ${error instanceof Error ? error.message : 'Unknown error'}`);
-            }
-        }
-    }
-    return null;
-}
-function extractBetterAuthFields(config) {
-    const authConfig = {};
-    if (config.database) {
-        let dbType = 'postgresql';
-        let dbName = config.database.name;
-        let adapter = 'unknown';
-        if (typeof config.database === 'function') {
-            if (config.database.options?.adapterId) {
-                adapter = config.database.options.adapterId;
-                if (config.database.options.provider) {
-                    const provider = config.database.options.provider;
-                    dbType = provider === 'pg' ? 'postgresql' : provider;
-                }
-            }
-            else if (config.database.options?.provider) {
-                const provider = config.database.options.provider;
-                if (provider === 'pg' || provider === 'mysql' || provider === 'sqlite') {
-                    adapter = 'drizzle';
-                    dbType = provider === 'pg' ? 'postgresql' : provider;
-                }
-                else {
-                    adapter = 'prisma';
-                    dbType = 'postgresql';
-                }
-            }
-            else if (config.database.provider) {
-                const provider = config.database.provider;
-                if (provider === 'pg' || provider === 'mysql' || provider === 'sqlite') {
-                    adapter = 'drizzle';
-                    dbType = provider === 'pg' ? 'postgresql' : provider;
-                }
-                else {
-                    adapter = 'prisma';
-                    dbType = 'postgresql';
-                }
-            }
-            else {
-                adapter = 'prisma';
-                dbType = 'postgresql';
-            }
-        }
-        else if (config.database.constructor?.name === 'Database' ||
-            (typeof config.database === 'object' &&
-                config.database.constructor &&
-                config.database.constructor.name === 'Database')) {
-            dbType = 'sqlite';
-            dbName = config.database.name || './better-auth.db';
-            adapter = 'sqlite';
-        }
-        else if (config.database.name?.endsWith('.db') ||
-            (typeof config.database === 'string' && config.database.endsWith('.db'))) {
-            dbType = 'sqlite';
-            adapter = 'sqlite';
-        }
-        else if (config.database.provider) {
-            const provider = config.database.provider;
-            if (provider === 'pg' ||
-                provider === 'postgresql' ||
-                provider === 'mysql' ||
-                provider === 'sqlite') {
-                adapter = 'drizzle';
-                dbType = provider === 'pg' ? 'postgresql' : provider;
-            }
-            else {
-                adapter = 'prisma';
-                dbType = provider;
-            }
-        }
-        else if (config.database.adapter) {
-            adapter = config.database.adapter;
-            if (config.database.provider) {
-                const provider = config.database.provider;
-                if (provider === 'pg' ||
-                    provider === 'postgresql' ||
-                    provider === 'mysql' ||
-                    provider === 'sqlite') {
-                    adapter = 'drizzle';
-                    dbType = provider === 'pg' ? 'postgresql' : provider;
-                }
-                else {
-                    dbType = provider;
-                }
-            }
-            else {
-                dbType = adapter;
-            }
-        }
-        else if (config.database.type) {
-            dbType = config.database.type;
-            adapter = config.database.type;
-        }
-        if (config.database.provider &&
-            (config.database.provider === 'postgresql' ||
-                config.database.provider === 'pg' ||
-                config.database.provider === 'mysql' ||
-                config.database.provider === 'sqlite')) {
-            adapter = 'drizzle';
-            dbType = config.database.provider === 'pg' ? 'postgresql' : config.database.provider;
-        }
-        authConfig.database = {
-            url: config.database.url || config.database.connectionString,
-            name: dbName,
-            type: adapter === 'drizzle' ? `${dbType} (${adapter})` : dbType,
-            adapter: adapter,
-            dialect: config.database.dialect,
-            provider: config.database.provider,
-            casing: config.database.casing,
-        };
-    }
-    if (config.socialProviders) {
-        if (typeof config.socialProviders === 'object' && !Array.isArray(config.socialProviders)) {
-            authConfig.socialProviders = config.socialProviders;
-            authConfig.providers = Object.entries(config.socialProviders).map(([provider, config]) => ({
-                type: provider,
-                clientId: config.clientId,
-                clientSecret: config.clientSecret,
-                redirectUri: config.redirectUri,
-                ...config,
-            }));
-        }
-        else if (Array.isArray(config.socialProviders)) {
-            authConfig.socialProviders = config.socialProviders;
-            authConfig.providers = config.socialProviders;
-        }
-    }
-    if (config.providers && Array.isArray(config.providers)) {
-        authConfig.providers = config.providers.map((provider) => ({
-            type: provider.type || provider.id,
-            clientId: provider.clientId || provider.client_id,
-            clientSecret: provider.clientSecret || provider.client_secret,
-            ...provider,
-        }));
-    }
-    if (config.emailAndPassword) {
-        authConfig.emailAndPassword = config.emailAndPassword;
-    }
-    if (config.session) {
-        authConfig.session = config.session;
-    }
-    if (config.secret) {
-        authConfig.secret = config.secret;
-    }
-    if (config.rateLimit) {
-        authConfig.rateLimit = config.rateLimit;
-    }
-    if (config.telemetry) {
-        authConfig.telemetry = config.telemetry;
-    }
-    if (config.plugins) {
-        authConfig.plugins = config.plugins.map((plugin) => plugin.id);
-    }
-    return authConfig;
-}
-async function evaluateJSConfig(configPath) {
-    try {
-        const config = require(configPath);
-        if (config.auth) {
-            const authConfig = config.auth.options || config.auth;
-            return extractBetterAuthFields(authConfig);
-        }
-        if (config.default) {
-            return extractBetterAuthFields(config.default);
-        }
-        else if (typeof config === 'object') {
-            return extractBetterAuthFields(config);
-        }
-        return null;
-    }
-    catch (error) {
-        console.warn(`Error evaluating JS config from ${configPath}:`, error);
+        console.warn(`Failed to load config:`, error);
         return null;
     }
 }

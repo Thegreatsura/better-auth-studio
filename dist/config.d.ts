@@ -1,3 +1,4 @@
+import type { BetterAuthOptions } from "better-auth";
 export interface AuthProvider {
     type: string;
     clientId?: string;
@@ -69,6 +70,13 @@ export interface AuthConfig {
     };
     [key: string]: any;
 }
-export declare function findAuthConfig(configPath?: string): Promise<AuthConfig | null>;
+declare let possiblePaths: string[];
+export declare function getConfig({ cwd, configPath, shouldThrowOnError, }: {
+    cwd: string;
+    configPath?: string;
+    shouldThrowOnError?: boolean;
+}): Promise<BetterAuthOptions | null>;
+export { possiblePaths };
 export declare function extractBetterAuthConfig(content: string): AuthConfig | null;
+export declare function findAuthConfig(configPath?: string): Promise<AuthConfig | null>;
 //# sourceMappingURL=config.d.ts.map
