@@ -179,15 +179,13 @@ async function findAuthConfigPath() {
     }
     return null;
 }
+// @ts-nocheck
 export function createRoutes(authConfig, configPath, geoDbPath) {
     const router = Router();
-    // Set geo database path if provided
     if (geoDbPath) {
         setGeoDbPath(geoDbPath);
     }
-    // Initialize Geo service
     initializeGeoService().catch(console.error);
-    // Store the config path for use in adapter functions
     const getAuthAdapterWithConfig = () => getAuthAdapter(configPath);
     router.get('/api/health', (req, res) => {
         const uptime = process.uptime();
@@ -1683,13 +1681,11 @@ export function createRoutes(authConfig, configPath, geoDbPath) {
                 });
             }
             try {
-                // Use the same logic as the /api/plugins endpoint
                 let authModule;
                 try {
                     authModule = await safeImportAuthConfig(authConfigPath);
                 }
                 catch (importError) {
-                    // Fallback: read file content directly
                     const content = readFileSync(authConfigPath, 'utf-8');
                     authModule = {
                         auth: {

@@ -219,7 +219,7 @@ async function findAuthConfigPath(): Promise<string | null> {
 }
 
 // @ts-nocheck
-export function createRoutes(authConfig: AuthConfig, configPath?: string, geoDbPath?: string) {
+export function createRoutes(authConfig: AuthConfig, configPath?: string, geoDbPath?: string): Router {
   const router = Router();
 
   if (geoDbPath) {
