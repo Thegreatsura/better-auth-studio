@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Better Auth Studio - Documentation",
+  title: "Better Auth Studio",
   description: "Better Auth Studio - A powerful admin dashboard for Better Auth. Manage users, sessions, organizations, and more with an intuitive interface.",
 };
 
