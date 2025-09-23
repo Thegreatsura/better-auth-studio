@@ -1065,7 +1065,10 @@ export default function Settings() {
                     <div className="flex items-center space-x-3">
                       <Puzzle className="w-5 h-5 text-white" />
                       <div>
-                        <p className="text-sm font-medium text-white">{plugin.name.slice(0,1).toUpperCase() + plugin.name.slice(1).replace("-" , " ")}</p>
+                        <p className="text-sm font-medium text-white">
+                          {plugin.name.slice(0, 1).toUpperCase() +
+                            plugin.name.slice(1).replace('-', ' ')}
+                        </p>
                         <p className="text-xs text-gray-400">{plugin.description}</p>
                       </div>
                     </div>
