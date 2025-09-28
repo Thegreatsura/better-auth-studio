@@ -61,6 +61,10 @@ export default function Changelog() {
                 </li>
                 <li className="flex items-start">
                   <span className="text-white/50 mr-3">•</span>
+                  <strong className="pr-2">Database Schema Visualizer</strong> with interactive ReactFlow diagrams and plugin-based table visualization
+                </li>
+                <li className="flex items-start">
+                  <span className="text-white/50 mr-3">•</span>
                   <strong className="pr-2">Biome Integration</strong> with comprehensive linting and formatting
                 </li>
                 <li className="flex items-start">
@@ -101,6 +105,46 @@ export default function Changelog() {
                   <li className="flex items-start">
                     <span className="text-white/50 mr-3">•</span>
                     Individual session revocation functionality
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </PixelCard>
+
+          <PixelCard className="mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-light tracking-tight text-white">Database Schema Visualizer</h3>
+              <span className="text-sm font-light tracking-tight text-white/50">2025-01-28</span>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-light tracking-tight mb-2 text-white">🗄️ Interactive Schema Visualization</h4>
+                <ul className="list-none space-y-2 text-sm font-light tracking-tight text-white/70 ml-4">
+                  <li className="flex items-start">
+                    <span className="text-white/50 mr-3">•</span>
+                    ReactFlow-powered interactive database schema diagrams
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-white/50 mr-3">•</span>
+                    Drag-and-drop table positioning with zoom and pan controls
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-white/50 mr-3">•</span>
+                    Mini-map navigation for large schema overviews
+                  </li>
+                </ul>
+              </div>
+              
+              <div>
+                <h4 className="font-light tracking-tight mb-2 text-white">🔌 Plugin-Based Configuration</h4>
+                <ul className="list-none space-y-2 text-sm font-light tracking-tight text-white/70 ml-4">
+                  <li className="flex items-start">
+                    <span className="text-white/50 mr-3">•</span>
+                    Dynamic plugin selection (Organization, Teams, Two Factor, API Key, Passkey)
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-white/50 mr-3">•</span>
+                    Schema statistics showing table count, relationships, and active plugins
                   </li>
                 </ul>
               </div>
