@@ -181,9 +181,25 @@ export const Hero: React.FC<HeroProps> = ({ title, description, links }) => {
         <h1 className="text-2xl md:text-3xl font-light tracking-tight mb-3 text-white">
             {title}
         </h1>
-        <p className="font-mono text-xs md:text-sm leading-relaxed font-light tracking-tight text-white/50">
+        <p className="font-mono text-xs md:text-sm leading-relaxed font-light tracking-tight text-white/50 mb-6">
             {description}
         </p>
+        
+        {/* Installation Command */}
+        <div className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-none p-4 font-mono text-xs">
+          <div className="text-white/70 mb-2">Install Better Auth Studio</div>
+          <div className="flex items-center gap-2">
+            <span className="text-white/80">$</span>
+            <code className="text-white text-xs">npx better-auth-studio@latest</code>
+            <button 
+              onClick={() => navigator.clipboard.writeText('npx better-auth-studio@latest')}
+              className="ml-2 text-white/50 hover:text-white transition-colors"
+              title="Copy to clipboard"
+            >
+              📋
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
