@@ -1673,44 +1673,37 @@ export function createRoutes(authConfig, configPath, geoDbPath) {
                 });
             }
             try {
-                let authModule;
-                try {
-                    authModule = await safeImportAuthConfig(authConfigPath);
-                }
-                catch (importError) {
-                    // Fallback: read file content directly
-                    const content = readFileSync(authConfigPath, 'utf-8');
-                    authModule = {
-                        auth: {
-                            options: {
-                                _content: content,
-                                plugins: [],
-                            },
-                        },
-                    };
-                }
-                const auth = authModule.auth || authModule.default;
-                if (!auth) {
-                    return res.json({
-                        enabled: false,
-                        error: 'No auth export found',
-                        configPath: authConfigPath,
-                    });
-                }
-                const organizationPlugin = auth.options?.plugins?.find((plugin) => plugin.id === 'organization');
-                const teamsEnabled = organizationPlugin?.teams?.enabled === true;
-                res.json({
-                    enabled: teamsEnabled,
+                const { getConfig } = await import('./config.js');
+                const betterAuthConfig = await getConfig({
+                    cwd: process.cwd(),
                     configPath: authConfigPath,
-                    organizationPlugin: organizationPlugin || null,
+                    shouldThrowOnError: false,
                 });
-            }
-            catch (error) {
-                console.error('Error checking teams plugin:', error);
+                console.log({ betterAuthConfig });
+                if (betterAuthConfig) {
+                    const plugins = betterAuthConfig.plugins || [];
+                    const organizationPlugin = plugins.find((plugin) => plugin.id === 'organization');
+                    if (organizationPlugin) {
+                        const teamsEnabled = organizationPlugin.options?.teams?.enabled === true;
+                        return res.json({
+                            enabled: teamsEnabled,
+                            configPath: authConfigPath,
+                            organizationPlugin: organizationPlugin || null,
+                        });
+                    }
+                    else {
+                        return res.json({
+                            enabled: false,
+                            configPath: authConfigPath,
+                            organizationPlugin: null,
+                            error: 'Organization plugin not found',
+                        });
+                    }
+                }
                 try {
                     const { readFileSync } = await import('fs');
                     const content = readFileSync(authConfigPath, 'utf-8');
-                    const { extractBetterAuthConfig } = await import('./config');
+                    const { extractBetterAuthConfig } = await import('./config.js');
                     const config = extractBetterAuthConfig(content);
                     if (config && config.plugins) {
                         const organizationPlugin = config.plugins.find((plugin) => plugin.id === 'organization');
@@ -1728,9 +1721,13 @@ export function createRoutes(authConfig, configPath, geoDbPath) {
                 }
                 res.json({
                     enabled: false,
-                    error: 'Failed to load auth config - import failed and regex extraction unavailable',
+                    error: 'Failed to load auth config - getConfig failed and regex extraction unavailable',
                     configPath: authConfigPath,
                 });
+            }
+            catch (error) {
+                console.error('Error checking teams plugin:', error);
+                res.status(500).json({ error: 'Failed to check teams status' });
             }
         }
         catch (error) {
@@ -2363,44 +2360,26 @@ export function createRoutes(authConfig, configPath, geoDbPath) {
                 });
             }
             try {
-                let authModule;
-                try {
-                    authModule = await safeImportAuthConfig(authConfigPath);
-                }
-                catch (importError) {
-                    const content = readFileSync(authConfigPath, 'utf-8');
-                    authModule = {
-                        auth: {
-                            options: {
-                                _content: content,
-                                plugins: [],
-                            },
-                        },
-                    };
-                }
-                const auth = authModule.auth || authModule.default;
-                if (!auth) {
+                const { getConfig } = await import('./config.js');
+                const betterAuthConfig = await getConfig({
+                    cwd: process.cwd(),
+                    configPath: authConfigPath,
+                    shouldThrowOnError: false,
+                });
+                if (betterAuthConfig) {
+                    const plugins = betterAuthConfig?.plugins || [];
+                    const hasOrganizationPlugin = plugins.find((plugin) => plugin.id === 'organization');
                     return res.json({
-                        enabled: false,
-                        error: 'No auth export found',
+                        enabled: !!hasOrganizationPlugin,
                         configPath: authConfigPath,
+                        availablePlugins: plugins.map((p) => p.id) || [],
+                        organizationPlugin: hasOrganizationPlugin || null,
                     });
                 }
-                const plugins = auth.options?.plugins || [];
-                const hasOrganizationPlugin = plugins.find((plugin) => plugin.id === 'organization');
-                res.json({
-                    enabled: !!hasOrganizationPlugin,
-                    configPath: authConfigPath,
-                    availablePlugins: plugins.map((p) => p.id) || [],
-                    organizationPlugin: hasOrganizationPlugin || null,
-                });
-            }
-            catch (error) {
-                console.error('Error checking organization plugin:', error);
                 try {
                     const { readFileSync } = await import('fs');
                     const content = readFileSync(authConfigPath, 'utf-8');
-                    const { extractBetterAuthConfig } = await import('./config');
+                    const { extractBetterAuthConfig } = await import('./config.js');
                     const config = extractBetterAuthConfig(content);
                     if (config && config.plugins) {
                         const hasOrganizationPlugin = config.plugins.find((plugin) => plugin.id === 'organization');
@@ -2418,9 +2397,13 @@ export function createRoutes(authConfig, configPath, geoDbPath) {
                 }
                 res.json({
                     enabled: false,
-                    error: 'Failed to load auth config - import failed and regex extraction unavailable',
+                    error: 'Failed to load auth config - getConfig failed and regex extraction unavailable',
                     configPath: authConfigPath,
                 });
+            }
+            catch (error) {
+                console.error('Error checking organization plugin:', error);
+                res.status(500).json({ error: 'Failed to check plugin status' });
             }
         }
         catch (error) {

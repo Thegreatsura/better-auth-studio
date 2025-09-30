@@ -190,7 +190,7 @@ export default function OrganizationDetails() {
     try {
       const response = await fetch('/api/plugins/teams/status');
       const data = await response.json();
-      setTeamsEnabled(data.organizationPlugin.options.teams.enabled);
+      setTeamsEnabled(data.enabled);
     } catch (error) {
       console.error('Failed to check teams status:', error);
       setTeamsEnabled(false);
@@ -933,7 +933,6 @@ export default function OrganizationDetails() {
             </div>
           </div>
 
-          {/* Teams Content */}
           {!teamsEnabled ? (
             <div className="bg-black/30 border border-dashed border-white/20 rounded-none p-8">
               <div className="flex items-start space-x-4">

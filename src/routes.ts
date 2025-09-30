@@ -97,7 +97,7 @@ export async function safeImportAuthConfig(authConfigPath: string): Promise<any>
       }
 
       const jiti = createJiti(import.meta.url, {
-        debug: true, // Enable debug to see what's happening
+        debug: true, 
         fsCache: true,
         moduleCache: true,
         interopDefault: true,
@@ -143,20 +143,7 @@ export async function safeImportAuthConfig(authConfigPath: string): Promise<any>
         currentDir = dirname(currentDir);
       }
 
-      resolvedContent = resolvedContent.replace(
-        /import\s+prisma\s+from\s+["']\.\/prisma["'];/g,
-        `const prisma = {
-  user: { findMany: () => [], create: () => ({}), update: () => ({}), delete: () => ({}) },
-  session: { findMany: () => [], create: () => ({}), update: () => ({}), delete: () => ({}) },
-  account: { findMany: () => [], create: () => ({}), update: () => ({}), delete: () => ({}) },
-  verification: { findMany: () => [], create: () => ({}), update: () => ({}), delete: () => ({}) },
-  organization: { findMany: () => [], create: () => ({}), update: () => ({}), delete: () => ({}) },
-  member: { findMany: () => [], create: () => ({}), update: () => ({}), delete: () => ({}) },
-  invitation: { findMany: () => [], create: () => ({}), update: () => ({}), delete: () => ({}) },
-  team: { findMany: () => [], create: () => ({}), update: () => ({}), delete: () => ({}) },
-  teamMember: { findMany: () => [], create: () => ({}), update: () => ({}), delete: () => ({}) }
-};`
-      );
+      resolvedContent = '' 
 
       resolvedContent = resolvedContent.replace(
         /import\s+([^"']*)\s+from\s+["']\.\/[^"']*["'];/g,
@@ -175,8 +162,8 @@ export async function safeImportAuthConfig(authConfigPath: string): Promise<any>
         let commonJsContent = resolvedContent
           .replace(/export\s+const\s+(\w+)\s*=/g, 'const $1 =')
           .replace(/export\s+default\s+/g, 'module.exports = ')
-          .replace(/export\s+type\s+.*$/gm, '// $&') // Comment out type exports
-          .replace(/import\s+type\s+.*$/gm, '// $&'); // Comment out type imports
+          .replace(/export\s+type\s+.*$/gm, '// $&') 
+          .replace(/import\s+type\s+.*$/gm, '// $&');
 
         if (!commonJsContent.includes('module.exports')) {
           commonJsContent += '\nmodule.exports = { auth };';
@@ -210,7 +197,7 @@ export async function safeImportAuthConfig(authConfigPath: string): Promise<any>
       }
     } catch (resolveError) {
       console.error('Import resolution also failed:', resolveError);
-      throw importError; // Throw original error
+      throw importError; 
     }
   }
 }
@@ -220,7 +207,7 @@ async function findAuthConfigPath(): Promise<string | null> {
   const { existsSync } = await import('fs');
 
   const possiblePaths = [
-    'auth.js', // Prioritize the working CommonJS file
+    'auth.js', 
     'auth.ts',
     'src/auth.js',
     'src/auth.ts',
@@ -1826,49 +1813,40 @@ export function createRoutes(
       }
 
       try {
-        let authModule;
-        try {
-          authModule = await safeImportAuthConfig(authConfigPath);
-        } catch (importError) {
-          // Fallback: read file content directly
-          const content = readFileSync(authConfigPath, 'utf-8');
-          authModule = {
-            auth: {
-              options: {
-                _content: content,
-                plugins: [],
-              },
-            },
-          };
-        }
-        const auth = authModule.auth || authModule.default;
-
-        if (!auth) {
-          return res.json({
-            enabled: false,
-            error: 'No auth export found',
-            configPath: authConfigPath,
-          });
-        }
-
-        const organizationPlugin = auth.options?.plugins?.find(
-          (plugin: any) => plugin.id === 'organization'
-        );
-
-        const teamsEnabled = organizationPlugin?.teams?.enabled === true;
-
-        res.json({
-          enabled: teamsEnabled,
+        const { getConfig } = await import('./config.js');
+        const betterAuthConfig = await getConfig({
+          cwd: process.cwd(),
           configPath: authConfigPath,
-          organizationPlugin: organizationPlugin || null,
+          shouldThrowOnError: false,
         });
-      } catch (error) {
-        console.error('Error checking teams plugin:', error);
 
+        console.log({betterAuthConfig}) 
+        if (betterAuthConfig) {
+          const plugins = betterAuthConfig.plugins || [];
+          const organizationPlugin = plugins.find(
+            (plugin: any) => plugin.id === 'organization'
+          );
+
+          if (organizationPlugin) {
+            const teamsEnabled = organizationPlugin.options?.teams?.enabled === true;
+            return res.json({
+              enabled: teamsEnabled,
+              configPath: authConfigPath,
+              organizationPlugin: organizationPlugin || null,
+            });
+          } else {
+            return res.json({
+              enabled: false,
+              configPath: authConfigPath,
+              organizationPlugin: null,
+              error: 'Organization plugin not found',
+            });
+          }
+        }
         try {
           const { readFileSync } = await import('fs');
           const content = readFileSync(authConfigPath, 'utf-8');
-          const { extractBetterAuthConfig } = await import('./config');
+          const { extractBetterAuthConfig } = await import('./config.js');
 
           const config = extractBetterAuthConfig(content);
           if (config && config.plugins) {
@@ -1891,9 +1869,12 @@ export function createRoutes(
 
         res.json({
           enabled: false,
-          error: 'Failed to load auth config - import failed and regex extraction unavailable',
+          error: 'Failed to load auth config - getConfig failed and regex extraction unavailable',
           configPath: authConfigPath,
         });
+      } catch (error) {
+        console.error('Error checking teams plugin:', error);
+        res.status(500).json({ error: 'Failed to check teams status' });
       }
     } catch (error) {
       console.error('Error checking teams status:', error);
@@ -2591,47 +2572,29 @@ export function createRoutes(
       }
 
       try {
-        let authModule;
-        try {
-          authModule = await safeImportAuthConfig(authConfigPath);
-        } catch (importError) {
-          const content = readFileSync(authConfigPath, 'utf-8');
+        const { getConfig } = await import('./config.js');
+        const betterAuthConfig = await getConfig({
+          cwd: process.cwd(),
+          configPath: authConfigPath,
+          shouldThrowOnError: false,
+        });
 
-          authModule = {
-            auth: {
-              options: {
-                _content: content,
-                plugins: [],
-              },
-            },
-          };
-        }
-        const auth = authModule.auth || authModule.default;
+        if (betterAuthConfig) {
+          const plugins = betterAuthConfig?.plugins || [];
+          const hasOrganizationPlugin = plugins.find((plugin: any) => plugin.id === 'organization');
 
-        if (!auth) {
           return res.json({
-            enabled: false,
-            error: 'No auth export found',
+            enabled: !!hasOrganizationPlugin,
             configPath: authConfigPath,
+            availablePlugins: plugins.map((p: any) => p.id) || [],
+            organizationPlugin: hasOrganizationPlugin || null,
           });
         }
-
-        const plugins = auth.options?.plugins || [];
-        const hasOrganizationPlugin = plugins.find((plugin: any) => plugin.id === 'organization');
-
-        res.json({
-          enabled: !!hasOrganizationPlugin,
-          configPath: authConfigPath,
-          availablePlugins: plugins.map((p: any) => p.id) || [],
-          organizationPlugin: hasOrganizationPlugin || null,
-        });
-      } catch (error) {
-        console.error('Error checking organization plugin:', error);
 
         try {
           const { readFileSync } = await import('fs');
           const content = readFileSync(authConfigPath, 'utf-8');
-          const { extractBetterAuthConfig } = await import('./config');
+          const { extractBetterAuthConfig } = await import('./config.js');
 
           const config = extractBetterAuthConfig(content);
           if (config && config.plugins) {
@@ -2653,9 +2616,12 @@ export function createRoutes(
 
         res.json({
           enabled: false,
-          error: 'Failed to load auth config - import failed and regex extraction unavailable',
+          error: 'Failed to load auth config - getConfig failed and regex extraction unavailable',
           configPath: authConfigPath,
         });
+      } catch (error) {
+        console.error('Error checking organization plugin:', error);
+        res.status(500).json({ error: 'Failed to check plugin status' });
       }
     } catch (error) {
       console.error('Error checking plugin status:', error);
