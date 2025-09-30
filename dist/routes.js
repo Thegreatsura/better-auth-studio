@@ -1669,7 +1669,6 @@ export function createRoutes(authConfig, configPath, geoDbPath) {
                     configPath: authConfigPath,
                     shouldThrowOnError: false,
                 });
-                console.log({ betterAuthConfig });
                 if (betterAuthConfig) {
                     const plugins = betterAuthConfig.plugins || [];
                     const organizationPlugin = plugins.find((plugin) => plugin.id === 'organization');
