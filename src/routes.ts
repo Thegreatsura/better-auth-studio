@@ -474,6 +474,35 @@ export function createRoutes(
       let organizationCount = 0;
       let teamCount = 0;
 
+      let organizationPluginEnabled = false;
+      let teamsPluginEnabled = false;
+
+      try {
+        const authConfigPath = configPath || (await findAuthConfigPath());
+        if (authConfigPath) {
+          const { getConfig } = await import('./config.js');
+          const betterAuthConfig = await getConfig({
+            cwd: process.cwd(),
+            configPath: authConfigPath,
+            shouldThrowOnError: false,
+          });
+
+          if (betterAuthConfig) {
+            const plugins = betterAuthConfig.plugins || [];
+            const organizationPlugin = plugins.find((plugin: any) => plugin.id === 'organization');
+            organizationPluginEnabled = !!organizationPlugin;
+            
+            if (organizationPlugin) {
+              teamsPluginEnabled = organizationPlugin.options?.teams?.enabled === true;
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error checking plugin status:', error);
+        organizationPluginEnabled = false;
+        teamsPluginEnabled = false;
+      }
+
       if (adapter) {
         try {
           if (typeof adapter.findMany === 'function') {
@@ -493,24 +522,28 @@ export function createRoutes(
           console.error('Error fetching session count:', error);
         }
 
-        try {
-          if (typeof adapter.findMany === 'function') {
-            const organizations = await adapter.findMany({ model: 'organization', limit: 10000 });
-            organizationCount = organizations?.length || 0;
+        if (organizationPluginEnabled) {
+          try {
+            if (typeof adapter.findMany === 'function') {
+              const organizations = await adapter.findMany({ model: 'organization', limit: 10000 });
+              organizationCount = organizations?.length || 0;
+            }
+          } catch (error) {
+            console.error('Error fetching organization count:', error);
+            organizationCount = 0;
           }
-        } catch (error) {
-          console.error('Error fetching organization count:', error);
-          organizationCount = 0;
         }
 
-        try {
-          if (typeof adapter.findMany === 'function') {
-            const teams = await adapter.findMany({ model: 'team', limit: 10000 });
-            teamCount = teams?.length || 0;
+        if (teamsPluginEnabled) {
+          try {
+            if (typeof adapter.findMany === 'function') {
+              const teams = await adapter.findMany({ model: 'team', limit: 10000 });
+              teamCount = teams?.length || 0;
+            }
+          } catch (error) {
+            console.error('Error fetching team count:', error);
+            teamCount = 0;
           }
-        } catch (error) {
-          console.error('Error fetching team count:', error);
-          teamCount = 0;
         }
       }
 

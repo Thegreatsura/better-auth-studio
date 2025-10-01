@@ -850,7 +850,6 @@ export default function OrganizationDetails() {
             </div>
           </div>
 
-          {/* Organization Stats */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="bg-black/30 border border-dashed border-white/20 rounded-none p-6">
               <div className="flex items-center space-x-3">
