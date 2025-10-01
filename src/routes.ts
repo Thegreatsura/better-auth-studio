@@ -491,7 +491,7 @@ export function createRoutes(
             const plugins = betterAuthConfig.plugins || [];
             const organizationPlugin = plugins.find((plugin: any) => plugin.id === 'organization');
             organizationPluginEnabled = !!organizationPlugin;
-            
+
             if (organizationPlugin) {
               teamsPluginEnabled = organizationPlugin.options?.teams?.enabled === true;
             }
