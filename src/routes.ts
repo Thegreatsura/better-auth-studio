@@ -1233,13 +1233,10 @@ export function createRoutes(
     }
   });
 
-  // Enhanced Database Information endpoint - Combines config and auto-detection
   router.get('/api/db', async (req: Request, res: Response) => {
     try {
-      // Get auto-detected database info
       const detectedDb = await detectDatabaseWithDialect();
       
-      // Get config-based database info
       const authConfigPath = configPath || (await findAuthConfigPath());
       let configDatabase = null;
       
@@ -1255,7 +1252,6 @@ export function createRoutes(
         }
       }
 
-      // Combine detected and configured information
       const databaseInfo = {
         detected: detectedDb ? {
           name: detectedDb.name,
@@ -1268,11 +1264,10 @@ export function createRoutes(
           type: authConfig.database?.type || 'unknown',
           dialect: authConfig.database?.dialect || authConfig.database?.provider || 'unknown',
           adapter: authConfig.database?.adapter || 'unknown',
-          url: authConfig.database?.url ? '••••••••' : null, // Hide sensitive URL
+          url: authConfig.database?.url ? '••••••••' : null,
           casing: authConfig.database?.casing || 'camel',
           debugLogs: authConfig.database?.debugLogs || false,
         } : null,
-        // Merged information (detected takes precedence for technical details)
         merged: {
           name: detectedDb?.name || authConfig.database?.type || 'unknown',
           displayName: detectedDb ? 
