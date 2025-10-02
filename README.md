@@ -1,8 +1,8 @@
 # Better Auth Studio 
 
-> ⚠️ **Alpha Version Notice**
+> ⚠️ **Beta Version Notice**
 > 
-> Better Auth Studio is currently in **alpha** and in early development. You may encounter bugs or incomplete features. Please report any issues you find on our GitHub repository to help us improve the project. Your feedback is greatly appreciated!
+> Better Auth Studio is currently in **beta** and in early development. You may encounter bugs or incomplete features. Please report any issues you find on our GitHub repository to help us improve the project. Your feedback is greatly appreciated!
 
 
 A web-based studio interface for managing Better Auth applications. Better Auth Studio provides a comprehensive dashboard for managing users, organizations, teams, and more.

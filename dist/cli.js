@@ -7,6 +7,7 @@ import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import { findAuthConfig } from './config.js';
 import { startStudio } from './studio.js';
+import { detectDatabaseWithDialect } from './utils/database-detection.js';
 async function findAuthConfigPath() {
     const possibleConfigFiles = [
         'auth.ts',
@@ -192,7 +193,18 @@ program
         }
         console.log(chalk.green('✅ Found Better Auth configuration'));
         let databaseInfo = 'Not configured';
-        if (authConfig.database) {
+        // Try to auto-detect database first
+        try {
+            const detectedDb = await detectDatabaseWithDialect();
+            if (detectedDb) {
+                databaseInfo = `${detectedDb.name.charAt(0).toUpperCase() + detectedDb.name.slice(1)} (${detectedDb.dialect}) v${detectedDb.version}`;
+            }
+        }
+        catch (error) {
+            console.warn('Failed to auto-detect database:', error);
+        }
+        // Fallback to existing logic if auto-detection fails
+        if (databaseInfo === 'Not configured' && authConfig.database) {
             const configPath = await findAuthConfigPath();
             if (configPath) {
                 const content = readFileSync(configPath, 'utf-8');

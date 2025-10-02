@@ -16,9 +16,9 @@ export default function Installation() {
             <div className="flex items-start">
               <span className="text-white/50 mr-3 text-lg">⚠️</span>
               <div>
-                <h3 className="text-lg font-light tracking-tight mb-2 text-white">Alpha Version Notice</h3>
+                <h3 className="text-lg font-light tracking-tight mb-2 text-white">Beta Version Notice</h3>
                 <p className="text-sm font-light tracking-tight text-white/70">
-                  Better Auth Studio is currently in <strong>alpha</strong> and in early development. You may encounter bugs or incomplete features. Please report any issues you find on our GitHub repository to help us improve the project. Your feedback is greatly appreciated!
+                  Better Auth Studio is currently in <strong>beta</strong> and in early development. You may encounter bugs or incomplete features. Please report any issues you find on our GitHub repository to help us improve the project. Your feedback is greatly appreciated!
                 </p>
               </div>
             </div>

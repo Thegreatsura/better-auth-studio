@@ -10,6 +10,7 @@ import {
   Key,
   Lock,
   Mail,
+  Package,
   Puzzle,
   RefreshCw,
   Settings as SettingsIcon,
@@ -32,6 +33,8 @@ interface AuthConfig {
     type?: string;
     url?: string;
     dialect?: string;
+    adapter?: string;
+    version?: string;
     casing?: string;
     debugLogs?: boolean;
   };
@@ -155,10 +158,40 @@ interface PluginsResponse {
   error?: string;
 }
 
+interface DatabaseInfo {
+  detected?: {
+    name: string;
+    version: string;
+    dialect: string;
+    adapter: string;
+    displayName: string;
+  } | null;
+  configured?: {
+    type: string;
+    dialect: string;
+    adapter: string;
+    url: string | null;
+    casing: string;
+    debugLogs: boolean;
+  } | null;
+  merged: {
+    name: string;
+    displayName: string;
+    version: string;
+    dialect: string;
+    adapter: string;
+    casing: string;
+    debugLogs: boolean;
+    hasUrl: boolean;
+    autoDetected: boolean;
+  };
+}
+
 export default function Settings() {
   const [config, setConfig] = useState<AuthConfig | null>(null);
   const [systemInfo, setSystemInfo] = useState<SystemInfo | null>(null);
   const [plugins, setPlugins] = useState<PluginsResponse | null>(null);
+  const [databaseInfo, setDatabaseInfo] = useState<DatabaseInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [studioVersion, setStudioVersion] = useState<string | null>(null);
 
@@ -171,6 +204,7 @@ export default function Settings() {
         fetchConfig();
         fetchSystemInfo();
         fetchPlugins();
+        fetchDatabaseInfo();
       }, 500);
     } else if (message.type === 'connected') {
       console.log('✅ Connected to Better Auth Studio WebSocket');
@@ -181,6 +215,7 @@ export default function Settings() {
     fetchConfig();
     fetchSystemInfo();
     fetchPlugins();
+    fetchDatabaseInfo();
   }, []);
 
   const fetchConfig = async () => {
@@ -234,6 +269,24 @@ export default function Settings() {
         totalPlugins: 0,
         error: 'Failed to fetch plugins',
       });
+    }
+  };
+
+  const fetchDatabaseInfo = async () => {
+    try {
+      const response = await fetch('/api/db');
+      const data = await response.json();
+      if (data.success) {
+        setDatabaseInfo({
+          detected: data.detected,
+          configured: data.configured,
+          merged: data.merged,
+        });
+      } else {
+        console.error('Failed to fetch database info:', data.error);
+      }
+    } catch (error) {
+      console.error('Failed to fetch database info:', error);
     }
   };
 
@@ -388,34 +441,63 @@ export default function Settings() {
           </CardContent>
         </Card>
 
-        {/* Database Configuration */}
+        {/* Enhanced Database Configuration */}
         <Card className="border-white/15 bg-black/70 px-0 sm:px-0 md:px-0 lg:px-0 xl:px-0 rounded-none">
           <CardHeader>
             <CardTitle className="text-white flex items-center space-x-2">
               <Database className="w-5 h-5 text-white" />
               <span>Database</span>
+              {databaseInfo?.merged.autoDetected && (
+                <Badge
+                  variant="secondary"
+                  className="text-xs bg-green-900/50 border border-green-500/30 text-green-400 rounded-sm ml-2"
+                >
+                  Auto-detected
+                </Badge>
+              )}
             </CardTitle>
             <CardDescription>Database connection and configuration</CardDescription>
           </CardHeader>
           <hr className="w-full border-white/15 h-px -mt-3 mb-1" />
           <CardContent className="space-y-0 px-0 pb-0 border-b-none">
+            {/* Database Type */}
             <div className="flex items-center justify-between p-4 px-5 border-b border-white/15">
               <div className="flex items-center space-x-3">
                 <Database className="w-5 h-5 text-white" />
                 <div>
                   <p className="text-sm font-medium text-white">
-                    {(config?.database?.type &&
-                      config?.database?.type.charAt(0).toUpperCase() +
-                        config?.database?.type.slice(1)) ||
-                      'Unknown'}
+                    {databaseInfo?.merged.displayName || 
+                     (config?.database?.type &&
+                       config?.database?.type.charAt(0).toUpperCase() +
+                         config?.database?.type.slice(1)) ||
+                     'Unknown'}
                   </p>
                   <p className="text-xs text-gray-400">Database Type</p>
                 </div>
               </div>
-              {config?.database?.type && getConnectionStatus(config.database.type)}
+              {(databaseInfo?.merged.name || config?.database?.type) && 
+               getConnectionStatus(databaseInfo?.merged.name || config?.database?.type || '')}
             </div>
 
-            {config?.database?.dialect && (
+            {/* Version (if auto-detected) */}
+            {databaseInfo?.merged.version && databaseInfo.merged.version !== 'unknown' && (
+              <div className="flex items-center justify-between p-4 px-5 border-b border-white/15">
+                <div className="flex items-center space-x-3">
+                  <Package className="w-5 h-5 text-white" />
+                  <div>
+                    <p className="text-sm font-medium text-white">Version</p>
+                    <p className="text-xs text-gray-400">Package version</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-mono font-medium text-white">v{databaseInfo.merged.version}</p>
+                  <p className="text-xs text-gray-400">Installed</p>
+                </div>
+              </div>
+            )}
+
+            {/* Dialect */}
+            {(databaseInfo?.merged.dialect || config?.database?.dialect) && (
               <div className="flex items-center justify-between p-4 px-5 border-b border-white/15">
                 <div className="flex items-center space-x-3">
                   <Database className="w-5 h-5 text-white" />
@@ -425,12 +507,54 @@ export default function Settings() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-medium text-white">{config.database.dialect}</p>
+                  <p className="text-sm font-medium text-white">
+                    {databaseInfo?.merged.dialect || config?.database?.dialect}
+                  </p>
                 </div>
               </div>
             )}
 
-            {config?.database?.casing && (
+            {/* Adapter */}
+            {(databaseInfo?.merged.adapter || config?.database?.adapter) && 
+             databaseInfo?.merged.adapter !== 'unknown' && (
+              <div className="flex items-center justify-between p-4 px-5 border-b border-white/15">
+                <div className="flex items-center space-x-3">
+                  <Package className="w-5 h-5 text-white" />
+                  <div>
+                    <p className="text-sm font-medium text-white">Adapter</p>
+                    <p className="text-xs text-gray-400">Database adapter</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-mono font-medium text-white">
+                    {databaseInfo?.merged.adapter || config?.database?.adapter}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Connection URL Status */}
+            {(databaseInfo?.merged.hasUrl || config?.database?.url) && (
+              <div className="flex items-center justify-between p-4 px-5 border-b border-white/15">
+                <div className="flex items-center space-x-3">
+                  <Key className="w-5 h-5 text-white" />
+                  <div>
+                    <p className="text-sm font-medium text-white">Connection URL</p>
+                    <p className="text-xs text-gray-400">Database connection string</p>
+                  </div>
+                </div>
+                <Badge
+                  variant="secondary"
+                  className="text-xs group-hover:bg-white group-hover:border-black group-hover:text-black bg-black/70 border border-white/15 rounded-none border-dashed flex items-center gap-1"
+                >
+                  <CheckCircle className="w-3 h-3" />
+                  Configured
+                </Badge>
+              </div>
+            )}
+
+            {/* Casing */}
+            {(databaseInfo?.merged.casing || config?.database?.casing) && (
               <div className="flex items-center justify-between p-4 px-5 border-b border-white/15">
                 <div className="flex items-center space-x-3">
                   <SettingsIcon className="w-5 h-5 text-white" />
@@ -441,11 +565,13 @@ export default function Settings() {
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-medium text-white capitalize">
-                    {config.database.casing}
+                    {databaseInfo?.merged.casing || config?.database?.casing}
                   </p>
                 </div>
               </div>
             )}
+
+            {/* Debug Logs */}
             <div className="flex items-center justify-between p-4 px-5 border-b border-white/15">
               <div className="flex items-center space-x-3">
                 <RefreshCw className="w-5 h-5 text-white" />
@@ -458,7 +584,7 @@ export default function Settings() {
                 variant="secondary"
                 className="text-xs group-hover:bg-white group-hover:border-black group-hover:text-black bg-black/70 border border-white/15 rounded-none border-dashed flex items-center gap-1"
               >
-                {config?.database?.debugLogs ? (
+                {(databaseInfo?.merged.debugLogs || config?.database?.debugLogs) ? (
                   <>
                     <AlertTriangle className="w-3 h-3" />
                     Enabled

@@ -6,6 +6,7 @@ import { fileURLToPath, pathToFileURL } from 'url';
 import { createMockAccount, createMockSession, createMockUser, createMockVerification, getAuthAdapter, } from './auth-adapter.js';
 import { getAuthData } from './data.js';
 import { initializeGeoService, resolveIPLocation, setGeoDbPath } from './geo-service.js';
+import { detectDatabaseWithDialect } from './utils/database-detection.js';
 function getStudioVersion() {
     try {
         const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -246,25 +247,44 @@ export function createRoutes(authConfig, configPath, geoDbPath) {
     });
     router.get('/api/config', async (req, res) => {
         let databaseType = 'unknown';
-        const configPath = await findAuthConfigPath();
-        if (configPath) {
-            const content = readFileSync(configPath, 'utf-8');
-            if (content.includes('drizzleAdapter')) {
-                databaseType = 'Drizzle';
-            }
-            else if (content.includes('prismaAdapter')) {
-                databaseType = 'Prisma';
-            }
-            else if (content.includes('better-sqlite3') || content.includes('new Database(')) {
-                databaseType = 'SQLite';
+        let databaseDialect = 'unknown';
+        let databaseAdapter = 'unknown';
+        let databaseVersion = 'unknown';
+        // Try to detect database using the new utility
+        try {
+            const detectedDb = await detectDatabaseWithDialect();
+            if (detectedDb) {
+                databaseType = detectedDb.name.charAt(0).toUpperCase() + detectedDb.name.slice(1);
+                databaseDialect = detectedDb.dialect || detectedDb.name;
+                databaseAdapter = detectedDb.adapter || detectedDb.name;
+                databaseVersion = detectedDb.version;
             }
         }
+        catch (error) {
+            console.warn('Failed to auto-detect database:', error);
+        }
+        // Fallback to existing detection logic if auto-detection fails
         if (databaseType === 'unknown') {
-            let type = authConfig.database?.type || authConfig.database?.adapter || 'unknown';
-            if (type && type !== 'unknown') {
-                type = type.charAt(0).toUpperCase() + type.slice(1);
+            const configPath = await findAuthConfigPath();
+            if (configPath) {
+                const content = readFileSync(configPath, 'utf-8');
+                if (content.includes('drizzleAdapter')) {
+                    databaseType = 'Drizzle';
+                }
+                else if (content.includes('prismaAdapter')) {
+                    databaseType = 'Prisma';
+                }
+                else if (content.includes('better-sqlite3') || content.includes('new Database(')) {
+                    databaseType = 'SQLite';
+                }
             }
-            databaseType = type;
+            if (databaseType === 'unknown') {
+                let type = authConfig.database?.type || authConfig.database?.adapter || 'unknown';
+                if (type && type !== 'unknown') {
+                    type = type.charAt(0).toUpperCase() + type.slice(1);
+                }
+                databaseType = type;
+            }
         }
         const config = {
             appName: authConfig.appName || 'Better Auth',
@@ -273,7 +293,9 @@ export function createRoutes(authConfig, configPath, geoDbPath) {
             secret: authConfig.secret ? 'Configured' : 'Not set',
             database: {
                 type: databaseType,
-                dialect: authConfig.database?.dialect || authConfig.database?.provider || 'unknown',
+                dialect: authConfig.database?.dialect || authConfig.database?.provider || databaseDialect,
+                adapter: authConfig.database?.adapter || databaseAdapter,
+                version: databaseVersion,
                 casing: authConfig.database?.casing || 'camel',
                 debugLogs: authConfig.database?.debugLogs || false,
                 url: authConfig.database?.url,
@@ -1048,6 +1070,107 @@ export function createRoutes(authConfig, configPath, geoDbPath) {
         catch (error) {
             console.error('Error fetching database info:', error);
             res.status(500).json({ error: 'Failed to fetch database info' });
+        }
+    });
+    // Database Detection endpoint - Auto-detect database from installed packages
+    router.get('/api/database/detect', async (req, res) => {
+        try {
+            const detectedDb = await detectDatabaseWithDialect();
+            if (detectedDb) {
+                res.json({
+                    success: true,
+                    database: {
+                        name: detectedDb.name,
+                        version: detectedDb.version,
+                        dialect: detectedDb.dialect,
+                        adapter: detectedDb.adapter,
+                        displayName: detectedDb.name.charAt(0).toUpperCase() + detectedDb.name.slice(1),
+                    },
+                });
+            }
+            else {
+                res.json({
+                    success: false,
+                    database: null,
+                    message: 'No supported database packages detected',
+                });
+            }
+        }
+        catch (error) {
+            console.error('Error detecting database:', error);
+            res.status(500).json({
+                success: false,
+                error: 'Failed to detect database',
+                message: error instanceof Error ? error.message : 'Unknown error'
+            });
+        }
+    });
+    // Enhanced Database Information endpoint - Combines config and auto-detection
+    router.get('/api/db', async (req, res) => {
+        try {
+            // Get auto-detected database info
+            const detectedDb = await detectDatabaseWithDialect();
+            // Get config-based database info
+            const authConfigPath = configPath || (await findAuthConfigPath());
+            let configDatabase = null;
+            if (authConfigPath) {
+                try {
+                    const authModule = await safeImportAuthConfig(authConfigPath);
+                    const auth = authModule.auth || authModule.default;
+                    if (auth?.options?.database) {
+                        configDatabase = auth.options.database;
+                    }
+                }
+                catch (error) {
+                    console.warn('Failed to load auth config for database info:', error);
+                }
+            }
+            // Combine detected and configured information
+            const databaseInfo = {
+                detected: detectedDb ? {
+                    name: detectedDb.name,
+                    version: detectedDb.version,
+                    dialect: detectedDb.dialect,
+                    adapter: detectedDb.adapter,
+                    displayName: detectedDb.name.charAt(0).toUpperCase() + detectedDb.name.slice(1),
+                } : null,
+                configured: configDatabase ? {
+                    type: authConfig.database?.type || 'unknown',
+                    dialect: authConfig.database?.dialect || authConfig.database?.provider || 'unknown',
+                    adapter: authConfig.database?.adapter || 'unknown',
+                    url: authConfig.database?.url ? '••••••••' : null, // Hide sensitive URL
+                    casing: authConfig.database?.casing || 'camel',
+                    debugLogs: authConfig.database?.debugLogs || false,
+                } : null,
+                // Merged information (detected takes precedence for technical details)
+                merged: {
+                    name: detectedDb?.name || authConfig.database?.type || 'unknown',
+                    displayName: detectedDb ?
+                        detectedDb.name.charAt(0).toUpperCase() + detectedDb.name.slice(1) :
+                        (authConfig.database?.type ?
+                            authConfig.database.type.charAt(0).toUpperCase() + authConfig.database.type.slice(1) :
+                            'Unknown'),
+                    version: detectedDb?.version || 'unknown',
+                    dialect: detectedDb?.dialect || authConfig.database?.dialect || authConfig.database?.provider || 'unknown',
+                    adapter: detectedDb?.adapter || authConfig.database?.adapter || 'unknown',
+                    casing: authConfig.database?.casing || 'camel',
+                    debugLogs: authConfig.database?.debugLogs || false,
+                    hasUrl: !!authConfig.database?.url,
+                    autoDetected: !!detectedDb,
+                }
+            };
+            res.json({
+                success: true,
+                ...databaseInfo
+            });
+        }
+        catch (error) {
+            console.error('Error getting database information:', error);
+            res.status(500).json({
+                success: false,
+                error: 'Failed to get database information',
+                message: error instanceof Error ? error.message : 'Unknown error'
+            });
         }
     });
     // Database Schema Visualization endpoint
