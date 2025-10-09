@@ -1,5 +1,5 @@
 import { getAuthAdapter } from './auth-adapter.js';
-export async function getAuthData(authConfig, type = 'stats', options, configPath) {
+export async function getAuthData(_authConfig, type = 'stats', options, configPath) {
     try {
         const adapter = await getAuthAdapter(configPath);
         if (!adapter) {
@@ -23,8 +23,7 @@ export async function getAuthData(authConfig, type = 'stats', options, configPat
                 throw new Error(`Unknown data type: ${type}`);
         }
     }
-    catch (error) {
-        console.error(`Error fetching ${type} data:`, error);
+    catch (_error) {
         return getMockData(type, options);
     }
 }
@@ -59,8 +58,7 @@ async function getRealStats(adapter) {
             recentLogins,
         };
     }
-    catch (error) {
-        console.error('Error fetching stats from adapter:', error);
+    catch (_error) {
         return getMockData('stats');
     }
 }
@@ -87,8 +85,7 @@ async function getRealUsers(adapter, options) {
         }
         return getMockData('users', options);
     }
-    catch (error) {
-        console.error('Error fetching users from adapter:', error);
+    catch (_error) {
         return getMockData('users', options);
     }
 }
@@ -110,56 +107,40 @@ async function getRealSessions(adapter, options) {
         }
         return getMockData('sessions', options);
     }
-    catch (error) {
-        console.error('Error fetching sessions from adapter:', error);
+    catch (_error) {
         return getMockData('sessions', options);
     }
 }
-async function getRealProviderStats(adapter) {
+async function getRealProviderStats(_adapter) {
     try {
         return [
             { type: 'email', users: 0, active: 0 },
             { type: 'github', users: 0, active: 0 },
         ];
     }
-    catch (error) {
-        console.error('Error fetching provider stats from adapter:', error);
+    catch (_error) {
         return getMockData('providers');
     }
 }
 async function deleteRealUser(adapter, userId) {
-    try {
-        if (adapter.delete) {
-            await adapter.delete({ model: 'user', where: [{ field: 'id', value: userId }] });
-        }
-        else {
-            console.warn('Delete method not available on adapter');
-        }
+    if (adapter.delete) {
+        await adapter.delete({ model: 'user', where: [{ field: 'id', value: userId }] });
     }
-    catch (error) {
-        console.error('Error deleting user from adapter:', error);
-        throw error;
+    else {
     }
 }
 async function updateRealUser(adapter, userId, userData) {
-    // Logging user update for debugging
-    try {
-        const updatedUser = await adapter.update({
-            model: 'user',
-            where: [
-                {
-                    field: 'id',
-                    value: userId,
-                },
-            ],
-            update: { ...userData },
-        });
-        return updatedUser;
-    }
-    catch (error) {
-        console.error('Error updating user from adapter:', error);
-        throw error;
-    }
+    const updatedUser = await adapter.update({
+        model: 'user',
+        where: [
+            {
+                field: 'id',
+                value: userId,
+            },
+        ],
+        update: { ...userData },
+    });
+    return updatedUser;
 }
 function getMockData(type, options) {
     switch (type) {

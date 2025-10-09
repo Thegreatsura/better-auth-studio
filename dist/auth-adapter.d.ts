@@ -20,5 +20,5 @@ export declare function getAuthAdapter(configPath?: string): Promise<AuthAdapter
 export declare function createMockUser(adapter: AuthAdapter, index: number): Promise<any>;
 export declare function createMockSession(adapter: AuthAdapter, userId: string, index: number): Promise<any>;
 export declare function createMockAccount(adapter: AuthAdapter, userId: string, index: number): Promise<any>;
-export declare function createMockVerification(adapter: AuthAdapter, userId: string, index: number): Promise<any>;
+export declare function createMockVerification(adapter: AuthAdapter, _userId: string, index: number): Promise<any>;
 //# sourceMappingURL=auth-adapter.d.ts.map

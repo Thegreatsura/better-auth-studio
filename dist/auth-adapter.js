@@ -1,7 +1,7 @@
-import { existsSync } from 'fs';
+import { existsSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { createJiti } from 'jiti';
-import { dirname, join } from 'path';
-const authInstance = null;
+const _authInstance = null;
 let authAdapter = null;
 export async function getAuthAdapter(configPath) {
     try {
@@ -23,15 +23,14 @@ export async function getAuthAdapter(configPath) {
             });
             authModule = await jitiInstance.import(importPath);
         }
-        catch (error) {
-            console.warn('Failed to import auth module in adapter:', error.message);
+        catch (_error) {
             return null;
         }
         const auth = authModule.auth || authModule.default;
         if (!auth) {
             return null;
         }
-        if (auth.options && auth.options._content) {
+        if (auth.options?._content) {
             return null;
         }
         let adapter;
@@ -39,7 +38,7 @@ export async function getAuthAdapter(configPath) {
             const context = await auth.$context;
             adapter = context?.adapter;
         }
-        catch (error) {
+        catch (_error) {
             adapter = auth.adapter;
         }
         if (!adapter) {
@@ -47,106 +46,74 @@ export async function getAuthAdapter(configPath) {
         }
         authAdapter = {
             createUser: async (data) => {
-                try {
-                    const user = await adapter.create({
-                        model: 'user',
-                        data: {
-                            createdAt: new Date(),
-                            updatedAt: new Date(),
-                            emailVerified: false,
-                            name: data.name,
-                            email: data.email?.toLowerCase(),
-                            image: data.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.email}`,
-                        },
-                    });
-                    if (data.password) {
-                        try {
-                            await adapter.create({
-                                model: 'account',
-                                data: {
-                                    userId: user.id,
-                                    providerId: 'credential',
-                                    accountId: user.id,
-                                    password: data.password,
-                                    createdAt: new Date(),
-                                    updatedAt: new Date(),
-                                },
-                            });
-                        }
-                        catch (accountError) {
-                            console.error('Error creating credential account:', accountError);
-                        }
+                const user = await adapter.create({
+                    model: 'user',
+                    data: {
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
+                        emailVerified: false,
+                        name: data.name,
+                        email: data.email?.toLowerCase(),
+                        image: data.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.email}`,
+                    },
+                });
+                if (data.password) {
+                    try {
+                        await adapter.create({
+                            model: 'account',
+                            data: {
+                                userId: user.id,
+                                providerId: 'credential',
+                                accountId: user.id,
+                                password: data.password,
+                                createdAt: new Date(),
+                                updatedAt: new Date(),
+                            },
+                        });
                     }
-                    return user;
+                    catch (_accountError) { }
                 }
-                catch (error) {
-                    console.error('Error creating user:', error);
-                    throw error;
-                }
+                return user;
             },
             createSession: async (data) => {
-                try {
-                    return await adapter.create({
-                        model: 'session',
-                        data: {
-                            createdAt: new Date(),
-                            updatedAt: new Date(),
-                            ...data,
-                        },
-                    });
-                }
-                catch (error) {
-                    console.error('Error creating session:', error);
-                    throw error;
-                }
+                return await adapter.create({
+                    model: 'session',
+                    data: {
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
+                        ...data,
+                    },
+                });
             },
             createAccount: async (data) => {
-                try {
-                    return await adapter.create({
-                        model: 'account',
-                        data: {
-                            createdAt: new Date(),
-                            updatedAt: new Date(),
-                            ...data,
-                        },
-                    });
-                }
-                catch (error) {
-                    console.error('Error creating account:', error);
-                    throw error;
-                }
+                return await adapter.create({
+                    model: 'account',
+                    data: {
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
+                        ...data,
+                    },
+                });
             },
             createVerification: async (data) => {
-                try {
-                    return await adapter.create({
-                        model: 'verification',
-                        data: {
-                            createdAt: new Date(),
-                            updatedAt: new Date(),
-                            ...data,
-                        },
-                    });
-                }
-                catch (error) {
-                    console.error('Error creating verification:', error);
-                    throw error;
-                }
+                return await adapter.create({
+                    model: 'verification',
+                    data: {
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
+                        ...data,
+                    },
+                });
             },
             createOrganization: async (data) => {
-                try {
-                    return await adapter.create({
-                        model: 'organization',
-                        data: {
-                            createdAt: new Date(),
-                            updatedAt: new Date(),
-                            ...data,
-                        },
-                    });
-                }
-                catch (error) {
-                    console.error('Error creating organization:', error);
-                    throw error;
-                }
+                return await adapter.create({
+                    model: 'organization',
+                    data: {
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
+                        ...data,
+                    },
+                });
             },
             getUsers: async () => {
                 try {
@@ -160,8 +127,7 @@ export async function getAuthAdapter(configPath) {
                     }
                     return [];
                 }
-                catch (error) {
-                    console.error('Error getting users:', error);
+                catch (_error) {
                     return [];
                 }
             },
@@ -177,8 +143,7 @@ export async function getAuthAdapter(configPath) {
                     }
                     return [];
                 }
-                catch (error) {
-                    console.error('Error getting sessions:', error);
+                catch (_error) {
                     return [];
                 }
             },
@@ -189,16 +154,14 @@ export async function getAuthAdapter(configPath) {
                     }
                     return [];
                 }
-                catch (error) {
-                    console.error('Error using findMany:', error);
+                catch (_error) {
                     return [];
                 }
             },
         };
         return { ...adapter, ...authAdapter };
     }
-    catch (error) {
-        console.error('Error loading auth adapter:', error);
+    catch (_error) {
         return null;
     }
 }
@@ -250,7 +213,7 @@ export async function createMockUser(adapter, index) {
     return await adapter.createUser(userData);
 }
 // Random IP address generators for different countries
-const countryIPRanges = [
+const _countryIPRanges = [
     // United States
     {
         country: 'United States',
@@ -429,7 +392,7 @@ export async function createMockAccount(adapter, userId, index) {
     };
     return await adapter.createAccount(accountData);
 }
-export async function createMockVerification(adapter, userId, index) {
+export async function createMockVerification(adapter, _userId, index) {
     const verificationData = {
         identifier: `user${index}@example.com`,
         token: `verification_token_${index}_${Date.now()}`,

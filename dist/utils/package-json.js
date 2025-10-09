@@ -1,6 +1,6 @@
-import { existsSync, readFileSync } from 'fs';
-import { join, dirname, resolve } from 'path';
-import { createRequire } from 'module';
+import { existsSync, readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { dirname, join, resolve } from 'node:path';
 /**
  * Find the project root by looking for package.json files up the directory tree
  * @param startDir - Directory to start searching from
@@ -44,20 +44,19 @@ export async function getPackageVersion(packageName, cwd) {
         try {
             const require = createRequire(import.meta.url);
             const packagePath = require.resolve(`${packageName}/package.json`, {
-                paths: [projectRoot]
+                paths: [projectRoot],
             });
             if (existsSync(packagePath)) {
                 const packageJson = JSON.parse(readFileSync(packagePath, 'utf-8'));
                 return packageJson.version;
             }
         }
-        catch (resolveError) {
+        catch (_resolveError) {
             // Only log unexpected errors, not MODULE_NOT_FOUND which is expected
         }
         return undefined;
     }
-    catch (error) {
-        console.warn(`Failed to get version for package ${packageName}:`, error);
+    catch (_error) {
         return undefined;
     }
 }

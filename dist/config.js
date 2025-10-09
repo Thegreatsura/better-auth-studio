@@ -1,11 +1,10 @@
-// @ts-expect-error
+import fs, { existsSync } from 'node:fs';
+import path from 'node:path';
 import babelPresetReact from '@babel/preset-react';
 // @ts-expect-error
 import babelPresetTypeScript from '@babel/preset-typescript';
 import { BetterAuthError, logger } from 'better-auth';
 import { loadConfig } from 'c12';
-import fs, { existsSync } from 'fs';
-import path from 'path';
 import { addSvelteKitEnvModules } from './add-svelte-kit-env-modules.js';
 import { getTsconfigInfo } from './get-tsconfig-info.js';
 let possiblePaths = [
@@ -100,8 +99,7 @@ function getPathAliases(cwd) {
         addSvelteKitEnvModules(result);
         return result;
     }
-    catch (error) {
-        console.error(error);
+    catch (_error) {
         throw new BetterAuthError('Error parsing tsconfig.json');
     }
 }
@@ -172,7 +170,6 @@ export async function getConfig({ cwd, configPath, shouldThrowOnError = false, }
                                 throw new Error("Couldn't read your auth config. Make sure to default export your auth instance or to export as a variable named auth.");
                             }
                             logger.error("[#better-auth]: Couldn't read your auth config.");
-                            console.log('');
                             logger.info('[#better-auth]: Make sure to default export your auth instance or to export as a variable named auth.');
                             process.exit(1);
                         }
@@ -222,7 +219,7 @@ export async function getConfig({ cwd, configPath, shouldThrowOnError = false, }
 }
 export { possiblePaths };
 // Legacy function for backward compatibility - kept for routes.ts
-export function extractBetterAuthConfig(content) {
+export function extractBetterAuthConfig(_content) {
     // This is a simplified version that returns null
     // The actual config loading is now handled by the better-auth getConfig function
     return null;
@@ -269,8 +266,7 @@ export async function findAuthConfig(configPath) {
         }
         return null;
     }
-    catch (error) {
-        console.warn(`Failed to load config:`, error);
+    catch (_error) {
         return null;
     }
 }

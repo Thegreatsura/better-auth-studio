@@ -1,4 +1,4 @@
-import type { DetectionInfo, DatabaseDetectionResult } from "../types";
+import type { DatabaseDetectionResult, DetectionInfo } from '../types';
 /**
  * Detect database type and version from installed packages
  * @param cwd - Current working directory to search in

@@ -77,6 +77,6 @@ export declare function getConfig({ cwd, configPath, shouldThrowOnError, }: {
     shouldThrowOnError?: boolean;
 }): Promise<any>;
 export { possiblePaths };
-export declare function extractBetterAuthConfig(content: string): AuthConfig | null;
+export declare function extractBetterAuthConfig(_content: string): AuthConfig | null;
 export declare function findAuthConfig(configPath?: string): Promise<AuthConfig | null>;
 //# sourceMappingURL=config.d.ts.map
