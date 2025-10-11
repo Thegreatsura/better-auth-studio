@@ -13,9 +13,8 @@ import {
 } from '@xyflow/react';
 import { useCallback, useEffect, useState } from 'react';
 import '@xyflow/react/dist/style.css';
-import { Database, Eye, EyeOff, Settings } from 'lucide-react';
+import { Database, Settings } from 'lucide-react';
 import { TableNode, type TableNodeData } from '../components/TableNode';
-import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Checkbox } from '../components/ui/checkbox';
 
@@ -96,7 +95,6 @@ export default function DatabaseVisualizer() {
   const [error, setError] = useState<string | null>(null);
   const [selectedPlugins, setSelectedPlugins] = useState<string[]>([]);
   const [availablePlugins, setAvailablePlugins] = useState<PluginInfo[]>([]);
-  const [showPluginLabels, setShowPluginLabels] = useState(true);
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
@@ -307,20 +305,20 @@ export default function DatabaseVisualizer() {
   return (
     <div className="p-6 h-screen flex flex-col bg-black">
       <div className="mb-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-1">
           <div className="flex items-center space-x-3">
             <Database className="w-6 h-6 text-white" />
-            <h1 className="text-2xl font-normal text-white">Schema Visualizer</h1>
+            <h1 className="text-2xl font-light text-white">Schema Visualizer</h1>
           </div>
         </div>
-        <p className="text-black dark:text-white">
+        <p className="text-gray-400">
           Visualize your Better Auth database schema with interactive tables and relationships.
         </p>
       </div>
 
       <div className="flex-1 grid grid-cols-4 gap-6">
         <div className="col-span-1">
-          <Card className="rounded-none bg-black border-gray-200 dark:border-gray-700 h-fit shadow-sm">
+          <Card className="rounded-none bg-black h-fit shadow-sm">
             <CardHeader>
               <CardTitle className="text-white flex items-center space-x-2">
                 <Settings className="w-5 h-5" />
@@ -353,7 +351,7 @@ export default function DatabaseVisualizer() {
                   </div>
                 ))
               ) : (
-                <div className="text-sm text-gray-500 dark:text-gray-400">
+                <div className="text-sm text-white/70">
                   No plugins detected in configuration
                 </div>
               )}
@@ -361,28 +359,28 @@ export default function DatabaseVisualizer() {
           </Card>
 
           {schema && (
-            <Card className="rounded-none bg-black border-gray-200 dark:border-gray-700 mt-4 shadow-sm">
+            <Card className="rounded-none bg-black mt-4 shadow-sm">
               <CardHeader>
-                <CardTitle className="text-gray-900 dark:text-white text-sm">Schema Info</CardTitle>
+                <CardTitle className="text-white text-sm">Schema Info</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">Tables:</span>
-                  <span className="text-gray-900 dark:text-white">{schema.tables.length}</span>
+                  <span className="text-white/70">Tables:</span>
+                  <span className="text-white">{schema.tables.length}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">Relationships:</span>
-                  <span className="text-gray-900 dark:text-white">
+                  <span className="text-white/70">Relationships:</span>
+                  <span className="text-white">
                     {schema.tables.reduce((sum, table) => sum + table.relationships.length, 0)}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">Available Plugins:</span>
-                  <span className="text-gray-900 dark:text-white">{availablePlugins.length}</span>
+                  <span className="text-white/70">Available Plugins:</span>
+                  <span className="text-white">{availablePlugins.length}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">Selected Plugins:</span>
-                  <span className="text-gray-900 dark:text-white">{selectedPlugins.length}</span>
+                  <span className="text-white/70">Selected Plugins:</span>
+                  <span className="text-white">{selectedPlugins.length}</span>
                 </div>
               </CardContent>
             </Card>
