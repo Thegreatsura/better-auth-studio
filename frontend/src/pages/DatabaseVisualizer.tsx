@@ -14,12 +14,12 @@ import {
 import { useCallback, useEffect, useState } from 'react';
 import '@xyflow/react/dist/style.css';
 import { Database, Settings } from 'lucide-react';
-import { TableNode, type TableNodeData } from '../components/TableNode';
+import { DatabaseSchemaNode, type DatabaseSchemaNodeData } from '../components/DatabaseSchemaNode';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Checkbox } from '../components/ui/checkbox';
 
 const nodeTypes = {
-  tableNode: TableNode,
+  databaseSchemaNode: DatabaseSchemaNode,
 };
 
 interface Field {
@@ -197,16 +197,22 @@ export default function DatabaseVisualizer() {
 
       newNodes.push({
         id: table.name,
-        type: 'tableNode',
+        type: 'databaseSchemaNode',
         position: {
-          x: (index % 4) * 350,
-          y: Math.floor(index / 4) * 300,
+          x: (index % 3) * 380,
+          y: Math.floor(index / 3) * 320,
         },
         data: {
           name: table.name,
+          displayName: table.displayName,
           isForeign: false,
-          columns,
-        } as TableNodeData,
+          plugin: getPluginForField(table.name, '', selectedPlugins),
+          columns: columns.map(col => ({
+            ...col,
+            description: table.fields.find(f => f.name === col.name)?.description || '',
+          })),
+          relationships: table.relationships,
+        } as DatabaseSchemaNodeData,
       });
     });
     
@@ -232,18 +238,18 @@ export default function DatabaseVisualizer() {
             type: 'smoothstep',
             animated: false,
             style: {
-              stroke: '#ffffff',
-              strokeWidth: 1.5,
+              stroke: '#6b7280',
+              strokeWidth: 2,
               strokeDasharray: '0',
             },
             label: relationshipLabel,
             labelStyle: {
               fontSize: '11px',
-              fill: '#6b7280',
+              fill: '#9ca3af',
               fontWeight: '500',
             },
             labelBgStyle: {
-              fill: 'rgba(255, 255, 255, 0.95)',
+              fill: 'rgba(0, 0, 0, 0.9)',
               fillOpacity: 1,
               // @ts-expect-error
               rx: 4,
@@ -251,7 +257,7 @@ export default function DatabaseVisualizer() {
             },
             markerEnd: {
               type: 'arrowclosed',
-              color: '#ffffff',
+              color: '#6b7280',
               width: 12,
               height: 12,
             },
@@ -388,7 +394,7 @@ export default function DatabaseVisualizer() {
         </div>
 
         <div className="col-span-3">
-          <div className="h-full bg-black border border-white/20 rounded-none overflow-hidden shadow-sm">
+          <div className="h-full bg-black border border-gray-700 rounded-lg overflow-hidden shadow-xl">
             <ReactFlow
               nodes={nodes}
               edges={edges}
@@ -406,8 +412,8 @@ export default function DatabaseVisualizer() {
               connectionLineType="smoothstep"
               defaultEdgeOptions={{
                 style: {
-                  stroke: '#ffffff',
-                  strokeWidth: 1.5,
+                  stroke: '#6b7280',
+                  strokeWidth: 2,
                 },
                 animated: false,
                 type: 'smoothstep',
@@ -416,16 +422,16 @@ export default function DatabaseVisualizer() {
               nodesConnectable={false}
               elementsSelectable={true}
             >
-              <Controls className="bg-black border-white/20" />
+              <Controls className="bg-gray-900 border-gray-700 [&>button]:bg-gray-800 [&>button]:border-gray-600 [&>button]:text-white [&>button:hover]:bg-gray-700" />
               <MiniMap
-                className="bg-black border-white/20"
+                className="bg-gray-900 border-gray-700"
                 nodeColor={(node) => {
-                  if (node.data?.isForeign) return '#ffffff';
-                  return '#ffffff';
+                  if (node.data?.isForeign) return '#374151';
+                  return '#1f2937';
                 }}
-                maskColor="rgba(0, 0, 0, 0.8)"
+                maskColor="rgba(0, 0, 0, 0.9)"
               />
-              <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#ffffff" />
+              <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#374151" />
             </ReactFlow>
           </div>
         </div>

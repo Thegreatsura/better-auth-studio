@@ -4,6 +4,7 @@ import Layout from './components/Layout';
 import { CountsProvider } from './contexts/CountsContext';
 import Dashboard from './pages/Dashboard';
 import DatabaseVisualizer from './pages/DatabaseVisualizer';
+import DatabaseSchemaNodeDemo from './components/DatabaseSchemaNodeDemo';
 import OrganizationDetails from './pages/OrganizationDetails';
 import Organizations from './pages/Organizations';
 import Sessions from './pages/Sessions';
@@ -29,6 +30,7 @@ function App() {
             <Route path="/organizations/:orgId/teams/:teamId" element={<TeamDetails />} />
             <Route path="/sessions" element={<Sessions />} />
             <Route path="/database" element={<DatabaseVisualizer />} />
+            <Route path="/database/demo" element={<DatabaseSchemaNodeDemo />} />
             <Route path="/settings" element={<Settings />} />
           </Routes>
         </Layout>
