@@ -437,7 +437,7 @@ export default function Settings() {
                     {databaseInfo?.displayName ||
                       (config?.database?.type &&
                         config?.database?.type.charAt(0).toUpperCase() +
-                          config?.database?.type.slice(1)) ||
+                        config?.database?.type.slice(1)) ||
                       'Unknown'}
                   </p>
                   <p className="text-xs text-gray-400">Database Type</p>
@@ -1109,34 +1109,24 @@ export default function Settings() {
             </div>
           </CardContent>
         </Card>
-
-        {/* Plugins Configuration */}
         <Card className="border-white/15 bg-black/70 px-0 sm:px-0 md:px-0 lg:px-0 xl:px-0 rounded-none lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center space-x-2">
-              <Puzzle className="w-5 h-5 text-white" />
-              <span>Plugins</span>
-            </CardTitle>
-            <CardDescription>Better Auth plugins enabled in your configuration</CardDescription>
-          </CardHeader>
+          <div className='flex justify-between items-center'>
+            <CardHeader className=''>
+              <CardTitle className="text-white flex items-center space-x-2">
+                <Puzzle className="w-5 h-5 text-white" />
+                <span>Plugins</span>
+              </CardTitle>
+              <CardDescription>Better Auth plugins enabled in your configuration</CardDescription>
+            </CardHeader>
+            <div className="text-right">
+              <p className="text-sm font-medium text-white">{plugins?.totalPlugins || 0}</p>
+              <p className="text-xs text-gray-400">Active</p>
+            </div>
+          </div>
           <hr className="w-full border-white/15 h-px -mt-3 mb-1" />
           <CardContent className="space-y-0 px-0 pb-0 border-b-none">
             {plugins?.plugins && plugins.plugins.length > 0 ? (
               <>
-                <div className="flex items-center justify-between p-4 px-5 border-b border-white/15">
-                  <div className="flex items-center space-x-3">
-                    <Info className="w-5 h-5 text-white" />
-                    <div>
-                      <p className="text-sm font-medium text-white">Total Plugins</p>
-                      <p className="text-xs text-gray-400">Currently enabled plugins</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-white">{plugins.totalPlugins}</p>
-                    <p className="text-xs text-gray-400">Active</p>
-                  </div>
-                </div>
-
                 {plugins.plugins.map((plugin, index) => (
                   <div
                     key={plugin.id}

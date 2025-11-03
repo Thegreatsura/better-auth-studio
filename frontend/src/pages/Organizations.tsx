@@ -910,9 +910,8 @@ export default function Organizations() {
                   </Button>
                 </div>
               </div>
-
               {/* Team Seeding */}
-              <div className="space-y-4">
+              {/* <div className="space-y-4">
                 <div className="flex items-center space-x-2">
                   <Plus className="w-5 h-5 text-white" />
                   <h4 className="text-white font-light">Seed Teams</h4>
@@ -953,9 +952,8 @@ export default function Organizations() {
                       </>
                     )}
                   </Button>
-                </div>
-              </div>
-
+                </div> */}
+              {/* </div> */}
               {/* Seeding Logs */}
               {seedingLogs.length > 0 && (
                 <div className="mt-6">

@@ -6,14 +6,14 @@ import * as schema from "../auth-schema";
 
 export const auth = betterAuth({
   secret: process.env.AUTH_SECRET || "better-auth-secret-123456789",
-  database: drizzleAdapter(db, { provider: "pg", schema: schema  }),
-  socialProviders: process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET ? {
+  database: drizzleAdapter(db, { provider: "pg", schema: schema }),
+  socialProviders: {
     github: {
-      clientId: process.env.GITHUB_CLIENT_ID,
+      clientId: process.env.GITHUB_CLIENT_ID!,
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
       redirectURI: "http://localhost:3000/api/auth/callback/github"
     }
-  } : undefined,
+  },
   emailAndPassword: {
     enabled: true,
     disableSignUp: false,
