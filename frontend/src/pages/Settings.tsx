@@ -1118,7 +1118,7 @@ export default function Settings() {
               </CardTitle>
               <CardDescription>Better Auth plugins enabled in your configuration</CardDescription>
             </CardHeader>
-            <div className="text-right">
+            <div className="pr-6">
               <p className="text-sm font-medium text-white">{plugins?.totalPlugins || 0}</p>
               <p className="text-xs text-gray-400">Active</p>
             </div>
