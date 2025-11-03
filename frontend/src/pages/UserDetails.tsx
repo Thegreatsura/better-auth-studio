@@ -535,8 +535,17 @@ export default function UserDetails() {
 
   return (
     <div className="min-h-screen bg-black w-full">
-      <div className="w-full px-6 py-8">
-        {/* Banned User Warning Banner */}
+      <div className="w-full flex flex-col px-6 py-8">
+        <Button
+            variant="outline"
+            onClick={() => navigate('/users')}
+            className="mb-4 border-none text-white"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Users
+          </Button>
+
+
         {user.banned && (
           <div className="mb-6 border-l-4 border-red-500 bg-red-500/10 p-4">
             <div className="flex items-start space-x-3">
@@ -568,16 +577,7 @@ export default function UserDetails() {
         )}
 
         <div className="mb-8">
-          <Button
-            variant="outline"
-            onClick={() => navigate('/users')}
-            className="mb-4 border-none text-white"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Users
-          </Button>
-
-          <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="w-16 h-16 bg-gray-800 border border-dashed border-white/20 flex items-center justify-center">
                 {user.image ? (
