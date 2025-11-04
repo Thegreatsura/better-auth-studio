@@ -752,7 +752,7 @@ export default function Dashboard() {
               {/* Bottom-right corner */}
               <div className="absolute bottom-0 right-0 w-[12px] h-[0.5px] bg-white/30" />
               <div className="absolute bottom-0 right-0 w-[0.5px] h-[12px] bg-white/30" />
-              <div className="flex items-center gap-2 mb-2 relative -mt-2 pb-1">
+              <div className="flex items-center justify-between mb-2 relative -mt-2 pb-1">
                 <div className="relative">
                   <button
                     onClick={() => setShowActiveUsersDropdown(!showActiveUsersDropdown)}
@@ -775,21 +775,21 @@ export default function Dashboard() {
                           {period}
                         </button>
                       ))}
-              </div>
+                    </div>
                   )}
-            </div>
+                </div>
                 
                 {activeUsersPeriod === 'Custom' && (
-                  <>
+                  <div className="flex items-center gap-2">
                     <Popover>
                       <PopoverTrigger asChild>
-            <Button 
+                        <Button
                           variant="outline"
                           className="h-6 px-2 text-xs font-mono uppercase text-gray-400 hover:text-white bg-transparent border-white/10 hover:bg-white/5"
-            >
+                        >
                           <CalendarIcon className="mr-1 h-3 w-3" />
-                          {activeUsersDateFrom ? format(activeUsersDateFrom, 'MMM dd') : 'From'}
-            </Button>
+                          {activeUsersDateFrom ? format(activeUsersDateFrom, 'MMM dd yyyy') : 'From'}
+                        </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0 bg-black border-white/10">
                         <Calendar
@@ -809,7 +809,7 @@ export default function Dashboard() {
                           className="h-6 px-2 text-xs font-mono uppercase text-gray-400 hover:text-white bg-transparent border-white/10 hover:bg-white/5"
                         >
                           <CalendarIcon className="mr-1 h-3 w-3" />
-                          {activeUsersDateTo ? format(activeUsersDateTo, 'MMM dd') : 'To'}
+                          {activeUsersDateTo ? format(activeUsersDateTo, 'MMM dd yyyy') : 'To'}
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0 bg-black border-white/10">
@@ -823,7 +823,7 @@ export default function Dashboard() {
                         />
                       </PopoverContent>
                     </Popover>
-                  </>
+                  </div>
                 )}
               </div>
               <hr className='mb-2 -mx-10 border-white/10' />
@@ -856,7 +856,7 @@ export default function Dashboard() {
               {/* Bottom-right corner */}
               <div className="absolute bottom-0 right-0 w-[12px] h-[0.5px] bg-white/30" />
               <div className="absolute bottom-0 right-0 w-[0.5px] h-[12px] bg-white/30" />
-              <div className="flex items-center gap-2 mb-2 relative -mt-2 pb-1">
+              <div className="flex items-center justify-between mb-2 relative -mt-2 pb-1">
                 <div className="relative">
                   <button
                     onClick={() => setShowNewUsersDropdown(!showNewUsersDropdown)}
@@ -884,16 +884,16 @@ export default function Dashboard() {
                 </div>
                 
                 {newUsersPeriod === 'Custom' && (
-                  <>
+                  <div className="flex items-center gap-2">
                     <Popover>
                       <PopoverTrigger asChild>
-            <Button
-              variant="outline"
+                        <Button
+                          variant="outline"
                           className="h-6 px-2 text-xs font-mono uppercase text-gray-400 hover:text-white bg-transparent border-white/10 hover:bg-white/5"
-            >
+                        >
                           <CalendarIcon className="mr-1 h-3 w-3" />
-                          {newUsersDateFrom ? format(newUsersDateFrom, 'MMM dd') : 'From'}
-            </Button>
+                          {newUsersDateFrom ? format(newUsersDateFrom, 'MMM dd yyyy') : 'From'}
+                        </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0 bg-black border-white/10">
                         <Calendar
@@ -913,7 +913,7 @@ export default function Dashboard() {
                           className="h-6 px-2 text-xs font-mono uppercase text-gray-400 hover:text-white bg-transparent border-white/10 hover:bg-white/5"
                         >
                           <CalendarIcon className="mr-1 h-3 w-3" />
-                          {newUsersDateTo ? format(newUsersDateTo, 'MMM dd') : 'To'}
+                          {newUsersDateTo ? format(newUsersDateTo, 'MMM dd yyyy') : 'To'}
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0 bg-black border-white/10">
@@ -927,7 +927,7 @@ export default function Dashboard() {
                         />
                       </PopoverContent>
                     </Popover>
-                  </>
+                  </div>
                 )}
               </div>
               <hr className='mb-2 -mx-10 border-white/10' />
@@ -965,7 +965,7 @@ export default function Dashboard() {
               {/* Bottom-right corner */}
               <div className="absolute bottom-0 right-0 w-[12px] h-[0.5px] bg-white/30" />
               <div className="absolute bottom-0 right-0 w-[0.5px] h-[12px] bg-white/30" />
-              <div className="flex items-center gap-2 mb-2 relative -mt-2 pb-1">
+              <div className="flex items-center justify-between mb-2 relative -mt-2 pb-1">
                 <div className="relative">
                   <button
                     onClick={() => setShowOrganizationsDropdown(!showOrganizationsDropdown)}
@@ -993,16 +993,16 @@ export default function Dashboard() {
                 </div>
                 
                 {organizationsPeriod === 'Custom' && (
-                  <>
+                  <div className="flex items-center gap-2">
                     <Popover>
                       <PopoverTrigger asChild>
-            <Button
-              variant="outline"
+                        <Button
+                          variant="outline"
                           className="h-6 px-2 text-xs font-mono uppercase text-gray-400 hover:text-white bg-transparent border-white/10 hover:bg-white/5"
-            >
+                        >
                           <CalendarIcon className="mr-1 h-3 w-3" />
-                          {organizationsDateFrom ? format(organizationsDateFrom, 'MMM dd') : 'From'}
-            </Button>
+                          {organizationsDateFrom ? format(organizationsDateFrom, 'MMM dd yyyy') : 'From'}
+                        </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0 bg-black border-white/10">
                         <Calendar
@@ -1022,7 +1022,7 @@ export default function Dashboard() {
                           className="h-6 px-2 text-xs font-mono uppercase text-gray-400 hover:text-white bg-transparent border-white/10 hover:bg-white/5"
                         >
                           <CalendarIcon className="mr-1 h-3 w-3" />
-                          {organizationsDateTo ? format(organizationsDateTo, 'MMM dd') : 'To'}
+                          {organizationsDateTo ? format(organizationsDateTo, 'MMM dd yyyy') : 'To'}
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0 bg-black border-white/10">
@@ -1036,7 +1036,7 @@ export default function Dashboard() {
                         />
                       </PopoverContent>
                     </Popover>
-                  </>
+                  </div>
                 )}
               </div>
               <hr className='mb-2 -mx-10 border-white/10' />
@@ -1069,7 +1069,7 @@ export default function Dashboard() {
               {/* Bottom-right corner */}
               <div className="absolute bottom-0 right-0 w-[12px] h-[0.5px] bg-white/30" />
               <div className="absolute bottom-0 right-0 w-[0.5px] h-[12px] bg-white/30" />
-              <div className="flex items-center gap-2 mb-2 relative -mt-2 pb-1">
+              <div className="flex items-center justify-between mb-2 relative -mt-2 pb-1">
                 <div className="relative">
                   <button
                     onClick={() => setShowTeamsDropdown(!showTeamsDropdown)}
@@ -1097,16 +1097,16 @@ export default function Dashboard() {
                 </div>
                 
                 {teamsPeriod === 'Custom' && (
-                  <>
+                  <div className="flex items-center gap-2">
                     <Popover>
                       <PopoverTrigger asChild>
-            <Button
-              variant="outline"
+                        <Button
+                          variant="outline"
                           className="h-6 px-2 text-xs font-mono uppercase text-gray-400 hover:text-white bg-transparent border-white/10 hover:bg-white/5"
-            >
+                        >
                           <CalendarIcon className="mr-1 h-3 w-3" />
-                          {teamsDateFrom ? format(teamsDateFrom, 'MMM dd') : 'From'}
-            </Button>
+                          {teamsDateFrom ? format(teamsDateFrom, 'MMM dd yyyy') : 'From'}
+                        </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0 bg-black border-white/10">
                         <Calendar
@@ -1126,7 +1126,7 @@ export default function Dashboard() {
                           className="h-6 px-2 text-xs font-mono uppercase text-gray-400 hover:text-white bg-transparent border-white/10 hover:bg-white/5"
                         >
                           <CalendarIcon className="mr-1 h-3 w-3" />
-                          {teamsDateTo ? format(teamsDateTo, 'MMM dd') : 'To'}
+                          {teamsDateTo ? format(teamsDateTo, 'MMM dd yyyy') : 'To'}
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0 bg-black border-white/10">
@@ -1140,7 +1140,7 @@ export default function Dashboard() {
                         />
                       </PopoverContent>
                     </Popover>
-                  </>
+                  </div>
                 )}
               </div>
               <hr className='mb-2 -mx-10 border-white/10' />
