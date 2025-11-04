@@ -667,7 +667,7 @@ export default function Dashboard() {
                         <circle
                           cx={x}
                           cy={y}
-                          r="3"
+                          r="0.5"
                           fill="white"
                           opacity={isHovered ? 1 : 0}
                           className="transition-all duration-200 ease-out"
@@ -762,7 +762,7 @@ export default function Dashboard() {
                     <span>{activeUsersPeriod}</span>
                   </button>
                   {showActiveUsersDropdown && (
-                    <div className="absolute top-6 left-0 z-10 bg-black border border-white/10 rounded-none shadow-lg">
+                    <div className="absolute top-6 left-0 w-[150px]  z-10 bg-black border border-white/10 rounded-none shadow-lg">
                       {periodOptions.map((period) => (
                         <button
                           key={period}
@@ -770,7 +770,7 @@ export default function Dashboard() {
                             setActiveUsersPeriod(period);
                             setShowActiveUsersDropdown(false);
                           }}
-                          className="block w-full text-left px-4 py-2 text-xs text-white hover:bg-white/10 transition-colors whitespace-nowrap"
+                          className="block border-b border-dashed border-white/5 w-full text-left px-4 py-2 text-xs text-white hover:bg-white/10 transition-colors whitespace-nowrap"
                         >
                           {period}
                         </button>
@@ -780,7 +780,7 @@ export default function Dashboard() {
                 </div>
                 
                 {activeUsersPeriod === 'Custom' && (
-                  <div className="flex items-center gap-2">
+                  <div className="flex h-0 items-center gap-2">
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
@@ -866,7 +866,7 @@ export default function Dashboard() {
                     <span>{newUsersPeriod}</span>
                   </button>
                   {showNewUsersDropdown && (
-                    <div className="absolute top-6 left-0 z-10 bg-black border border-white/10 rounded-none shadow-lg">
+                    <div className="absolute top-6 left-0 w-[150px]  z-10 bg-black border border-white/10 rounded-none shadow-lg">
                       {periodOptions.map((period) => (
                         <button
                           key={period}
@@ -874,7 +874,7 @@ export default function Dashboard() {
                             setNewUsersPeriod(period);
                             setShowNewUsersDropdown(false);
                           }}
-                          className="block w-full text-left px-4 py-2 text-xs text-white hover:bg-white/10 transition-colors whitespace-nowrap"
+                          className="block border-b border-dashed border-white/5 w-full text-left px-4 py-2 text-xs text-white hover:bg-white/10 transition-colors whitespace-nowrap"
                         >
                           {period}
                         </button>
@@ -884,7 +884,7 @@ export default function Dashboard() {
                 </div>
                 
                 {newUsersPeriod === 'Custom' && (
-                  <div className="flex items-center gap-2">
+                  <div className="h-0 flex items-center gap-2">
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
@@ -975,7 +975,7 @@ export default function Dashboard() {
                     <span>{organizationsPeriod}</span>
                   </button>
                   {showOrganizationsDropdown && (
-                    <div className="absolute top-6 left-0 z-10 bg-black border border-white/10 rounded-none shadow-lg">
+                    <div className="absolute top-6 left-0 w-[150px]  z-10 bg-black border border-white/10 rounded-none shadow-lg">
                       {periodOptions.map((period) => (
                         <button
                           key={period}
@@ -983,7 +983,7 @@ export default function Dashboard() {
                             setOrganizationsPeriod(period);
                             setShowOrganizationsDropdown(false);
                           }}
-                          className="block w-full text-left px-4 py-2 text-xs text-white hover:bg-white/10 transition-colors whitespace-nowrap"
+                          className="block border-b border-dashed border-white/5 w-full text-left px-4 py-2 text-xs text-white hover:bg-white/10 transition-colors whitespace-nowrap"
                         >
                           {period}
                         </button>
@@ -993,7 +993,7 @@ export default function Dashboard() {
                 </div>
                 
                 {organizationsPeriod === 'Custom' && (
-                  <div className="flex items-center gap-2">
+                  <div className="h-0 flex items-center gap-2">
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
@@ -1079,7 +1079,7 @@ export default function Dashboard() {
                     <span>{teamsPeriod}</span>
                   </button>
                   {showTeamsDropdown && (
-                    <div className="absolute top-6 left-0 z-10 bg-black border border-white/10 rounded-none shadow-lg">
+                    <div className="absolute top-6 left-0 w-[150px]  z-10 bg-black border border-white/10 rounded-none shadow-lg">
                       {periodOptions.map((period) => (
                         <button
                           key={period}
@@ -1087,7 +1087,7 @@ export default function Dashboard() {
                             setTeamsPeriod(period);
                             setShowTeamsDropdown(false);
                           }}
-                          className="block w-full text-left px-4 py-2 text-xs text-white hover:bg-white/10 transition-colors whitespace-nowrap"
+                          className="block border-b border-dashed border-white/5 w-full text-left px-4 py-2 text-xs text-white hover:bg-white/10 transition-colors whitespace-nowrap"
                         >
                           {period}
                         </button>
@@ -1097,7 +1097,7 @@ export default function Dashboard() {
                 </div>
                 
                 {teamsPeriod === 'Custom' && (
-                  <div className="flex items-center gap-2">
+                  <div className="flex h-0 items-center gap-2">
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
