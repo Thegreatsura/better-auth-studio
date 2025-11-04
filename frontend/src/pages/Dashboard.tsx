@@ -51,66 +51,106 @@ export default function Dashboard() {
   const [showNewUsersDropdown, setShowNewUsersDropdown] = useState(false);
   const [showOrganizationsDropdown, setShowOrganizationsDropdown] = useState(false);
   const [showTeamsDropdown, setShowTeamsDropdown] = useState(false);
+  const [betterAuthVersion, setBetterAuthVersion] = useState<{
+    current: string;
+    latest: string;
+    isOutdated: boolean;
+  } | null>(null);
   const { counts, loading } = useCounts();
   const navigate = useNavigate();
 
   const periodOptions = ['Daily', 'Weekly', 'Monthly', 'Yearly', 'Custom'];
 
-  // Security patches data
-  const securityPatches: SecurityPatch[] = [
-    {
+  // Security insights data - better-auth specific
+  const getSecurityPatches = (): SecurityPatch[] => {
+    const patches: SecurityPatch[] = [];
+
+    if (betterAuthVersion?.isOutdated) {
+      patches.push({
+        id: 'version-check',
+        title: `Update Better-Auth to v${betterAuthVersion.latest}`,
+        severity: 'high',
+        date: new Date().toISOString().split('T')[0],
+        description: `Your current version (v${betterAuthVersion.current}) is outdated. Update to v${betterAuthVersion.latest} to get the latest security fixes, features, and improvements. Run: npm install better-auth@latest`,
+        affectedComponents: ['All Components'],
+        status: 'pending',
+        cve: '',
+      });
+    } else if (betterAuthVersion) {
+      patches.push({
+        id: 'version-check',
+        title: `Better-Auth v${betterAuthVersion.current} (Up to date)`,
+        severity: 'low',
+        date: new Date().toISOString().split('T')[0],
+        description: `You are running the latest version of better-auth (v${betterAuthVersion.latest}). Great job keeping your dependencies up to date!`,
+        affectedComponents: ['All Components'],
+        status: 'applied',
+        cve: '',
+      });
+    }
+
+    // Add other security recommendations
+    patches.push({
       id: '1',
-      title: 'SQL Injection Vulnerability Fix',
-      severity: 'critical',
+      title: 'Session Token Rotation',
+      severity: 'high',
       date: '2024-01-15',
       description:
-        'Critical SQL injection vulnerability in user authentication module has been identified and patched. This vulnerability could allow attackers to bypass authentication and access sensitive user data.',
-      affectedComponents: ['Auth Module', 'User Service', 'Database Layer'],
+        'Ensure session tokens are rotated regularly to prevent session fixation attacks. Better-auth supports automatic token rotation on security-sensitive operations.',
+      affectedComponents: ['Session Management', 'Auth Core'],
       status: 'applied',
-      cve: 'CVE-2024-0001',
-    },
-    {
-      id: '2',
-      title: 'XSS Protection Enhancement',
-      severity: 'high',
-      date: '2024-01-12',
-      description:
-        'Enhanced cross-site scripting (XSS) protection across all input fields and user-generated content areas. Implements content security policies and input sanitization.',
-      affectedComponents: ['Frontend Components', 'API Gateway'],
-      status: 'applied',
-      cve: 'CVE-2024-0002',
-    },
-    {
-      id: '3',
-      title: 'JWT Token Expiration Update',
-      severity: 'medium',
-      date: '2024-01-10',
-      description:
-        'Updated JWT token expiration policies to improve security. Tokens now expire after 1 hour of inactivity and require re-authentication for sensitive operations.',
-      affectedComponents: ['Authentication Service', 'Session Manager'],
-      status: 'scheduled',
-    },
-    {
-      id: '4',
-      title: 'Rate Limiting Implementation',
-      severity: 'high',
-      date: '2024-01-08',
-      description:
-        'Implemented rate limiting across all API endpoints to prevent brute force attacks and DDoS attempts. Default limit set to 100 requests per minute per IP.',
-      affectedComponents: ['API Gateway', 'Load Balancer'],
-      status: 'applied',
-    },
-    {
-      id: '5',
-      title: 'Dependency Security Updates',
-      severity: 'medium',
-      date: '2024-01-05',
-      description:
-        'Updated multiple npm dependencies with known security vulnerabilities. Includes updates to react, express, and authentication libraries.',
-      affectedComponents: ['All Modules'],
-      status: 'pending',
-    },
-  ];
+      cve: '',
+    });
+
+    // patches.push({
+    //   id: '2',
+    //   title: 'CSRF Protection Enabled',
+    //   severity: 'critical',
+    //   date: '2024-01-12',
+    //   description:
+    //     'Cross-Site Request Forgery protection is enabled by default in better-auth. Verify CSRF tokens are being validated on all state-changing requests.',
+    //   affectedComponents: ['API Routes', 'Middleware'],
+    //   status: 'applied',
+    //   cve: '',
+    // });
+
+    // patches.push({
+    //   id: '3',
+    //   title: 'Rate Limiting Configuration',
+    //   severity: 'medium',
+    //   date: '2024-01-10',
+    //   description:
+    //     'Configure rate limiting for authentication endpoints to prevent brute force attacks. Better-auth provides built-in rate limiting middleware.',
+    //   affectedComponents: ['Auth Endpoints'],
+    //   status: 'pending',
+    // });
+
+    // patches.push({
+    //   id: '4',
+    //   title: 'Secure Cookie Settings',
+    //   severity: 'high',
+    //   date: '2024-01-08',
+    //   description:
+    //     'Ensure cookies are configured with secure, httpOnly, and sameSite flags. Better-auth sets secure defaults but verify your production configuration.',
+    //   affectedComponents: ['Cookie Configuration'],
+    //   status: 'applied',
+    // });
+
+    // patches.push({
+    //   id: '5',
+    //   title: 'Password Policy Enforcement',
+    //   severity: 'medium',
+    //   date: '2024-01-05',
+    //   description:
+    //     'Implement strong password policies using better-auth password validation hooks. Recommended: minimum 8 characters, mixed case, numbers, and symbols.',
+    //   affectedComponents: ['User Registration', 'Password Reset'],
+    //   status: 'pending',
+    // });
+
+    return patches;
+  };
+
+  const securityPatches = getSecurityPatches();
 
   useEffect(() => {
     // Fetch additional stats
@@ -131,6 +171,45 @@ export default function Dashboard() {
       }
     };
     fetchStats();
+  }, []);
+
+  useEffect(() => {
+    // Check better-auth version
+    const checkBetterAuthVersion = async () => {
+      try {
+        const response = await fetch('/api/version-check');
+        const data = await response.json();
+        if (data) {
+          setBetterAuthVersion({
+            current: data.current || '1.0.0',
+            latest: data.latest || '1.0.0',
+            isOutdated: data.isOutdated || false,
+          });
+        }
+      } catch (_error) {
+        // Fallback: try to get from package.json endpoint
+        try {
+          const pkgResponse = await fetch('/api/package-info');
+          const pkgData = await pkgResponse.json();
+          const current = pkgData.betterAuthVersion || '1.0.0';
+          // For now, set a mock latest version (in production, fetch from npm registry)
+          const latest = '1.5.0'; // This should be fetched from npm registry
+          setBetterAuthVersion({
+            current,
+            latest,
+            isOutdated: current !== latest,
+          });
+        } catch {
+          // Set default
+          setBetterAuthVersion({
+            current: '1.0.0',
+            latest: '1.5.0',
+            isOutdated: true,
+          });
+        }
+      }
+    };
+    checkBetterAuthVersion();
   }, []);
 
   const formatNumber = (num: number): string => {
@@ -363,7 +442,7 @@ export default function Dashboard() {
           {/* Bottom-right corner */}
           <div className="absolute bottom-0 right-0 w-[12px] h-[0.5px] bg-white/30" />
           <div className="absolute bottom-0 right-0 w-[0.5px] h-[12px] bg-white/30" />
-          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm text-white uppercase font-light">TOTAL USER</h3>
             <div className="flex items-center space-x-1">
               {['ALL', '1M', '3M', '6M', '1Y'].map((period) => (
@@ -418,7 +497,7 @@ export default function Dashboard() {
               ))}
             </div>
           </div>
-        </div>
+              </div>
 
         {/* Total Subscription Card */}
         <div className="bg-white/5 border border-white/10 p-6 relative">
@@ -729,48 +808,44 @@ export default function Dashboard() {
               <Shield className="w-5 h-5 text-white" />
               <h4 className="text-lg text-white font-light">Security Insights</h4>
             </div>
-            <span className="text-xs text-gray-400">{securityPatches.length} items</span>
           </div>
-          <div className="space-y-2 overflow-y-auto custom-scrollbar max-h-[400px]">
+          <div className="space-y-3 overflow-y-auto custom-scrollbar max-h-[400px]">
             {securityPatches.map((patch, index) => (
               <div
                 key={patch.id}
                 onClick={() => handlePatchClick(patch)}
-                className="group p-3 bg-white/[0.02] hover:bg-white/5 border border-white/10 rounded-none cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
+                className="group py-2 border-b border-white/5 cursor-pointer transition-all duration-200 hover:border-white/20"
                 style={{
                   animation: `slideIn 0.3s ease-out ${index * 0.1}s both`,
                 }}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm text-white font-medium truncate">{patch.title}</span>
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span className="text-sm text-white/90 font-light truncate group-hover:text-white transition-colors">{patch.title}</span>
                     </div>
-                    <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex items-center gap-1.5 flex-wrap">
                       <span
-                        className={`text-xs px-2 py-0.5 border rounded-none uppercase font-medium ${getSeverityColor(
+                        className={`text-[9px] px-1.5 py-0.5 border rounded-sm uppercase font-mono ${getSeverityColor(
                           patch.severity
                         )}`}
                       >
                         {patch.severity}
                       </span>
                       <span
-                        className={`text-xs px-2 py-0.5 border rounded-none capitalize ${getStatusColor(patch.status)}`}
+                        className={`text-[9px] px-1.5 py-0.5 border rounded-sm capitalize font-mono ${getStatusColor(patch.status)}`}
                       >
                         {patch.status}
                       </span>
-                      {patch.cve && (
-                        <span className="text-xs text-gray-400 font-mono">{patch.cve}</span>
-                      )}
                     </div>
                   </div>
-                  <ArrowUpRight className="w-4 h-4 text-gray-400 group-hover:text-white transition-all flex-shrink-0" />
+                  <ArrowUpRight className="w-3.5 h-3.5 text-gray-500 group-hover:text-white transition-all flex-shrink-0 mt-0.5" />
                 </div>
               </div>
             ))}
           </div>
         </div>
-      </div>
+            </div>
       </div>
     </div>
   );
