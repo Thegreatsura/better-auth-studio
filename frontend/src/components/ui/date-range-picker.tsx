@@ -1,6 +1,5 @@
 'use client';
 
-import { ChevronDownIcon } from 'lucide-react';
 import * as React from 'react';
 import type { DateRange } from 'react-day-picker';
 

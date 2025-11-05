@@ -1,5 +1,6 @@
 import {
   Building2,
+  Calendar as CalendarIcon,
   Database,
   Download,
   Edit,
@@ -12,10 +13,14 @@ import {
   X,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import type { DateRange } from 'react-day-picker';
+import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Terminal } from '../components/Terminal';
 import { Button } from '../components/ui/button';
+import { Calendar } from '../components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Pagination } from '../components/ui/pagination';
@@ -48,11 +53,19 @@ interface PluginStatus {
 export default function Organizations() {
   const navigate = useNavigate();
   const { refetchCounts } = useCounts();
+  
+  interface FilterConfig {
+    type: string;
+    value?: any;
+    dateRange?: DateRange;
+  }
+  
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [loading, setLoading] = useState(true);
   const [pluginStatus, setPluginStatus] = useState<PluginStatus | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filter, setFilter] = useState('all');
+  const [filter, _] = useState('all');
+  const [activeFilters, setActiveFilters] = useState<FilterConfig[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [organizationsPerPage] = useState(20);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -431,12 +444,49 @@ export default function Organizations() {
     toast.success(`Exported ${organizations.length} organizations to CSV`);
   };
 
+  const addFilter = (filterType: string) => {
+    if (activeFilters.some((f) => f.type === filterType)) return;
+    setActiveFilters([...activeFilters, { type: filterType }]);
+  };
+
+  const removeFilter = (filterType: string) => {
+    setActiveFilters(activeFilters.filter((f) => f.type !== filterType));
+  };
+
+  const clearFilters = () => {
+    setActiveFilters([]);
+  };
+
+  const updateFilterDateRange = (filterType: string, dateRange: DateRange | undefined) => {
+    setActiveFilters((prev) =>
+      prev.map((f) => (f.type === filterType ? { ...f, dateRange } : f))
+    );
+  };
+
   const filteredOrganizations = organizations.filter((organization) => {
     const matchesSearch =
       organization.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       organization.slug.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filter === 'all' || organization.metadata?.status === filter;
-    return matchesSearch && matchesFilter;
+
+    if (activeFilters.length === 0) {
+      return matchesSearch;
+    }
+
+    const matchesFilters = activeFilters.every((filter) => {
+      switch (filter.type) {
+        case 'createdAt': {
+          if (!filter.dateRange?.from && !filter.dateRange?.to) return true;
+          const orgDate = new Date(organization.createdAt);
+          if (filter.dateRange?.from && filter.dateRange.from > orgDate) return false;
+          if (filter.dateRange?.to && filter.dateRange.to < orgDate) return false;
+          return true;
+        }
+        default:
+          return true;
+      }
+    });
+
+    return matchesSearch && matchesFilters;
   });
 
   const totalPages = Math.ceil(filteredOrganizations.length / organizationsPerPage);
@@ -450,7 +500,7 @@ export default function Organizations() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-32">
+      <div className="flex min-h-screen items-center justify-center h-full">
         <div className="flex flex-col items-center space-y-3">
           <Loader className="w-6 h-6 text-white animate-spin" />
           <div className="text-white text-sm">Loading organizations...</div>
@@ -565,8 +615,15 @@ export default function Organizations() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl text-white font-light">Organizations ({organizations.length})</h1>
-          <p className="text-gray-400 mt-1">Manage your organizations and teams</p>
+          <h1 className="text-2xl relative text-white font-light inline-flex items-start">
+            Organizations
+            <sup className="text-xs text-gray-500 ml-1 mt-0">
+              <span className='mr-1'>[</span>
+              <span className='text-white font-mono text-sm'>{organizations.length}</span>
+              <span className='ml-1'>]</span>
+            </sup>
+          </h1>
+          <p className="text-gray-400 font-light text-sm mt-1 uppercase font-mono">Manage your organizations and teams</p>
         </div>
         <div className="flex items-center space-x-3">
           <Button
@@ -583,13 +640,7 @@ export default function Organizations() {
             <Database className="w-4 h-4 mr-2" />
             Seed
           </Button>
-          <Button
-            className="border border-dashed border-white/20 text-white hover:bg-white/10 bg-transparent rounded-none"
-            onClick={() => setShowCreateTeamModal(true)}
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Create Team
-          </Button>
+          
           <Button
             className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none"
             onClick={() => setShowCreateModal(true)}
@@ -601,30 +652,113 @@ export default function Organizations() {
       </div>
 
       {/* Filters */}
-      <div className="flex items-center space-x-4">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <Input
-            placeholder="Search organizations..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 border border-dashed border-white/20 bg-black/30 text-white rounded-none"
-          />
+      <div className="space-y-4">
+        <div className="flex items-center space-x-4">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Input
+              placeholder="Search organizations..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 border border-dashed border-white/20 bg-black/30 text-white rounded-none"
+            />
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Select value="add-filter" onValueChange={addFilter}>
+              <SelectTrigger className="w-[180px]">
+                <div className="flex items-center space-x-2">
+                  <Filter className="w-4 h-4 text-gray-400" />
+                  <span>Add Filter</span>
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                {!activeFilters.some((f) => f.type === 'createdAt') && (
+                  <SelectItem value="createdAt">Created Date</SelectItem>
+                )}
+              </SelectContent>
+            </Select>
+          </div>
+          {activeFilters.length > 0 && (
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={clearFilters}
+                className="text-xs text-gray-400 hover:text-white"
+              >
+                Clear All
+              </Button>
+            </div>
+          )}
         </div>
 
-        <div className="flex items-center space-x-2">
-          <Filter className="w-4 h-4 text-gray-400" />
-          <Select value={filter} onValueChange={setFilter}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="inactive">Inactive</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        {/* Active Filters */}
+        {activeFilters.length > 0 && (
+          <div className="flex flex-wrap items-center gap-3">
+            {activeFilters.map((filter, index) => (
+              <div
+                key={index}
+                className="flex items-center gap-2 bg-black/30 border border-white/10 rounded-none px-3 py-2"
+              >
+                {filter.type === 'createdAt' && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-white">Created:</span>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="h-8 px-3 text-xs font-mono uppercase text-gray-400 hover:text-white bg-transparent border-white/10 hover:bg-white/5"
+                        >
+                          <CalendarIcon className="mr-1 h-3 w-3" />
+                          {filter.dateRange?.from ? format(filter.dateRange.from, 'MMM dd yyyy') : 'From'}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0 bg-black border-white/10">
+                        <Calendar
+                          mode="single"
+                          selected={filter.dateRange?.from}
+                          onSelect={(date) => updateFilterDateRange('createdAt', { from: date, to: filter.dateRange?.to })}
+                          initialFocus
+                          className="rounded-none"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="h-8 px-3 text-xs font-mono uppercase text-gray-400 hover:text-white bg-transparent border-white/10 hover:bg-white/5"
+                        >
+                          <CalendarIcon className="mr-1 h-3 w-3" />
+                          {filter.dateRange?.to ? format(filter.dateRange.to, 'MMM dd yyyy') : 'To'}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0 bg-black border-white/10">
+                        <Calendar
+                          mode="single"
+                          selected={filter.dateRange?.to}
+                          onSelect={(date) => updateFilterDateRange('createdAt', { from: filter.dateRange?.from, to: date })}
+                          initialFocus
+                          disabled={(date) => filter.dateRange?.from ? date < filter.dateRange.from : false}
+                          className="rounded-none"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                )}
+
+                <button
+                  onClick={() => removeFilter(filter.type)}
+                  className="text-gray-400 hover:text-white ml-2"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Organizations Table */}
@@ -846,81 +980,6 @@ export default function Organizations() {
                 className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none"
               >
                 Close
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Create Team Modal */}
-      {showCreateTeamModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-black/90 border border-dashed border-white/20 p-6 w-full max-w-md rounded-none">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg text-white font-light">Create Team</h3>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowCreateTeamModal(false)}
-                className="text-gray-400 hover:text-white rounded-none"
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="team-name" className="text-sm text-gray-400 font-light">
-                  Team Name
-                </Label>
-                <Input
-                  id="team-name"
-                  value={createTeamFormData.name}
-                  onChange={(e) =>
-                    setCreateTeamFormData((prev) => ({ ...prev, name: e.target.value }))
-                  }
-                  placeholder="Enter team name"
-                  className="mt-1 border border-dashed border-white/20 bg-black/30 text-white rounded-none"
-                />
-              </div>
-              <div>
-                <Label htmlFor="team-organization" className="text-sm text-gray-400 font-light">
-                  Organization
-                </Label>
-                <Select
-                  value={createTeamFormData.organizationId}
-                  onValueChange={(value) =>
-                    setCreateTeamFormData((prev) => ({ ...prev, organizationId: value }))
-                  }
-                >
-                  <SelectTrigger className="mt-1 border border-dashed border-white/20 bg-black/30 text-white rounded-none">
-                    <SelectValue placeholder="Select organization" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {organizations.map((org) => (
-                      <SelectItem key={org.id} value={org.id}>
-                        {org.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="flex justify-end space-x-3 mt-6">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setShowCreateTeamModal(false);
-                  setCreateTeamFormData({ name: '', organizationId: '' });
-                }}
-                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleCreateTeam}
-                className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none"
-              >
-                Create
               </Button>
             </div>
           </div>

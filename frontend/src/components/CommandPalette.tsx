@@ -155,7 +155,7 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start justify-center pt-[20vh] z-50">
-      <div className="bg-black/90 border border-dashed border-white/20 rounded-none w-full max-w-2xl mx-4">
+      <div className="bg-black/90 border border-white/10 rounded-none w-full max-w-2xl mx-4">
         <Command className="p-2">
           <div className="flex items-center border-b border-dashed border-white/10 px-3 pb-3">
             <Search className="w-4 h-4 text-gray-400 mr-3" />

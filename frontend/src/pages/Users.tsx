@@ -499,7 +499,7 @@ export default function Users() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-32">
+      <div className="flex min-h-screen items-center justify-center h-full">
         <div className="flex flex-col items-center space-y-3">
           <Loader className="w-6 h-6 text-white animate-spin" />
           <div className="text-white text-sm">Loading users...</div>
@@ -507,7 +507,6 @@ export default function Users() {
       </div>
     );
   }
-
   return (
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
@@ -520,7 +519,7 @@ export default function Users() {
               <span className='ml-1'>]</span>
             </sup>
           </h1>
-          <p className="text-gray-400 mt-1">Manage your application users</p>
+          <p className="text-gray-400 font-light text-sm mt-1 uppercase font-mono">Manage your application users</p>
           <div className="flex items-center space-x-4 mt-2">
             {bannedCount > 0 && (
               <span className="text-sm text-red-400 flex items-center space-x-1">
