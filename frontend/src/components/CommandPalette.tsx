@@ -146,16 +146,28 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
     };
 
     if (isOpen) {
+      // Prevent background scroll when command palette is open
+      document.body.style.overflow = 'hidden';
       document.addEventListener('keydown', handleEscape);
-      return () => document.removeEventListener('keydown', handleEscape);
+      
+      return () => {
+        document.body.style.overflow = 'unset';
+        document.removeEventListener('keydown', handleEscape);
+      };
     }
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-start justify-center pt-[20vh] z-50">
-      <div className="bg-black/90 border border-white/10 rounded-none w-full max-w-2xl mx-4">
+    <div 
+      className="fixed inset-0 bg-black/50 flex items-start justify-center pt-[20vh] z-50 overflow-hidden"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-black/90 overflow-hidden border border-white/10 rounded-none w-full max-w-2xl mx-4"
+        onClick={(e) => e.stopPropagation()}
+      >
         <Command className="p-2">
           <div className="flex items-center border-b border-dashed border-white/10 px-3 pb-3">
             <Search className="w-4 h-4 text-gray-400 mr-3" />
@@ -163,7 +175,7 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
               value={search}
               onValueChange={setSearch}
               placeholder="Search for actions, pages, or commands..."
-              className="flex-1 bg-transparent text-white placeholder-gray-400 outline-none"
+              className="flex-1 placeholder:text-xs bg-transparent text-white placeholder-gray-400 outline-none"
               autoFocus
             />
             <kbd className="hidden sm:inline-flex items-center px-2 py-1 text-xs text-gray-400 border border-dashed border-white/20 rounded-sm">
@@ -195,12 +207,12 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
                             command.action();
                             onClose();
                           }}
-                          className="flex items-center space-x-3 px-3 py-2 rounded-none hover:bg-white/5 cursor-pointer transition-colors"
+                          className="flex items-center space-x-3 px-0 py-2 rounded-none hover:bg-white/5 cursor-pointer transition-colors"
                         >
                           <Icon className="w-4 h-4 text-white" />
                           <div className="flex-1">
-                            <div className="text-white font-light">{command.title}</div>
-                            <div className="text-sm text-gray-400">{command.description}</div>
+                            <div className="text-white text-[13px] font-light">{command.title}</div>
+                            <div className="text-[10px] font-light uppercase font-mono text-gray-400">{command.description}</div>
                           </div>
                           <ArrowRight className="w-4 h-4 text-gray-400" />
                         </Command.Item>

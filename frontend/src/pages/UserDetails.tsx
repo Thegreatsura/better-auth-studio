@@ -540,8 +540,7 @@ export default function UserDetails() {
   return (
     <div className="min-h-screen bg-black w-full">
       <div className="w-full flex flex-col px-6 py-8">
-        <Button
-          variant="outline"
+        <span
           onClick={() => navigate('/users')}
           className="mb-4 ml-0 flex justify-start items-start text-left border-none text-white"
         >
@@ -549,7 +548,7 @@ export default function UserDetails() {
             <span className='uppercase text-white/80 font-mono text-sm'>users / </span>
             <span className='text-white font-mono text-sm'>{user.id}</span>
           </span>
-        </Button>
+        </span>
         {/* {user.banned && (
           <div className="mb-6 border-l-4 border-red-500 bg-red-500/10 p-4">
             <div className="flex items-start space-x-3">
@@ -679,9 +678,9 @@ export default function UserDetails() {
                     : 'border-transparent text-gray-400 hover:text-white hover:border-white/50'
                     }`}
                 >
-                  <tab.icon className="w-4 h-4" />
+                  <tab.icon className="w-4 h-4 text-white/90" />
                   <span className="inline-flex items-start">
-                    {tab.name}
+                    <span className="">{tab.name}</span>
                     {tab.count !== undefined && (
                       <sup className="text-xs text-gray-500 ml-1">
                         <span className='mr-0.5'>[</span>
@@ -1164,9 +1163,18 @@ export default function UserDetails() {
       {/* Session Seed Modal */}
       {showSessionSeedModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-black/90 border border-dashed border-white/20 p-6 w-full max-w-2xl rounded-none">
+          <div className="overflow-x-hidden bg-black/90 border border-white/10 p-6 w-full pt-4 max-w-2xl rounded-none">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg text-white font-light">Seed Sessions</h3>
+              <h3 className="text-sm text-white flex items-center justify-center font-light uppercase">
+                <span className='text-white/50 mr-2'>
+                  [
+                </span>
+                <Monitor className="inline mr-2 w-3 h-3 text-white" />
+                <span className='font-mono text-white/70 uppercase'>Seed Sessions</span>
+                <span className='text-white/50 ml-2'>
+                  ]
+                </span>
+              </h3>
               <Button
                 variant="ghost"
                 size="sm"
@@ -1176,14 +1184,12 @@ export default function UserDetails() {
                 <X className="w-4 h-4" />
               </Button>
             </div>
+            <hr className="border-white/10 -mx-10 border-dashed -mt-4 mb-4" />
             <div className="space-y-6">
+              {/* Session Seeding */}
               <div className="space-y-4">
-                <div className="flex items-center space-x-2">
-                  <Clock className="w-5 h-5 text-white" />
-                  <h4 className="text-white font-light">Create Sessions for {user?.name}</h4>
-                </div>
-                <div className="space-y-3">
-                  <div>
+                <div className="flex items-center space-x-3">
+                  <div className="flex-1">
                     <Label htmlFor="session-count" className="text-sm text-gray-400 font-light">
                       Number of sessions
                     </Label>
@@ -1196,9 +1202,29 @@ export default function UserDetails() {
                       className="mt-1 border border-dashed border-white/20 bg-black/30 text-white rounded-none"
                     />
                   </div>
-                  <p className="text-xs text-gray-400">
-                    Each session will have a unique token, IP address, and 7-day expiration.
-                  </p>
+                  <Button
+                    onClick={() => {
+                      const count = parseInt(
+                        (document.getElementById('session-count') as HTMLInputElement)?.value || '3',
+                        10
+                      );
+                      handleSeedSessions(count);
+                    }}
+                    disabled={isSeeding}
+                    className="bg-transparent hover:bg-white/90 bg-white text-black border border-white/20 rounded-none mt-6 disabled:opacity-50"
+                  >
+                    {isSeeding ? (
+                      <>
+                        <Loader className="w-3 h-3 mr-2 animate-spin" />
+                        Seeding...
+                      </>
+                    ) : (
+                      <>
+                        <Database className="w-3 h-3 mr-2" />
+                        Seed Sessions
+                      </>
+                    )}
+                  </Button>
                 </div>
               </div>
 
@@ -1209,41 +1235,19 @@ export default function UserDetails() {
                     lines={seedingLogs}
                     isRunning={isSeeding}
                     className="w-full"
-                    defaultCollapsed={false}
+                    defaultCollapsed={true}
                   />
                 </div>
               )}
             </div>
-            <div className="flex justify-end space-x-2 mt-6 pt-6 border-t border-dashed border-white/10">
+            <hr className="border-white/10 -mx-10 border-dashed mt-10" />
+            <div className="flex justify-end mt-6 pt-6">
               <Button
                 variant="outline"
                 onClick={() => setShowSessionSeedModal(false)}
                 className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none"
               >
-                Cancel
-              </Button>
-              <Button
-                onClick={() => {
-                  const count = parseInt(
-                    (document.getElementById('session-count') as HTMLInputElement)?.value || '3',
-                    10
-                  );
-                  handleSeedSessions(count);
-                }}
-                disabled={isSeeding}
-                className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none disabled:opacity-50"
-              >
-                {isSeeding ? (
-                  <>
-                    <Loader className="w-4 h-4 mr-2 animate-spin" />
-                    Seeding...
-                  </>
-                ) : (
-                  <>
-                    <Database className="w-4 h-4 mr-2" />
-                    Seed Sessions
-                  </>
-                )}
+                Close
               </Button>
             </div>
           </div>

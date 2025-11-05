@@ -600,7 +600,7 @@ export default function Users() {
                 Clear all
               </Button>
             </div>
-            )}
+          )}
         </div>
 
         {/* Active Filters */}
@@ -685,7 +685,7 @@ export default function Users() {
                           />
                         </PopoverContent>
                       </Popover>
-                      
+
                       <Popover>
                         <PopoverTrigger asChild>
                           <Button
@@ -789,9 +789,8 @@ export default function Users() {
                 currentUsers.map((user) => (
                   <tr
                     key={user.id}
-                    className={`border-b border-dashed hover:bg-white/5 cursor-pointer ${
-                      user.banned ? 'border-red-500/30 bg-red-500/5' : 'border-white/5'
-                    }`}
+                    className={`border-b border-dashed hover:bg-white/5 cursor-pointer ${user.banned ? 'border-red-500/30 bg-red-500/5' : 'border-white/5'
+                      }`}
                     onClick={() => navigate(`/users/${user.id}`)}
                   >
                     <td className="py-4 px-4">
@@ -803,9 +802,8 @@ export default function Users() {
                               `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`
                             }
                             alt={user.name}
-                            className={`w-10 h-10 rounded-none border border-dashed ${
-                              user.banned ? 'border-red-400/50 opacity-60' : 'border-white/20'
-                            }`}
+                            className={`w-10 h-10 rounded-none border border-dashed ${user.banned ? 'border-red-400/50 opacity-60' : 'border-white/20'
+                              }`}
                           />
                           {user.banned && (
                             <div className="absolute -top-1 -right-1 bg-red-500 rounded-full p-0.5">
@@ -956,9 +954,18 @@ export default function Users() {
       {/* Seed Modal */}
       {showSeedModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-black/90 border border-dashed border-white/20 p-6 w-full max-w-2xl rounded-none">
+          <div className="overflow-x-hidden bg-black/90 border border-white/10 p-6 w-full pt-4 max-w-2xl rounded-none">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg text-white font-light">Seed Data</h3>
+              <h3 className="text-sm text-white flex items-center justify-center font-light uppercase">
+                <span className='text-white/50 mr-2'>
+                  [
+                </span>
+                  <UsersIcon className="inline mr-2 w-3 h-3 text-white" />
+                <span className='font-mono text-white/70 uppercase'>Seed User</span>
+                <span className='text-white/50 ml-2'>
+                  ]
+                </span>
+              </h3>
               <Button
                 variant="ghost"
                 size="sm"
@@ -968,12 +975,12 @@ export default function Users() {
                 <X className="w-4 h-4" />
               </Button>
             </div>
+            <hr className="border-white/10 -mx-10 border-dashed -mt-4 mb-4" />
             <div className="space-y-6">
               {/* User Seeding */}
               <div className="space-y-4">
                 <div className="flex items-center space-x-2">
-                  <UsersIcon className="w-5 h-5 text-white" />
-                  <h4 className="text-white font-light">Seed Users</h4>
+                  {/* <h4 className="text-white font-light">Seed Users</h4> */}
                 </div>
                 <div className="flex items-center space-x-3">
                   <div className="flex-1">
@@ -1027,7 +1034,8 @@ export default function Users() {
                 </div>
               )}
             </div>
-            <div className="flex justify-end mt-6 pt-6 border-t border-dashed border-white/10">
+            <hr className="border-white/10 -mx-10 border-dashed mt-10" />
+            <div className="flex justify-end mt-6 pt-6">
               <Button
                 variant="outline"
                 onClick={() => setShowSeedModal(false)}
@@ -1040,10 +1048,9 @@ export default function Users() {
         </div>
       )}
 
-      {/* Create User Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-black/90 border border-dashed border-white/20 p-6 w-full max-w-md rounded-none">
+          <div className="bg-black/90 border border-white/10 p-6 w-full max-w-md rounded-none">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg text-white font-light">Create User</h3>
               <Button
