@@ -95,7 +95,7 @@ export default function Layout({ children }: LayoutProps) {
                 type="text"
                 placeholder="Search..."
                 onClick={() => setIsCommandPaletteOpen(true)}
-                className="pl-10 pr-4 py-2  bg-black border rounded-none border-gray-600 text-white border-dashed border-white/10 focus:ring-2 focus:ring-white focus:border-transparent transition-colors placeholder-gray-400 cursor-pointer"
+                className="pl-10 pr-4 py-2  bg-black border rounded-none border-gray-600 text-white border-dashed border-white/20 focus:ring-2 focus:ring-white focus:border-transparent transition-colors placeholder-gray-400 cursor-pointer"
                 readOnly
               />
               <kbd className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs text-gray-400 border border-dashed border-white/10 rounded-sm px-1.5 py-0.5">

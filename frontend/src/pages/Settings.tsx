@@ -2,7 +2,6 @@ import {
   AlertTriangle,
   Bell,
   CheckCircle,
-  ChevronRight,
   Clock,
   Database,
   Eye,

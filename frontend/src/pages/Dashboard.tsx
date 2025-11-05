@@ -4,6 +4,7 @@ import {
   BarChart3,
   Building2,
   ChevronDown,
+  Copy,
   Database,
   Settings,
   Users,
@@ -20,6 +21,7 @@ import {
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import {
@@ -95,7 +97,7 @@ export default function Dashboard() {
         title: `Update Better-Auth to v${betterAuthVersion.latest}`,
         severity: 'high',
         date: new Date().toISOString().split('T')[0],
-        description: `Your current version (v${betterAuthVersion.current}) is outdated. Update to v${betterAuthVersion.latest} to get the latest security fixes, features, and improvements. Run: npm install better-auth@latest`,
+        description: `Your current version is outdated. Update to the latest version to get the latest security fixes, features, and improvements. Run: \`npm install better-auth@latest\``,
         affectedComponents: ['All Components'],
         status: 'pending',
         cve: '',
@@ -775,21 +777,21 @@ export default function Dashboard() {
                           {period}
                         </button>
                       ))}
-                    </div>
+              </div>
                   )}
-                </div>
+            </div>
                 
                 {activeUsersPeriod === 'Custom' && (
                   <div className="flex h-0 items-center gap-2">
                     <Popover>
                       <PopoverTrigger asChild>
-                        <Button
+            <Button 
                           variant="outline"
                           className="h-6 px-2 text-xs font-mono uppercase text-gray-400 hover:text-white bg-transparent border-white/10 hover:bg-white/5"
-                        >
+            >
                           <CalendarIcon className="mr-1 h-3 w-3" />
                           {activeUsersDateFrom ? format(activeUsersDateFrom, 'MMM dd yyyy') : 'From'}
-                        </Button>
+            </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0 bg-black border-white/10">
                         <Calendar
@@ -823,9 +825,9 @@ export default function Dashboard() {
                         />
                       </PopoverContent>
                     </Popover>
-                  </div>
-                )}
               </div>
+                )}
+            </div>
               <hr className='mb-2 -mx-10 border-white/10' />
               <h4 className="text-md text-white/80 uppercase font-mono font-light mb-1">Active Users</h4>
               <p className="text-xs text-gray-400 mb-3">Users with active session in the time frame</p>
@@ -887,13 +889,13 @@ export default function Dashboard() {
                   <div className="h-0 flex items-center gap-2">
                     <Popover>
                       <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
+            <Button
+              variant="outline"
                           className="h-6 px-2 text-xs font-mono uppercase text-gray-400 hover:text-white bg-transparent border-white/10 hover:bg-white/5"
-                        >
+            >
                           <CalendarIcon className="mr-1 h-3 w-3" />
                           {newUsersDateFrom ? format(newUsersDateFrom, 'MMM dd yyyy') : 'From'}
-                        </Button>
+            </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0 bg-black border-white/10">
                         <Calendar
@@ -927,9 +929,9 @@ export default function Dashboard() {
                         />
                       </PopoverContent>
                     </Popover>
-                  </div>
-                )}
               </div>
+                )}
+            </div>
               <hr className='mb-2 -mx-10 border-white/10' />
               <h4 className="text-md text-white/80 uppercase font-mono font-light mb-1">New Users</h4>
               <p className="text-xs text-gray-400 mb-3">
@@ -996,13 +998,13 @@ export default function Dashboard() {
                   <div className="h-0 flex items-center gap-2">
                     <Popover>
                       <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
+            <Button
+              variant="outline"
                           className="h-6 px-2 text-xs font-mono uppercase text-gray-400 hover:text-white bg-transparent border-white/10 hover:bg-white/5"
-                        >
+            >
                           <CalendarIcon className="mr-1 h-3 w-3" />
                           {organizationsDateFrom ? format(organizationsDateFrom, 'MMM dd yyyy') : 'From'}
-                        </Button>
+            </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0 bg-black border-white/10">
                         <Calendar
@@ -1036,9 +1038,9 @@ export default function Dashboard() {
                         />
                       </PopoverContent>
                     </Popover>
-                  </div>
-                )}
               </div>
+                )}
+            </div>
               <hr className='mb-2 -mx-10 border-white/10' />
               <h4 className="text-md text-white/80 uppercase font-mono font-light mb-1">Organizations</h4>
               <p className="text-xs text-gray-400 mb-3">Total organizations in the time frame</p>
@@ -1100,13 +1102,13 @@ export default function Dashboard() {
                   <div className="flex h-0 items-center gap-2">
                     <Popover>
                       <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
+            <Button
+              variant="outline"
                           className="h-6 px-2 text-xs font-mono uppercase text-gray-400 hover:text-white bg-transparent border-white/10 hover:bg-white/5"
-                        >
+            >
                           <CalendarIcon className="mr-1 h-3 w-3" />
                           {teamsDateFrom ? format(teamsDateFrom, 'MMM dd yyyy') : 'From'}
-                        </Button>
+            </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0 bg-black border-white/10">
                         <Calendar
@@ -1503,7 +1505,37 @@ export default function Dashboard() {
               {/* Description */}
               <div>
                 <h4 className="text-sm text-gray-400 uppercase tracking-wide mb-2">Description</h4>
-                <p className="text-white leading-relaxed">{selectedPatch.description}</p>
+                {selectedPatch.description.includes('npm install') ? (
+                  <div>
+                    <p className="text-white leading-relaxed mb-3">
+                      {selectedPatch.description.split('Run:')[0]}
+                    </p>
+                    <div className="relative group">
+                      <div className="bg-black border border-white/20 rounded-none p-3 font-mono text-sm">
+                        <div className="flex items-center justify-between">
+                          <code>
+                            <span className="text-green-400">$</span>{' '}
+                            <span className="text-cyan-400">npm</span>{' '}
+                            <span className="text-yellow-400">install</span>{' '}
+                            <span className="text-white">better-auth@latest</span>
+                          </code>
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText('npm install better-auth@latest');
+                              toast.success('Command copied to clipboard');
+                            }}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-white/10 rounded"
+                            title="Copy command"
+                          >
+                            <Copy className="w-4 h-4 text-gray-400 hover:text-white" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-white leading-relaxed">{selectedPatch.description}</p>
+                )}
               </div>
 
               {/* Affected Components */}
@@ -1575,11 +1607,6 @@ export default function Dashboard() {
                 >
                   Close
                 </Button>
-                {selectedPatch.status === 'pending' && (
-                  <Button className="bg-white text-black hover:bg-gray-200 rounded-none">
-                    Apply Patch
-                  </Button>
-                )}
               </div>
             </div>
           </div>
