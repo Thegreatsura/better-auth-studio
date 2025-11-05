@@ -1161,7 +1161,7 @@ export default function Dashboard() {
           </div>
 
           {/* Right Column - Security Insights */}
-          <div className="bg-white/5 border border-white/10 p-6 relative rounded-none flex flex-col">
+          <div className="bg-white/5 border border-white/10 p-6 pt-4 overflow-hidden relative rounded-none flex flex-col">
             {/* Top-left corner */}
             <div className="absolute top-0 left-0 w-[12px] h-[0.5px] bg-white/30" />
             <div className="absolute top-0 left-0 w-[0.5px] h-[12px] bg-white/30" />
@@ -1176,10 +1176,11 @@ export default function Dashboard() {
             <div className="absolute bottom-0 right-0 w-[0.5px] h-[12px] bg-white/30" />
             <div className="flex items-center justify-between mb-4 flex-shrink-0">
               <div className="flex items-center gap-2">
-                <Shield className="w-5 h-5 text-white" />
-                <h4 className="text-lg text-white font-light">Security Insights</h4>
+                <Shield className="w-4 h-4 text-white/60" />
+                <h4 className="text-xs text-gray-400 uppercase font-mono font-light">Security Insights</h4>
               </div>
             </div>
+            <hr className='-mx-10 -mt-1 border-white/10' />
             <div className="space-y-3 overflow-y-auto custom-scrollbar max-h-[400px]">
               {securityPatches.map((patch, index) => (
                 <div
