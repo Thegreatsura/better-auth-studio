@@ -576,7 +576,7 @@ export default function UserDetails() {
                     <span className='ml-1'>]</span>
                   </sup>
                   {user.banned && (
-                    <sup className="ml-2 px-2 pt-2 py-0.5 text-[10px] font-mono uppercase border border-dashed border-red-500/30 bg-red-500/10 text-red-400/80 rounded-none">
+                    <sup className="ml-2 px-2 pt-2 pb-2 -mt-1 py-0.5 text-[10px] font-mono uppercase border border-dashed border-red-500/30 bg-red-500/10 text-red-400/80 rounded-none">
                       Banned
                     </sup>
                   )}

@@ -504,7 +504,6 @@ export function createRoutes(authConfig, configPath, geoDbPath) {
                         const plugins = betterAuthConfig.plugins || [];
                         const organizationPlugin = plugins.find((plugin) => plugin.id === 'organization');
                         organizationPluginEnabled = !!organizationPlugin;
-                        console.log({ organizationPlugin });
                         teamsPluginEnabled = !!organizationPlugin?.options?.teams?.enabled;
                         if (organizationPlugin) {
                             teamsPluginEnabled = organizationPlugin.options?.teams?.enabled === true;
@@ -516,7 +515,6 @@ export function createRoutes(authConfig, configPath, geoDbPath) {
                 organizationPluginEnabled = false;
                 teamsPluginEnabled = false;
             }
-            console.log({ teamsPluginEnabled, organizationPluginEnabled });
             if (adapter) {
                 try {
                     if (typeof adapter.findMany === 'function') {
