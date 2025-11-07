@@ -1703,54 +1703,6 @@ export default function Dashboard() {
 
   return (
     <div className="h-screen bg-black text-white overflow-hidden flex flex-col" style={{ overflowX: 'hidden' }}>
-      {/* Navigation */}
-      {/* <div className="border-b border-dashed border-white/10">
-        <div className="px-6 py-4">
-          <div className="flex items-center space-x-8">
-            <button
-              onClick={() => setActiveTab('overview')}
-              className={`pb-3 px-1 border-b-2 font-light text-sm transition-colors ${
-                activeTab === 'overview'
-                  ? 'border-white text-white'
-                  : 'border-transparent text-white/60 hover:text-white/80'
-              }`}
-            >
-              Overview
-            </button>
-            <button
-              onClick={() => setActiveTab('users')}
-              className={`pb-3 px-1 border-b-2 font-light text-sm transition-colors ${
-                activeTab === 'users'
-                  ? 'border-white text-white'
-                  : 'border-transparent text-white/60 hover:text-white/80'
-              }`}
-            >
-              Users
-            </button>
-            <button
-              onClick={() => setActiveTab('organizations')}
-              className={`pb-3 px-1 border-b-2 font-light text-sm transition-colors ${
-                activeTab === 'organizations'
-                  ? 'border-white text-white'
-                  : 'border-transparent text-white/60 hover:text-white/80'
-              }`}
-            >
-              Organizations
-            </button>
-            <button
-              onClick={() => setActiveTab('sessions')}
-              className={`pb-3 px-1 border-b-2 font-light text-sm transition-colors ${
-                activeTab === 'sessions'
-                  ? 'border-white text-white'
-                  : 'border-transparent text-white/60 hover:text-white/80'
-              }`}
-            >
-              Sessions
-            </button>
-          </div>
-        </div>
-      </div> */}
-
       {/* Tab Content */}
       <div className="flex-1 overflow-hidden">
       {activeTab === 'overview' ? (

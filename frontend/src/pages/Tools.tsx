@@ -474,10 +474,6 @@ export default function Tools() {
             activePolls.current.add(sessionId);
         }
 
-        // if (attempt === 0) {
-        //   logSessionMessage(sessionId, 'progress', 'waiting', '🔁 Waiting for Better Auth to finalize the OAuth flow...', 'running');
-        // }
-        // console.log("pulling event:", sessionId, provider, attempt);
         fetch(`/api/tools/oauth/status?testSessionId=${encodeURIComponent(sessionId)}`)
             .then((response) => response.json())
             .then((data) => {
@@ -751,10 +747,7 @@ export default function Tools() {
                         const storedResult = sessionStorage.getItem(`oauth_test_result_${testSession.testSessionId}`);
                         if (!storedResult && !completionHandled) {
                             completionHandled = true;
-                            //   logSessionMessage(testSession.testSessionId, 'info', 'popup-closed', '🔍 Popup closed. Verifying status with Better Auth...', 'running');
-                            //   if (!activePolls.current.has(testSession.testSessionId)) {
                             pollOAuthStatus(testSession.testSessionId, testSession.provider);
-                            //   }
                         }
                     }
                 }, 500);
@@ -867,9 +860,6 @@ export default function Tools() {
         addLog('info', 'Validating Better Auth configuration...', 'running');
 
         try {
-            //   const response = await fetch('/api/config');
-            //   const data = await response.json();
-
             await new Promise((resolve) => setTimeout(resolve, 500));
             addLog('progress', 'Checking database connection...', 'running');
             await new Promise((resolve) => setTimeout(resolve, 500));
@@ -946,28 +936,6 @@ export default function Tools() {
             setRunningTool(null);
         }
     };
-    // const handleExportData = async () => {
-    //     setRunningTool('export-data');
-    //     setShowLogs(true);
-    //     setToolLogs([]);
-
-    //     addLog('info', 'Preparing data export...', 'running');
-
-    //     try {
-    //         await new Promise((resolve) => setTimeout(resolve, 1000));
-    //         addLog('progress', 'Exporting users data...', 'running');
-    //         await new Promise((resolve) => setTimeout(resolve, 800));
-    //         addLog('progress', 'Exporting organizations data...', 'running');
-    //         await new Promise((resolve) => setTimeout(resolve, 600));
-    //         addLog('success', '✅ Data export completed!', 'completed');
-    //         toast.success('Data export completed');
-    //     } catch (error) {
-    //         addLog('error', `❌ Export failed: ${error}`, 'failed');
-    //         toast.error('Data export failed');
-    //     } finally {
-    //         setRunningTool(null);
-    //     }
-    // };
     const handleHealthCheck = async () => {
         setRunningTool('health-check');
         setShowLogs(true);

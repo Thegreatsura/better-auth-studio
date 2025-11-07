@@ -8,7 +8,7 @@ import { getAuthData } from './data.js';
 import { initializeGeoService, resolveIPLocation, setGeoDbPath } from './geo-service.js';
 import { detectDatabaseWithDialect } from './utils/database-detection.js';
 import { scryptAsync } from "@noble/hashes/scrypt.js";
-// @ts-ignoree
+// @ts-ignore
 import { hex } from "@better-auth/utils/hex";
 const config = {
     N: 16384,
@@ -243,7 +243,6 @@ export function createRoutes(authConfig, configPath, geoDbPath) {
                 }
             }
             catch (error) {
-                // Fallback: Try to find better-auth in package.json
                 try {
                     const packageJsonPath = join(projectRoot, 'package.json');
                     if (existsSync(packageJsonPath)) {
@@ -256,20 +255,18 @@ export function createRoutes(authConfig, configPath, geoDbPath) {
                 }
                 catch { }
             }
-            let latestVersion = currentVersion; // Default to current if fetch fails
+            let latestVersion = currentVersion;
             let isOutdated = false;
             try {
                 const npmResponse = await fetch('https://registry.npmjs.org/better-auth/latest');
                 if (npmResponse.ok) {
                     const npmData = await npmResponse.json();
                     latestVersion = npmData.version || currentVersion;
-                    // Compare versions
                     isOutdated = currentVersion !== latestVersion;
                 }
             }
             catch (fetchError) {
                 console.error('Failed to fetch latest version from npm:', fetchError);
-                // If npm fetch fails, just report current version without update needed
                 latestVersion = currentVersion;
                 isOutdated = false;
             }
@@ -290,7 +287,6 @@ export function createRoutes(authConfig, configPath, geoDbPath) {
             });
         }
     });
-    // IP Geolocation endpoint
     router.post('/api/geo/resolve', (req, res) => {
         try {
             const { ipAddress } = req.body;
@@ -332,7 +328,6 @@ export function createRoutes(authConfig, configPath, geoDbPath) {
             }
         }
         catch (_error) {
-            // Adapter config not available, continue without it
         }
         try {
             const detectedDb = await detectDatabaseWithDialect();

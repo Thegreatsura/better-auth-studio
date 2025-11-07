@@ -16,7 +16,7 @@ import { initializeGeoService, resolveIPLocation, setGeoDbPath } from './geo-ser
 import { detectDatabaseWithDialect } from './utils/database-detection.js';
 import { scryptAsync } from "@noble/hashes/scrypt.js";
 import { hexToBytes } from "@noble/hashes/utils.js";
-// @ts-ignoree
+// @ts-ignore
 import { hex } from "@better-auth/utils/hex";
 const config = {
   N: 16384,
@@ -296,7 +296,6 @@ export function createRoutes(
           currentVersion = betterAuthPkg.version || '1.0.0';
         }
       } catch (error) {
-        // Fallback: Try to find better-auth in package.json
         try {
           const packageJsonPath = join(projectRoot, 'package.json');
           if (existsSync(packageJsonPath)) {
@@ -309,7 +308,7 @@ export function createRoutes(
         } catch { }
       }
 
-      let latestVersion = currentVersion; // Default to current if fetch fails
+      let latestVersion = currentVersion;
       let isOutdated = false;
 
       try {
@@ -317,13 +316,10 @@ export function createRoutes(
         if (npmResponse.ok) {
           const npmData = await npmResponse.json();
           latestVersion = (npmData as { version: string }).version || currentVersion;
-
-          // Compare versions
           isOutdated = currentVersion !== latestVersion;
         }
       } catch (fetchError) {
         console.error('Failed to fetch latest version from npm:', fetchError);
-        // If npm fetch fails, just report current version without update needed
         latestVersion = currentVersion;
         isOutdated = false;
       }
@@ -345,7 +341,6 @@ export function createRoutes(
     }
   });
 
-  // IP Geolocation endpoint
   router.post('/api/geo/resolve', (req: Request, res: Response) => {
     try {
       const { ipAddress } = req.body;
@@ -391,7 +386,6 @@ export function createRoutes(
         adapterConfig = (adapterResult as any).options.adapterConfig;
       }
     } catch (_error) {
-      // Adapter config not available, continue without it
     }
 
     try {
