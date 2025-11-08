@@ -218,8 +218,7 @@ export default function Dashboard() {
 
       const response = await fetch(`/api/analytics?${params.toString()}`);
       return await response.json();
-    } catch (error) {
-      console.error('Failed to fetch analytics:', error);
+    } catch (_error) {
       return null;
     }
   };
@@ -230,7 +229,7 @@ export default function Dashboard() {
       try {
         const response = await fetch('/api/users/all');
         const data = await response.json();
-        if (data && data.success && data.users) {
+        if (data?.success && data.users) {
           setAllUsers(data.users);
         }
       } catch (_error) {
@@ -277,7 +276,7 @@ export default function Dashboard() {
       }
     };
     fetchData();
-  }, [selectedUserPeriod, activeUsersDateFrom, activeUsersDateTo]);
+  }, [selectedUserPeriod, activeUsersDateFrom, activeUsersDateTo, fetchAnalytics]);
 
   // Sync newUsersPeriod with selectedSubscriptionPeriod
   useEffect(() => {
@@ -410,7 +409,7 @@ export default function Dashboard() {
       }
     };
     fetchData();
-  }, [selectedSubscriptionPeriod, newUsersDateFrom, newUsersDateTo]);
+  }, [selectedSubscriptionPeriod, newUsersDateFrom, newUsersDateTo, fetchAnalytics]);
 
   // Fetch active users card analytics
   useEffect(() => {
@@ -419,7 +418,7 @@ export default function Dashboard() {
       if (data) setActiveUsersPercentage(data.percentageChange || 0);
     };
     fetchData();
-  }, []);
+  }, [fetchAnalytics]);
 
   useEffect(() => {
     if (!loading) {
@@ -458,7 +457,7 @@ export default function Dashboard() {
     };
 
     fetchOrganizationMetrics();
-  }, [organizationsPeriod, organizationsDateFrom, organizationsDateTo]);
+  }, [organizationsPeriod, organizationsDateFrom, organizationsDateTo, fetchAnalytics]);
 
   useEffect(() => {
     const fetchTeamMetrics = async () => {
@@ -490,7 +489,7 @@ export default function Dashboard() {
     };
 
     fetchTeamMetrics();
-  }, [teamsPeriod, teamsDateFrom, teamsDateTo]);
+  }, [teamsPeriod, teamsDateFrom, teamsDateTo, fetchAnalytics]);
 
   // Fetch daily percentages for stats bar
   useEffect(() => {
@@ -512,7 +511,7 @@ export default function Dashboard() {
       if (revenueData) setRevenueDailyPercentage(revenueData.percentageChange || 0);
     };
     fetchDailyPercentages();
-  }, []);
+  }, [fetchAnalytics]);
 
   useEffect(() => {
     // Check better-auth version
@@ -620,7 +619,7 @@ export default function Dashboard() {
           .filter((_, i) => i % 4 === 0)
           .map((label) => {
             // Convert hour format to am/pm
-            const hour = parseInt(label.replace('h', ''));
+            const hour = parseInt(label.replace('h', ''), 10);
             if (hour === 0) return '12am';
             if (hour < 12) return `${hour}am`;
             if (hour === 12) return '12pm';
@@ -717,7 +716,7 @@ export default function Dashboard() {
       if (period === '1D') {
         // Convert hour format to am/pm for tooltips
         return labels.map((label) => {
-          const hour = parseInt(label.replace('h', ''));
+          const hour = parseInt(label.replace('h', ''), 10);
           if (hour === 0) return '12am';
           if (hour < 12) return `${hour}am`;
           if (hour === 12) return '12pm';
@@ -755,7 +754,7 @@ export default function Dashboard() {
             'Nov',
             'Dec',
           ];
-          const index = shortNames.findIndex((s) => s === label);
+          const index = shortNames.indexOf(label);
           if (index !== -1) return monthNames[index];
           return label;
         });

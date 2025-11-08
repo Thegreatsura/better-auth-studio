@@ -44,9 +44,7 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
         const response = await fetch('/api/plugins');
         const data = await response.json();
         setPlugins(data);
-      } catch (error) {
-        console.error('Failed to fetch plugins:', error);
-      }
+      } catch (_error) {}
     };
     fetchPlugins();
   }, []);

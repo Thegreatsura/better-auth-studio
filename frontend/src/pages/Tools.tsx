@@ -386,7 +386,7 @@ export default function Tools() {
     } else {
       setSelectedMigration('');
     }
-  }, [showMigrationModal]);
+  }, [showMigrationModal, getDefaultMigrationProvider]);
 
   const handleSelectMigration = (providerId: string) => {
     setSelectedMigration(providerId);
@@ -399,7 +399,7 @@ export default function Tools() {
     try {
       await navigator.clipboard.writeText(value);
       toast.success('Copied to clipboard');
-    } catch (error) {
+    } catch (_error) {
       toast.error('Failed to copy to clipboard');
     }
   };
@@ -502,7 +502,6 @@ export default function Tools() {
         setTimeout(() => pollOAuthStatus(sessionId, provider, attempt + 1), 2000);
       })
       .catch((error) => {
-        console.error('Failed to check OAuth status', error);
         if (attempt + 1 < maxAttempts) {
           setTimeout(() => pollOAuthStatus(sessionId, provider, attempt + 1), 2000);
         } else {
@@ -622,12 +621,10 @@ export default function Tools() {
         handleOAuthResult(result);
         // Clean up URL
         setSearchParams({});
-      } catch (error) {
-        console.error('Failed to parse OAuth result:', error);
-      }
+      } catch (_error) {}
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams, setSearchParams]);
+  }, [searchParams, setSearchParams, handleOAuthResult]);
 
   // Fetch OAuth providers on mount
   useEffect(() => {
@@ -638,9 +635,7 @@ export default function Tools() {
         if (result.success && result.providers) {
           setOauthProviders(result.providers.filter((p: OAuthProvider) => p.enabled));
         }
-      } catch (error) {
-        console.error('Failed to fetch OAuth providers:', error);
-      }
+      } catch (_error) {}
     };
     fetchProviders();
   }, []);
@@ -908,7 +903,6 @@ export default function Tools() {
         throw new Error(data.error || 'Migration request failed');
       }
     } catch (error) {
-      console.error('Migration execution error:', error);
       addLog('error', `❌ Migration failed: ${error}`, 'failed');
       toast.error('Migration failed');
     } finally {
@@ -1221,49 +1215,47 @@ export default function Tools() {
                   </p>
                 </div>
               ) : (
-                <>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-4 uppercase font-mono">
-                      Available Providers ({oauthProviders.length})
-                    </label>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto">
-                      {oauthProviders.map((provider) => (
-                        <button
-                          key={provider.id}
-                          onClick={() => {
-                            setSelectedProvider(provider.id);
-                            // Start test immediately when clicked
-                            setTimeout(() => {
-                              startOAuthTest(provider.id);
-                            }, 100);
-                          }}
-                          className={`w-full flex items-center space-x-4 p-4 border rounded-none transition-all text-left group ${
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-4 uppercase font-mono">
+                    Available Providers ({oauthProviders.length})
+                  </label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto">
+                    {oauthProviders.map((provider) => (
+                      <button
+                        key={provider.id}
+                        onClick={() => {
+                          setSelectedProvider(provider.id);
+                          // Start test immediately when clicked
+                          setTimeout(() => {
+                            startOAuthTest(provider.id);
+                          }, 100);
+                        }}
+                        className={`w-full flex items-center space-x-4 p-4 border rounded-none transition-all text-left group ${
+                          selectedProvider === provider.id
+                            ? 'border-white/50 bg-white/10'
+                            : 'border-dashed border-white/20 hover:bg-white/5 hover:border-white/30'
+                        }`}
+                      >
+                        <div className="flex-shrink-0">{getProviderIcon(provider.id)}</div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-white uppercase font-mono font-light text-base">
+                            {provider.name || provider.id}
+                          </p>
+                        </div>
+                        <ArrowRight
+                          className={`w-5 h-5 transition-colors flex-shrink-0 ${
                             selectedProvider === provider.id
-                              ? 'border-white/50 bg-white/10'
-                              : 'border-dashed border-white/20 hover:bg-white/5 hover:border-white/30'
+                              ? 'text-white'
+                              : 'text-gray-400 group-hover:text-white'
                           }`}
-                        >
-                          <div className="flex-shrink-0">{getProviderIcon(provider.id)}</div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-white uppercase font-mono font-light text-base">
-                              {provider.name || provider.id}
-                            </p>
-                          </div>
-                          <ArrowRight
-                            className={`w-5 h-5 transition-colors flex-shrink-0 ${
-                              selectedProvider === provider.id
-                                ? 'text-white'
-                                : 'text-gray-400 group-hover:text-white'
-                            }`}
-                          />
-                        </button>
-                      ))}
-                    </div>
-                    <p className="text-xs text-gray-500 mt-4 font-mono uppercase">
-                      Click on a provider to start the OAuth test
-                    </p>
+                        />
+                      </button>
+                    ))}
                   </div>
-                </>
+                  <p className="text-xs text-gray-500 mt-4 font-mono uppercase">
+                    Click on a provider to start the OAuth test
+                  </p>
+                </div>
               )}
             </div>
             <div className="flex justify-end space-x-3 mt-8 pt-6 border-t border-dashed border-white/10">

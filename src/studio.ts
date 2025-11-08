@@ -1,7 +1,6 @@
 import { createServer } from 'node:http';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import chalk from 'chalk';
 import cors from 'cors';
 import express from 'express';
 import open from 'open';
@@ -78,15 +77,8 @@ export async function startStudio(options: StudioOptions) {
 
   server.listen(port, host, () => {
     const url = `http://${host}:${port}`;
-
-    console.log(chalk.green('✅ Better Auth Studio is running!'));
-    console.log(chalk.blue(`🌐 Open your browser and navigate to: ${url}`));
-    console.log(chalk.gray(`📊 Dashboard available at: ${url}`));
-    console.log(chalk.gray(`🔧 API endpoints available at: ${url}/api`));
     if (watchMode) {
-      console.log(chalk.yellow('👀 Watch mode enabled - studio will reload on config changes'));
     }
-    console.log(chalk.gray('\nPress Ctrl+C to stop the studio\n'));
 
     if (openBrowser) {
       setTimeout(() => {

@@ -234,7 +234,10 @@ export default function UserDetails() {
         resolveSessionLocations(sessions);
       }
     } catch (_error) {}
-  }, [userId]);
+  }, [
+    userId, // Resolve locations for sessions
+    resolveSessionLocations,
+  ]);
 
   const handleEditUser = async () => {
     if (!user) return;

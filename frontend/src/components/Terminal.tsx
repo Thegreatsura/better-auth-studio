@@ -44,7 +44,7 @@ export function Terminal({
       top: container.scrollHeight,
       behavior: 'smooth',
     });
-  }, [lines, isRunning, isCollapsed]);
+  }, [isCollapsed]);
 
   const getLineIcon = (line: TerminalLine) => {
     switch (line.type) {
@@ -166,7 +166,6 @@ export function Terminal({
           )}
         </div>
       )}
-
       {/* Terminal Footer */}
       {!isCollapsed && (
         <div className="px-3 py-1.5 border-t border-dashed border-white/10 bg-black/50">

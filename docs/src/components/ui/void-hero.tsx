@@ -5,7 +5,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { Geometry, Base, Subtraction } from '@react-three/csg'
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 import { Bloom, N8AO, SMAA, EffectComposer } from '@react-three/postprocessing'
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Mesh } from "three";
 import { KernelSize } from "postprocessing";
 import { LineShadowText } from "../LineShadow";
@@ -164,6 +164,54 @@ function Navbar({ links }: { links: Array<{ name: string; href: string }> }) {
   );
 }
 
+type TerminalTone = "command" | "info" | "success" | "muted";
+
+interface TerminalLine {
+  text: string;
+  tone: TerminalTone;
+}
+
+const TERMINAL_SCRIPT: TerminalLine[] = [
+  { text: "$ npx better-auth-studio@latest", tone: "command" },
+  { text: "Starting Better Auth Studio…", tone: "info" },
+  { text: "✔ Found Better Auth configuration", tone: "success" },
+  { text: "Database: Prisma (sqlite) v6.15.0", tone: "info" },
+  { text: "✔ Better Auth Studio is running!", tone: "success" },
+  { text: "🌐 Open your browser and navigate to: http://localhost:3002", tone: "info" },
+  { text: "📊 Dashboard available at: http://localhost:3002", tone: "info" },
+  { text: "🔧 API endpoints available at: http://localhost:3002/api", tone: "info" },
+  { text: "Press Ctrl+C to stop the studio", tone: "info" },
+  { text: "$ Seeding 10 mock users...", tone: "command" },
+  { text: "⌁ inserting mock records with hashed credentials", tone: "info" },
+  { text: "✔ seeding completed in 43ms", tone: "success" },
+  { text: "— runnning migrations for clerk...", tone: "command" },
+  { text: "✔ migrated 182 entries in 213ms", tone: "success" },
+  { text: "$ testing github oauth...", tone: "command" },
+  { text: "⌁ redirecting to https://github.com/login/oauth", tone: "info" },
+  { text: "✔ oauth session verified — kinfishtech@gmail.com", tone: "success" },
+  { text: "$ testing database connection...", tone: "command" },
+  { text: "⌁ checking database connection with adapter.findMany()", tone: "info" },
+  { text: "✔ connection established → first user email: kinfishtech@gmail.com", tone: "success" },
+  { text: "$ testing health check..", tone: "command" },
+  { text: "⌁ running system health check api...", tone: "info" },
+  { text: "✔ health check passed! all systems operational", tone: "success" },
+];
+
+const toneClassName = (tone: TerminalTone) => {
+  switch (tone) {
+    case "command":
+      return "text-white";
+    case "info":
+      return "text-white/70";
+    case "success":
+      return "text-emerald-400";
+    case "muted":
+      return "text-white/40";
+    default:
+      return "text-white/70";
+  }
+};
+
 interface HeroProps {
   title: string;
   description: string;
@@ -173,6 +221,32 @@ interface HeroProps {
 
 export const Hero: React.FC<HeroProps> = ({ title, description, links, version }) => {
   const [copied, setCopied] = useState(false);
+  const [visibleTerminalLines, setVisibleTerminalLines] = useState<TerminalLine[]>([]);
+
+  useEffect(() => {
+    let index = 0;
+    setVisibleTerminalLines([TERMINAL_SCRIPT[index]]);
+    index = (index + 1) % TERMINAL_SCRIPT.length;
+
+    const interval = setInterval(() => {
+      setVisibleTerminalLines((prev) => {
+        const nextLine = TERMINAL_SCRIPT[index];
+        index = (index + 1) % TERMINAL_SCRIPT.length;
+
+        if (!nextLine) {
+          return [TERMINAL_SCRIPT[0]];
+        }
+
+        const nextLines =
+          prev.length >= 15 ? [...prev.slice(1), nextLine] : [...prev, nextLine];
+
+        return nextLines;
+      });
+    }, 1600);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="h-svh w-screen relative bg-[#0A0A0A]">
       <Navbar links={links} />
@@ -182,11 +256,12 @@ export const Hero: React.FC<HeroProps> = ({ title, description, links, version }
       <div className="absolute bottom-4 left-4 md:bottom-10 md:left-10 z-20 max-w-md">
 
         <h1 className="text-2xl flex uppercase font-mono md:text-3xl font-light tracking-tight mb-3 text-white">
-          {title.split("Studio")[0]} <LineShadowText className="font-normal ml-2" shadowColor="white">
+          {title.split("Studio")[0]}{" "}
+          <LineShadowText className="font-normal ml-2" shadowColor="white">
             Studio
           </LineShadowText>
           {version && (
-            <div className="inline-flex group gap-x-1 text-[13px] ml-2 font-mono">  
+            <div className="inline-flex group gap-x-1 text-[13px] ml-2 font-mono">
               <span className="text-white/50 group-hover:text-white transition-colors">[</span>
               <span className="text-white/70 text-[14px] lowercase">v {version}</span>
               <span className="text-white/50 group-hover:text-white transition-colors">]</span>
@@ -247,12 +322,53 @@ export const Hero: React.FC<HeroProps> = ({ title, description, links, version }
                     viewBox="0 0 24 24"
                     className="w-4 h-4 text-white/50 hover:text-white transition-colors"
                   >
-                    <path d="M4 2h12v2H4v12H2V2h2zm4 4h12v16H8V6zm2 2v12h8V8h-8z" fill="currentColor" />
+                    <path
+                      d="M18 6h2v2h-2V6zm-2 4V8h2v2h-2zm-2 2v-2h2v2h-2zm-2 2h2v-2h-2v2zm-2 2h2v-2h-2v2zm-2 0v2h2v-2H8zm-2-2h2v2H6v-2zm0 0H4v-2h2v2z"
+                      fill="currentColor"
+                    />
                   </svg>
                 )
               }
 
             </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="hidden z-999 md:block absolute bottom-6 right-6 lg:right-12 w-[420px] bg-transparent lg:w-[520px]">
+        <div className="relative z-999 bg-transparent overflow-hidden border border-white/15 border-dashed rounded-none animate-[terminal-pop_0.6s_ease-out]">
+          <div className="absolute inset-0 bg-transparent opacity-80" />
+          <div className="relative px-5 pt-4 pb-0 font-mono text-[12px] text-white shadow-[0_12px_80px_rgba(255,255,255,0.18)]">
+            <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.35em] text-white/60 mb-3">
+              <span className="text-white/40 text-[10px]">terminal</span>
+              {/* <span className="text-white/40 tracking-tight">Better Auth Studio</span> */}
+            </div>
+            <div className="space-y-1.5 min-h-[350px] overflow-hidden">
+              {visibleTerminalLines.map((line, idx) => (
+                <div
+                  key={`${line.text}-${idx}`}
+                  className={`flex items-start gap-2 whitespace-pre-wrap leading-relaxed ${toneClassName(line.tone)} transition-all duration-300 translate-y-0 opacity-100`}
+                  style={{
+                    animation: `line-enter 0.35s ease-out forwards`,
+                    animationDelay: `${idx * 0.04}s`,
+                  }}
+                >
+                  <span>{line.text}</span>
+                </div>
+              ))}
+            </div>
+            <div className="px-3 mt-4 py-2 border-t border-dashed border-white/10 bg-black/20 backdrop-blur-sm">
+              <div className="flex items-center justify-between text-[10px] text-white/60 uppercase tracking-[0.22em]">
+                <div className="flex items-center space-x-3">
+                  <span>Status: {visibleTerminalLines.length === 0 ? "Idle" : "Live"}</span>
+                  <span>Lines: {visibleTerminalLines.length}</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
+                  <span>better auth studio</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

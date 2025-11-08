@@ -4,7 +4,6 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 // @ts-expect-error
 import { hex } from '@better-auth/utils/hex';
 import { scryptAsync } from '@noble/hashes/scrypt.js';
-import { hexToBytes } from '@noble/hashes/utils.js';
 import { type Request, type Response, Router } from 'express';
 import { createJiti } from 'jiti';
 import {
@@ -296,7 +295,7 @@ export function createRoutes(
           const betterAuthPkg = JSON.parse(readFileSync(betterAuthPkgPath, 'utf-8'));
           currentVersion = betterAuthPkg.version || '1.0.0';
         }
-      } catch (error) {
+      } catch (_error) {
         try {
           const packageJsonPath = join(projectRoot, 'package.json');
           if (existsSync(packageJsonPath)) {
@@ -320,8 +319,7 @@ export function createRoutes(
           latestVersion = (npmData as { version: string }).version || currentVersion;
           isOutdated = currentVersion !== latestVersion;
         }
-      } catch (fetchError) {
-        console.error('Failed to fetch latest version from npm:', fetchError);
+      } catch (_fetchError) {
         latestVersion = currentVersion;
         isOutdated = false;
       }
@@ -332,8 +330,7 @@ export function createRoutes(
         isOutdated,
         updateCommand: 'npm install better-auth@latest',
       });
-    } catch (error) {
-      console.error('Version check error:', error);
+    } catch (_error) {
       res.status(500).json({
         error: 'Failed to check version',
         current: 'unknown',
@@ -1348,18 +1345,9 @@ export function createRoutes(
       if (!provider) {
         return res.status(400).json({ success: false, error: 'Migration provider is required' });
       }
-
-      console.log('');
-      console.log('='.repeat(80));
-      console.log(`🛠  Migration Tool → Provider: ${provider}`);
       if (script) {
-        console.log('📄 Migration script received:');
-        console.log(script);
       } else {
-        console.log('ℹ️ No script payload provided.');
       }
-      console.log('='.repeat(80));
-      console.log('');
 
       // This endpoint does not execute arbitrary scripts for safety. It simply
       // acknowledges receipt so the frontend can present instructions.
@@ -1368,7 +1356,6 @@ export function createRoutes(
         message: 'Migration script received. Review the server logs for details.',
       });
     } catch (error) {
-      console.error('Migration tool error:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to process migration request',
@@ -3041,9 +3028,9 @@ export function createRoutes(
 
   router.get('/api/organizations', async (req: Request, res: Response) => {
     try {
-      const page = parseInt(req.query.page as string, 10) || 1;
+      const _page = parseInt(req.query.page as string, 10) || 1;
       const limit = parseInt(req.query.limit as string, 10) || 20;
-      const search = req.query.search as string;
+      const _search = req.query.search as string;
 
       try {
         const adapter = await getAuthAdapterWithConfig();
@@ -3480,7 +3467,7 @@ export function createRoutes(
 
   // OAuth Test Endpoints
   router.get('/api/tools/oauth/providers', async (_req: Request, res: Response) => {
-    const result = await getAuthAdapterWithConfig();
+    const _result = await getAuthAdapterWithConfig();
     try {
       const providers = authConfig.socialProviders || [];
       res.json({
@@ -3492,7 +3479,7 @@ export function createRoutes(
           enabled: provider.enabled !== false,
         })),
       });
-    } catch (error) {
+    } catch (_error) {
       res.status(500).json({ success: false, error: 'Failed to fetch OAuth providers' });
     }
   });
@@ -3532,7 +3519,6 @@ export function createRoutes(
         provider: selectedProvider.name || selectedProvider.id || (selectedProvider as any).type,
       });
     } catch (error) {
-      console.error('OAuth test error:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to initiate OAuth test',
@@ -3723,8 +3709,7 @@ export function createRoutes(
           </body>
         </html>
       `);
-    } catch (error) {
-      console.error('OAuth start error:', error);
+    } catch (_error) {
       res
         .status(500)
         .send(
@@ -3821,8 +3806,7 @@ export function createRoutes(
         </body>
         </html>
       `);
-    } catch (error) {
-      console.error('OAuth callback error:', error);
+    } catch (_error) {
       res.send(
         '<html><body style="background:#000;color:#fff;text-align:center;"><h1>OAuth Test Error</h1><p>Callback processing failed</p></body></html>'
       );
@@ -3884,9 +3868,7 @@ export function createRoutes(
           .sort((a, b) => b.created - a.created)[0];
 
         recentAccount = accountCandidate?.account ?? null;
-      } catch (accountError) {
-        console.error('Failed to fetch accounts:', accountError);
-      }
+      } catch (_accountError) {}
 
       try {
         const sessions = await adapter.findMany({
@@ -3908,9 +3890,7 @@ export function createRoutes(
           .sort((a, b) => b.created - a.created)[0];
 
         recentSession = sessionCandidate?.session ?? null;
-      } catch (sessionError) {
-        console.error('Failed to fetch sessions:', sessionError);
-      }
+      } catch (_sessionError) {}
 
       if (recentAccount || recentSession) {
         let userInfo: any = null;
@@ -3933,9 +3913,7 @@ export function createRoutes(
               };
             }
           }
-        } catch (userError) {
-          console.error('Failed to fetch user info:', userError);
-        }
+        } catch (_userError) {}
         const result = {
           testSessionId: testSessionId as string,
           provider,
@@ -3963,8 +3941,7 @@ export function createRoutes(
       }
 
       res.json({ hasResult: false });
-    } catch (error) {
-      console.error('OAuth status error:', error);
+    } catch (_error) {
       res.status(500).json({ hasResult: false, error: 'Failed to check status' });
     }
   });

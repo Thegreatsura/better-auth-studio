@@ -3,7 +3,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import chalk from 'chalk';
 import chokidar from 'chokidar';
 import { Command } from 'commander';
 import { findAuthConfig } from './config.js';
@@ -181,31 +180,13 @@ program
   .option('--no-open', 'Do not open browser automatically')
   .action(async (options) => {
     try {
-      console.log(chalk.blue('🔐 Better Auth Studio'));
-      console.log(chalk.gray('Starting Better Auth Studio...\n'));
-
       const authConfig = await findAuthConfig(options.config);
       if (!authConfig) {
-        console.error(chalk.red('❌ No Better Auth configuration found.'));
         if (options.config) {
-          console.log(chalk.yellow(`Could not find or load config file: ${options.config}`));
-          console.log(chalk.gray(`Current working directory: ${process.cwd()}`));
-          console.log(chalk.gray(`Tried paths:`));
-          console.log(chalk.gray(`  - ${join(process.cwd(), options.config)}`));
-          console.log(chalk.gray(`  - ${join(process.cwd(), '..', options.config)}`));
-          console.log(chalk.gray(`  - ${join(process.cwd(), '../..', options.config)}`));
         } else {
-          console.log(
-            chalk.yellow('Make sure you have a Better Auth configuration file in your project.')
-          );
-          console.log(
-            chalk.yellow('Supported files: auth.ts, auth.js, better-auth.config.ts, etc.')
-          );
         }
         process.exit(1);
       }
-
-      console.log(chalk.green('✅ Found Better Auth configuration'));
 
       let databaseInfo = 'Not configured';
 
@@ -248,21 +229,18 @@ program
         }
       }
 
-      let providersInfo = 'None';
+      let _providersInfo = 'None';
       if (authConfig.socialProviders && typeof authConfig.socialProviders === 'object') {
         const providerNames = Object.keys(authConfig.socialProviders);
         if (providerNames.length > 0) {
-          providersInfo = providerNames.join(', ');
+          _providersInfo = providerNames.join(', ');
         }
       } else if (authConfig.providers && Array.isArray(authConfig.providers)) {
         const providerNames = authConfig.providers.map((p) => p.type || p.name).filter(Boolean);
         if (providerNames.length > 0) {
-          providersInfo = providerNames.join(', ');
+          _providersInfo = providerNames.join(', ');
         }
       }
-
-      console.log(chalk.gray(`Database: ${databaseInfo}`));
-      console.log(chalk.gray(`Providers: ${providersInfo}\n`));
 
       if (options.watch) {
         await startStudioWithWatch({

@@ -437,7 +437,6 @@ async function getRealAnalytics(
           // For Custom, use from date if provided, otherwise default to 30 days
           startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
           break;
-        case 'ALL':
         default: {
           // Get the earliest creation date from users
           const earliestUser = users.reduce((earliest: any, user: any) => {
@@ -629,7 +628,7 @@ async function getRealAnalytics(
       period,
       type,
     };
-  } catch (error) {
+  } catch (_error) {
     // Return empty data on error
     return {
       data: [],

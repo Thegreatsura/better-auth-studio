@@ -10,7 +10,7 @@ interface PixelLayoutProps {
 
 export default function PixelLayout({ children, currentPage, title, description }: PixelLayoutProps) {
   return (
-    <div className="min-h-screen bg-black text-white font-geist-mono" style={{ fontFamily: 'var(--font-geist-mono)' }}>
+    <div className="min-h-screen bg-black text-white" style={{ fontFamily: 'var(--font-geist-mono)' }}>
       <Navigation currentPage={currentPage} />
       
       <div className="relative h-screen flex items-center justify-center">
