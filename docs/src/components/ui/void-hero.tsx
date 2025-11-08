@@ -182,7 +182,7 @@ export const Hero: React.FC<HeroProps> = ({ title, description, links, version }
       <div className="absolute bottom-4 left-4 md:bottom-10 md:left-10 z-20 max-w-md">
 
         <h1 className="text-2xl flex uppercase font-mono md:text-3xl font-light tracking-tight mb-3 text-white">
-          {title.split("Studio")[0]} <LineShadowText className="font-normal" shadowColor="white">
+          {title.split("Studio")[0]} <LineShadowText className="font-normal ml-2" shadowColor="white">
             Studio
           </LineShadowText>
           {version && (
