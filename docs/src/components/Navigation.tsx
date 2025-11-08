@@ -13,7 +13,7 @@ export default function Navigation({ currentPage }: NavigationProps) {
   ];
 
   return (
-    <nav className="absolute top-4 left-4 right-4 md:top-10 md:left-10 md:right-10 z-30">
+    <nav className="absolute font-mono top-4 left-4 right-4 md:top-10 md:left-10 md:right-10 z-30">
       <ul className="hidden md:flex gap-8 lg:gap-12">
         {navItems.map((item) => (
           <li key={item.name}>

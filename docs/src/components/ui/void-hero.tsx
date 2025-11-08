@@ -2,12 +2,13 @@
 "use client";
 
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Geometry, Base, Subtraction} from '@react-three/csg'
+import { Geometry, Base, Subtraction } from '@react-three/csg'
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 import { Bloom, N8AO, SMAA, EffectComposer } from '@react-three/postprocessing'
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Mesh } from "three";
 import { KernelSize } from "postprocessing";
+import { LineShadowText } from "../LineShadow";
 
 function Shape() {
   const meshRef = useRef<Mesh>(null);
@@ -29,7 +30,7 @@ function Shape() {
   return (
     <>
       <mesh ref={meshRef}>
-        <meshPhysicalMaterial 
+        <meshPhysicalMaterial
           roughness={0}
           metalness={0.95}
           clearcoat={1}
@@ -49,10 +50,10 @@ function Shape() {
           </Subtraction>
         </Geometry>
       </mesh>
-      
+
       <mesh ref={innerSphereRef}>
         <sphereGeometry args={[0.8, 32, 32]} />
-        <meshPhysicalMaterial 
+        <meshPhysicalMaterial
           color="#ffffff"
           emissive={"white"}
           emissiveIntensity={1}
@@ -65,38 +66,38 @@ function Shape() {
 function Environment() {
   return (
     <>
-      
-      <directionalLight 
-        position={[-5, 5, -5]} 
-        intensity={0.3} 
+
+      <directionalLight
+        position={[-5, 5, -5]}
+        intensity={0.3}
         color="#ffffff"
       />
-      
-      <directionalLight 
-        position={[0, -5, 10]} 
-        intensity={0.5} 
+
+      <directionalLight
+        position={[0, -5, 10]}
+        intensity={0.5}
         color="#ffffff"
       />
-      
+
       <ambientLight intensity={0.6} color="#ffffff" />
-      
-      <pointLight 
-        position={[8, 3, 8]} 
-        intensity={0.3} 
+
+      <pointLight
+        position={[8, 3, 8]}
+        intensity={0.3}
         color="#ffffff"
         distance={20}
       />
-      
-      <pointLight 
-        position={[-8, 3, -8]} 
-        intensity={0.3} 
+
+      <pointLight
+        position={[-8, 3, -8]}
+        intensity={0.3}
         color="#ffffff"
         distance={20}
       />
-      
-      <directionalLight 
-        position={[0, -10, 0]} 
-        intensity={0.3} 
+
+      <directionalLight
+        position={[0, -10, 0]}
+        intensity={0.3}
         color="#ffffff"
       />
     </>
@@ -132,7 +133,6 @@ function Scene() {
 }
 
 function Navbar({ links }: { links: Array<{ name: string; href: string }> }) {
-
   return (
     <nav className="absolute font-mono top-4 left-4 right-4 md:top-10 md:left-10 md:right-10 z-30">
       <ul className="hidden md:flex gap-8 lg:gap-12">
@@ -147,7 +147,7 @@ function Navbar({ links }: { links: Array<{ name: string; href: string }> }) {
           </li>
         ))}
       </ul>
-      
+
       <ul className="md:hidden flex flex-col gap-3 items-end">
         {links.map((link) => (
           <li key={link.name}>
@@ -168,9 +168,11 @@ interface HeroProps {
   title: string;
   description: string;
   links: Array<{ name: string; href: string }>;
+  version?: string | null;
 }
 
-export const Hero: React.FC<HeroProps> = ({ title, description, links }) => {
+export const Hero: React.FC<HeroProps> = ({ title, description, links, version }) => {
+  const [copied, setCopied] = useState(false);
   return (
     <div className="h-svh w-screen relative bg-[#0A0A0A]">
       <Navbar links={links} />
@@ -178,23 +180,78 @@ export const Hero: React.FC<HeroProps> = ({ title, description, links }) => {
         <Scene />
       </div>
       <div className="absolute bottom-4 left-4 md:bottom-10 md:left-10 z-20 max-w-md">
-        <h1 className="text-2xl md:text-3xl font-light tracking-tight mb-3 text-white">
-            {title}
+
+        <h1 className="text-2xl flex uppercase font-mono md:text-3xl font-light tracking-tight mb-3 text-white">
+          {title.split("Studio")[0]} <LineShadowText className="font-normal" shadowColor="white">
+            Studio
+          </LineShadowText>
+          {version && (
+            <div className="inline-flex group gap-x-1 text-[13px] ml-2 font-mono">  
+              <span className="text-white/50 group-hover:text-white transition-colors">[</span>
+              <span className="text-white/70 text-[14px] lowercase">v {version}</span>
+              <span className="text-white/50 group-hover:text-white transition-colors">]</span>
+            </div>
+          )}
         </h1>
-        <p className="font-mono text-xs md:text-sm leading-relaxed font-light tracking-tight text-white/50 mb-6">
-            {description}
+        <p className="font-mono uppercase text-[12.5px] text-white/50 mb-6">
+          {description}
         </p>
-        <div className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-none p-4 font-mono text-xs">
-          <div className="text-white/70 mb-2">Install Better Auth Studio</div>
+        <div className="bg-black/20 backdrop-blur-sm border border-white/20 border-dashed rounded-none p-4 font-mono text-xs">
+          <div className="text-white/70 flex items-center text-[10px] uppercase font-mono mb-2">
+            <svg
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              className="w-3 rotate-180 h-3 inline-flex mr-1 text-white/50 hover:text-white transition-colors"
+            >
+              <path
+                d="M16 5v2h-2V5h2zm-4 4V7h2v2h-2zm-2 2V9h2v2h-2zm0 2H8v-2h2v2zm2 2v-2h-2v2h2zm0 0h2v2h-2v-2zm4 4v-2h-2v2h2z"
+                fill="currentColor"
+              />
+            </svg>
+            Install Better Auth Studio</div>
           <div className="flex items-center gap-2">
             <span className="text-white/80">$</span>
             <code className="text-white text-xs">npx better-auth-studio@latest</code>
-            <button 
-              onClick={() => navigator.clipboard.writeText('npx better-auth-studio@latest')}
+            <button
+              onClick={() => {
+                setCopied(true)
+                navigator.clipboard.writeText('npx better-auth-studio@latest')
+                setTimeout(() => {
+                  setCopied(false)
+                }, 3000)
+              }}
               className="ml-2 text-white/50 hover:text-white transition-colors"
               title="Copy to clipboard"
             >
-              📋
+              {
+                copied ? (
+
+                  <svg
+                    fill="none"
+                    className="w-4 h-4 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M18 6h2v2h-2V6zm-2 4V8h2v2h-2zm-2 2v-2h2v2h-2zm-2 2h2v-2h-2v2zm-2 2h2v-2h-2v2zm-2 0v2h2v-2H8zm-2-2h2v2H6v-2zm0 0H4v-2h2v2z"
+                      fill="currentColor"
+                    />
+
+                  </svg>
+
+                ) : (
+                  <svg
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="w-4 h-4 text-white/50 hover:text-white transition-colors"
+                  >
+                    <path d="M4 2h12v2H4v12H2V2h2zm4 4h12v16H8V6zm2 2v12h8V8h-8z" fill="currentColor" />
+                  </svg>
+                )
+              }
+
             </button>
           </div>
         </div>
