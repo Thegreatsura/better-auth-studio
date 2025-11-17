@@ -427,11 +427,6 @@ export const Hero: React.FC<HeroProps> = ({ title, description, links, version }
                     <span>Status: {terminalLogs.length === 0 ? "Idle" : "Live"}</span>
                     <span>Lines: {terminalLogs.length}</span>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-1.5 h-1.5 mr-1 bg-emerald-400 rounded-full animate-pulse" />
-                    <span className="text-white/70 font-mono text-[9px] uppercase tracking-[0.25em]">
-                      better-auth studio</span>
-                  </div>
                 </div>
               </div>
             </div>

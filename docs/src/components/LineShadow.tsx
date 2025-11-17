@@ -4,13 +4,15 @@ import { type MotionProps, motion } from "framer-motion"
 import { cn } from "@/lib/utils"
 
 
+type LineShadowMotionProps = Omit<MotionProps, "children">
+
 interface LineShadowTextProps
    extends Omit<React.HTMLAttributes<HTMLElement>, keyof MotionProps>,
-      MotionProps {
+      LineShadowMotionProps {
    shadowColor?: string
    as?: React.ElementType
-   children: React.ReactNode,
-   className?: string,
+   children: string
+   className?: string
 }
 
 export function LineShadowText({
@@ -21,11 +23,7 @@ export function LineShadowText({
    ...props
 }: LineShadowTextProps) {
    const MotionComponent = motion.create(Component)
-   const content = typeof children === "string" ? children : null
-
-   if (!content) {
-      throw new Error("LineShadowText only accepts string content")
-   }
+   const content = children
 
    return (
       <MotionComponent
