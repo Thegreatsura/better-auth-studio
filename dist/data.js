@@ -2,6 +2,7 @@ import { getAuthAdapter } from './auth-adapter.js';
 export async function getAuthData(_authConfig, type = 'stats', options, configPath) {
     try {
         const adapter = await getAuthAdapter(configPath);
+        console.log({ adapter });
         if (!adapter) {
             // No adapter available, falling back to mock data
             console.log('No adapter available, falling back to mock data');

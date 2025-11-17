@@ -55,12 +55,11 @@ export async function getAuthData(
 ): Promise<any> {
   try {
     const adapter = await getAuthAdapter(configPath);
-
+    console.log({adapter})
     if (!adapter) {
       // No adapter available, falling back to mock data
       console.log('No adapter available, falling back to mock data');
     }
-
     switch (type) {
       case 'stats':
         return await getRealStats(adapter);

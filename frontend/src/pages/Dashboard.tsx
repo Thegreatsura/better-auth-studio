@@ -238,17 +238,19 @@ export default function Dashboard() {
     }
 
     // Add other security recommendations
-    patches.push({
-      id: '1',
-      title: 'Session Token Rotation',
-      severity: 'high',
-      date: '2024-01-15',
-      description:
-        'Ensure session tokens are rotated regularly to prevent session fixation attacks. Better-auth supports automatic token rotation on security-sensitive operations.',
-      affectedComponents: ['Session Management', 'Auth Core'],
-      status: 'applied',
-      cve: '',
-    });
+    patches.push(
+    //   {
+    //   id: '1',
+    //   title: 'Session Token Rotation',
+    //   severity: 'high',
+    //   date: '2024-01-15',
+    //   description:
+    //     'Ensure session tokens are rotated regularly to prevent session fixation attacks. Better-auth supports automatic token rotation on security-sensitive operations.',
+    //   affectedComponents: ['Session Management', 'Auth Core'],
+    //   status: 'applied',
+    //   cve: '',
+    // }
+    );
 
     // patches.push({
     //   id: '2',
