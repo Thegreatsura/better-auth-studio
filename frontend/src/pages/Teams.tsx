@@ -243,9 +243,7 @@ export default function Teams() {
               className="text-white font-mono text-sm"
               format={{ notation: 'standard', maximumFractionDigits: 0 }}
             />
-            <span>
-              team{filteredTeams.length !== 1 ? 's' : ''} found
-            </span>
+            <span>team{filteredTeams.length !== 1 ? 's' : ''} found</span>
           </p>
         </div>
         <div className="flex items-center space-x-3">

@@ -2,7 +2,7 @@
 
 import NumberFlow from '@number-flow/react';
 import clsx from 'clsx';
-import { useMemo, type ComponentType, type ReactNode } from 'react';
+import { type ComponentType, type ReactNode, useMemo } from 'react';
 
 interface AnimatedNumberProps {
   value: number | null | undefined;

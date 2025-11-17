@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.2.4/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.3.4/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -7,23 +7,7 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "includes": ["src/**/*", "frontend/src/**/*", "apps/docs/src/**/*", "scripts/**/*"],
-    "experimentalScannerIgnores": [
-      "node_modules/**",
-      "dist/**",
-      "public/**",
-      "frontend/dist/**",
-      "frontend/node_modules/**",
-      "apps/docs/.next/**",
-      "apps/docs/node_modules/**",
-      "tests/**/node_modules/**",
-      "tests/**/dist/**",
-      "tests/**/generated/**",
-      "*.d.ts",
-      "*.d.ts.map",
-      "*.js.map",
-      "**/*.css"
-    ]
+    "includes": ["src/**/*", "frontend/src/**/*", "apps/docs/src/**/*", "scripts/**/*"]
   },
   "formatter": {
     "enabled": true,

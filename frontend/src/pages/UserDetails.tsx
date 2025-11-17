@@ -2,6 +2,7 @@ import { Clock1, Edit } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
+import { AnimatedNumber } from '../components/AnimatedNumber';
 import {
   Ban,
   Building2,
@@ -18,7 +19,6 @@ import {
   Users,
   X,
 } from '../components/PixelIcons';
-import { AnimatedNumber } from '../components/AnimatedNumber';
 import { Terminal } from '../components/Terminal';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -158,7 +158,9 @@ export default function UserDetails() {
 
   const resolveSessionLocations = useCallback(
     async (sessions: Session[]) => {
-      const pendingSessions = sessions.filter((session) => !sessionLocationsRef.current[session.id]);
+      const pendingSessions = sessions.filter(
+        (session) => !sessionLocationsRef.current[session.id]
+      );
       if (pendingSessions.length === 0) {
         return;
       }

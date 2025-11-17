@@ -2,6 +2,7 @@ import { Edit } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
+import { AnimatedNumber } from '../components/AnimatedNumber';
 import {
   Building2,
   Calendar,
@@ -12,7 +13,6 @@ import {
   Users,
   X,
 } from '../components/PixelIcons';
-import { AnimatedNumber } from '../components/AnimatedNumber';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';

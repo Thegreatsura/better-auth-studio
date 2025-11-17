@@ -1,6 +1,6 @@
 import { format } from 'date-fns';
-import { ArrowUpRight, DollarSign, Shield } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ArrowUpRight, Shield } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState, type MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -27,6 +27,44 @@ import {
 import OrganizationsPage from './Organizations';
 import UsersPage from './Users';
 
+const ACTIVITY_STREAMS = [
+  {
+    id: 'signups',
+    label: 'Signups',
+    analyticsKey: 'newUsers',
+    barClass: 'bg-white/25 border border-white/10',
+    dotClass: 'bg-white/25',
+  },
+  {
+    id: 'logins',
+    label: 'Logins',
+    analyticsKey: 'activeUsers',
+    barClass: 'bg-white/20 border border-white/10',
+    dotClass: 'bg-white/20',
+  },
+  {
+    id: 'organizations',
+    label: 'Organizations',
+    analyticsKey: 'organizations',
+    barClass: 'bg-white/15 border border-white/10',
+    dotClass: 'bg-white/15',
+  },
+  {
+    id: 'teams',
+    label: 'Teams',
+    analyticsKey: 'teams',
+    barClass: 'bg-white/10 border border-white/10',
+    dotClass: 'bg-white/10',
+  },
+  {
+    id: 'sessions',
+    label: 'Sessions',
+    analyticsKey: 'sessions',
+    barClass: 'bg-white/5 border border-white/10',
+    dotClass: 'bg-white/5',
+  },
+] as const;
+
 interface SecurityPatch {
   id: string;
   title: string;
@@ -44,8 +82,7 @@ export default function Dashboard() {
   const [activeUsersDaily, setActiveUsersDaily] = useState(0);
   const [newUsersDaily, setNewUsersDaily] = useState(0);
   const [selectedUserPeriod, setSelectedUserPeriod] = useState('1D');
-  const [selectedSubscriptionPeriod, setSelectedSubscriptionPeriod] = useState('1D');
-  const [totalSubscription, setTotalSubscription] = useState(1243.22);
+  const [activityPeriod, setActivityPeriod] = useState('1D');
   const [selectedPatch, setSelectedPatch] = useState<SecurityPatch | null>(null);
   const [showPatchModal, setShowPatchModal] = useState(false);
   const [activeUsersPeriod, setActiveUsersPeriod] = useState('Daily');
@@ -87,7 +124,6 @@ export default function Dashboard() {
   const [totalUsersPercentage, setTotalUsersPercentage] = useState(0);
   const [newUsersData, setNewUsersData] = useState<number[]>([]);
   const [newUsersLabels, setNewUsersLabels] = useState<string[]>([]);
-  const [newUsersPercentage, setNewUsersPercentage] = useState(0);
   const [activeUsersPercentage, setActiveUsersPercentage] = useState(0);
   const [organizationsPercentage, setOrganizationsPercentage] = useState(0);
   const [teamsPercentage, setTeamsPercentage] = useState(0);
@@ -95,12 +131,22 @@ export default function Dashboard() {
   const [teamsCount, setTeamsCount] = useState(0);
   const [organizationsLoading, setOrganizationsLoading] = useState(false);
   const [teamsLoading, setTeamsLoading] = useState(false);
+  const [activitySeries, setActivitySeries] = useState<Record<string, number[]>>({
+    signups: [],
+    logins: [],
+    organizations: [],
+    teams: [],
+    sessions: [],
+  });
+  const [activityLabels, setActivityLabels] = useState<string[]>([]);
+  const [activityLoading, setActivityLoading] = useState(false);
 
   // Daily percentages for stats bar
   const [usersDailyPercentage, setUsersDailyPercentage] = useState(0);
   const [organizationsDailyPercentage, setOrganizationsDailyPercentage] = useState(0);
   const [sessionsDailyPercentage, setSessionsDailyPercentage] = useState(0);
-  const [revenueDailyPercentage, setRevenueDailyPercentage] = useState(0);
+  const [activityHitsDailyPercentage, setActivityHitsDailyPercentage] = useState(0);
+  const [activityHitsDailyTotal, setActivityHitsDailyTotal] = useState(0);
 
   // Store all users for client-side filtering
   const [allUsers, setAllUsers] = useState<any[]>([]);
@@ -140,6 +186,27 @@ export default function Dashboard() {
       return '...';
     }
     return Number(value).toLocaleString();
+  };
+
+  const activityTotals = useMemo(() => {
+    return ACTIVITY_STREAMS.reduce<Record<string, number>>((acc, stream) => {
+      acc[stream.id] = (activitySeries[stream.id] || []).reduce((sum, value) => sum + value, 0);
+      return acc;
+    }, {});
+  }, [activitySeries]);
+
+  const activityGrandTotal = useMemo(
+    () => Object.values(activityTotals).reduce((sum, val) => sum + val, 0),
+    [activityTotals]
+  );
+
+  const handleActivityHover = (event: MouseEvent<HTMLDivElement>, index: number) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    setHoveredAreaIndex(index);
+    setHoveredAreaPosition({
+      x: rect.left + rect.width / 2,
+      y: rect.top,
+    });
   };
 
   // Security insights data - better-auth specific
@@ -271,13 +338,11 @@ export default function Dashboard() {
         if (data) {
           setActiveUsersDaily(data.activeUsers || 0);
           setNewUsersDaily(data.totalUsers || 0);
-          setTotalSubscription(data.totalUsers || 0);
         }
       } catch (_error) {
         // Set to 0 if API fails
         setActiveUsersDaily(0);
         setNewUsersDaily(0);
-        setTotalSubscription(0);
       }
     };
     fetchStats();
@@ -300,20 +365,6 @@ export default function Dashboard() {
     };
     fetchData();
   }, [selectedUserPeriod, activeUsersDateFrom, activeUsersDateTo, fetchAnalytics]);
-
-  // Sync newUsersPeriod with selectedSubscriptionPeriod
-  useEffect(() => {
-    const periodMap: Record<string, string> = {
-      Daily: '1D',
-      Weekly: '1W',
-      Monthly: '1M',
-      Yearly: '1Y',
-      Custom: 'Custom',
-    };
-    if (newUsersPeriod && periodMap[newUsersPeriod]) {
-      setSelectedSubscriptionPeriod(periodMap[newUsersPeriod]);
-    }
-  }, [newUsersPeriod]);
 
   // Calculate new users count and percentage from fetched users
   useEffect(() => {
@@ -410,29 +461,49 @@ export default function Dashboard() {
     setNewUsersCountPercentage(percentageChange);
   }, [allUsers, newUsersPeriod, newUsersDateFrom, newUsersDateTo]);
 
-  // Fetch new users chart analytics
+  // Fetch activity analytics (signups, logins, organizations, teams, sessions)
   useEffect(() => {
     const fetchData = async () => {
-      // For Custom period, we need both dates
-      if (selectedSubscriptionPeriod === 'Custom') {
-        if (!newUsersDateFrom || !newUsersDateTo) {
-          return; // Don't fetch if dates are not set
-        }
+      if (activityPeriod === 'Custom' && (!newUsersDateFrom || !newUsersDateTo)) {
+        return;
       }
-      const data = await fetchAnalytics(
-        'newUsers',
-        selectedSubscriptionPeriod,
-        newUsersDateFrom,
-        newUsersDateTo
-      );
-      if (data) {
-        setNewUsersData(data.data || []);
-        setNewUsersLabels(data.labels || []);
-        setNewUsersPercentage(data.percentageChange || 0);
+      setActivityLoading(true);
+      try {
+        const [signups, logins, orgs, teamsMetrics, sessionsMetrics] = await Promise.all([
+          fetchAnalytics('newUsers', activityPeriod, newUsersDateFrom, newUsersDateTo),
+          fetchAnalytics('activeUsers', activityPeriod, newUsersDateFrom, newUsersDateTo),
+          fetchAnalytics('organizations', activityPeriod, newUsersDateFrom, newUsersDateTo),
+          fetchAnalytics('teams', activityPeriod, newUsersDateFrom, newUsersDateTo),
+          fetchAnalytics('sessions', activityPeriod, newUsersDateFrom, newUsersDateTo),
+        ]);
+
+        if (signups) {
+          setNewUsersData(signups.data || []);
+          setNewUsersLabels(signups.labels || []);
+        }
+
+        setActivitySeries({
+          signups: signups?.data || [],
+          logins: logins?.data || [],
+          organizations: orgs?.data || [],
+          teams: teamsMetrics?.data || [],
+          sessions: sessionsMetrics?.data || [],
+        });
+
+        setActivityLabels(
+          signups?.labels ||
+            logins?.labels ||
+            orgs?.labels ||
+            teamsMetrics?.labels ||
+            sessionsMetrics?.labels ||
+            []
+        );
+      } finally {
+        setActivityLoading(false);
       }
     };
     fetchData();
-  }, [selectedSubscriptionPeriod, newUsersDateFrom, newUsersDateTo, fetchAnalytics]);
+  }, [activityPeriod, newUsersDateFrom, newUsersDateTo, fetchAnalytics]);
 
   // Fetch active users card analytics
   useEffect(() => {
@@ -529,9 +600,43 @@ export default function Dashboard() {
       const sessionsData = await fetchAnalytics('activeUsers', '1D');
       if (sessionsData) setSessionsDailyPercentage(sessionsData.percentageChange || 0);
 
-      // For Revenue, we'll use newUsers as a proxy since revenue is typically tied to new signups
-      const revenueData = await fetchAnalytics('newUsers', '1D');
-      if (revenueData) setRevenueDailyPercentage(revenueData.percentageChange || 0);
+      // Fetch Activity Hits daily percentage and total (sum of all activity types)
+      const [signupsData, loginsData, orgsDataForActivity, teamsData, sessionsMetricsData] = await Promise.all([
+        fetchAnalytics('newUsers', '1D'),
+        fetchAnalytics('activeUsers', '1D'),
+        fetchAnalytics('organizations', '1D'),
+        fetchAnalytics('teams', '1D'),
+        fetchAnalytics('sessions', '1D'),
+      ]);
+
+      const dailyTotals = [
+        signupsData?.total || 0,
+        loginsData?.total || 0,
+        orgsDataForActivity?.total || 0,
+        teamsData?.total || 0,
+        sessionsMetricsData?.total || 0,
+      ];
+      const activityHitsTotal = dailyTotals.reduce((sum, val) => sum + val, 0);
+      setActivityHitsDailyTotal(activityHitsTotal);
+
+      // Calculate percentage change by comparing with previous day
+      const previousDayTotals = [
+        signupsData?.previousTotal || 0,
+        loginsData?.previousTotal || 0,
+        orgsDataForActivity?.previousTotal || 0,
+        teamsData?.previousTotal || 0,
+        sessionsMetricsData?.previousTotal || 0,
+      ];
+      const previousDayTotal = previousDayTotals.reduce((sum, val) => sum + val, 0);
+
+      if (previousDayTotal > 0) {
+        const percentageChange = ((activityHitsTotal - previousDayTotal) / previousDayTotal) * 100;
+        setActivityHitsDailyPercentage(percentageChange);
+      } else if (activityHitsTotal > 0) {
+        setActivityHitsDailyPercentage(100);
+      } else {
+        setActivityHitsDailyPercentage(0);
+      }
     };
     fetchDailyPercentages();
   }, [fetchAnalytics]);
@@ -854,8 +959,19 @@ export default function Dashboard() {
     return trimmedData.map((val) => (val / maxValue) * 100);
   };
 
-  const renderOverview = () => (
-    <div className="space-y-6 min-h-screen h-full mt-5 flex-1 overflow-y-hidden overflow-x-hidden px-0">
+  const renderOverview = () => {
+    const resolvedActivityLabels =
+      activityLabels.length > 0 ? activityLabels : getChartLabels(activityPeriod, 'users');
+    const activityBuckets = resolvedActivityLabels.map((_, index) =>
+      ACTIVITY_STREAMS.reduce(
+        (sum, stream) => sum + (activitySeries[stream.id]?.[index] ?? 0),
+        0
+      )
+    );
+    const maxActivityValue = Math.max(...activityBuckets, 1);
+
+    return (
+      <div className="space-y-6 min-h-screen h-full mt-5 flex-1 overflow-y-hidden overflow-x-hidden px-0">
       {/* <div className="px-6 pt-8">
         <h1 className="text-3xl text-white font-light mb-2">Welcome Back</h1>
         <p className="text-gray-400 text-sm">
@@ -968,28 +1084,28 @@ export default function Dashboard() {
           {/* Divider */}
           <div className="h-8 w-[1px] bg-white/10" />
 
-          {/* Revenue Stat */}
+          {/* Activity Hits Stat */}
           <div className="flex items-center gap-3 min-w-fit">
             <div className="w-10 h-10 rounded-none bg-white/5 border border-dashed border-white/10 flex items-center justify-center flex-shrink-0">
-              <DollarSign className="w-5 h-5 text-white" />
+              <BarChart3 className="w-5 h-5 text-white" />
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-gray-400 text-sm uppercase tracking-wide">Revenue</span>
+              <span className="text-gray-400 text-sm uppercase tracking-wide">Activity Hits</span>
               <span className="text-white text-lg font-medium">
-                {loading ? '...' : `$${formatCompactNumber(totalSubscription ?? 0)}`}
+                {loading ? '...' : formatCompactNumber(activityHitsDailyTotal ?? 0)}
               </span>
               <div
-                className={`flex items-center gap-1 ${revenueDailyPercentage >= 0 ? 'text-green-500' : 'text-red-500'}`}
+                className={`flex items-center gap-1 ${activityHitsDailyPercentage >= 0 ? 'text-green-500' : 'text-red-500'}`}
               >
                 <svg
-                  className={`w-3 h-3 ${revenueDailyPercentage < 0 ? 'rotate-180' : ''}`}
+                  className={`w-3 h-3 ${activityHitsDailyPercentage < 0 ? 'rotate-180' : ''}`}
                   viewBox="0 0 12 12"
                   fill="currentColor"
                 >
                   <path d="M6 0 L12 12 L0 12 Z" />
                 </svg>
                 <span className="text-sm font-medium">
-                  {Math.abs(revenueDailyPercentage).toFixed(1)}%
+                  {Math.abs(activityHitsDailyPercentage).toFixed(1)}%
                 </span>
               </div>
             </div>
@@ -1042,11 +1158,10 @@ export default function Dashboard() {
                   <button
                     key={period}
                     onClick={() => setSelectedUserPeriod(period)}
-                    className={`px-2 py-1 text-xs font-light transition-colors whitespace-nowrap ${
-                      selectedUserPeriod === period
+                    className={`px-2 py-1 text-xs font-light transition-colors whitespace-nowrap ${selectedUserPeriod === period
                         ? 'bg-white/20 text-white border border-white/30'
                         : 'text-gray-500 hover:text-white'
-                    }`}
+                      }`}
                   >
                     {period}
                   </button>
@@ -1178,199 +1293,124 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Total Subscription Card */}
+          {/* Activity Hit Card */}
           <div className="bg-white/5 border border-white/10 p-6 relative">
-            {/* Top-left corner */}
             <div className="absolute top-0 left-0 w-[12px] h-[0.5px] bg-white/30" />
             <div className="absolute top-0 left-0 w-[0.5px] h-[12px] bg-white/30" />
-            {/* Top-right corner */}
             <div className="absolute top-0 right-0 w-[12px] h-[0.5px] bg-white/30" />
             <div className="absolute top-0 right-0 w-[0.5px] h-[12px] bg-white/30" />
-            {/* Bottom-left corner */}
             <div className="absolute bottom-0 left-0 w-[12px] h-[0.5px] bg-white/30" />
             <div className="absolute bottom-0 left-0 w-[0.5px] h-[12px] bg-white/30" />
-            {/* Bottom-right corner */}
             <div className="absolute bottom-0 right-0 w-[12px] h-[0.5px] bg-white/30" />
             <div className="absolute bottom-0 right-0 w-[0.5px] h-[12px] bg-white/30" />
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm text-white uppercase font-light">TOTAL SUBSCRIPTION</h3>
+              <div>
+                <h3 className="text-sm text-white uppercase font-light">Activity Hits</h3>
+                <p className="text-4xl text-white font-light mt-1">
+                  {activityLoading ? '...' : formatFullNumber(activityGrandTotal)}
+                </p>
+                <p className="text-xs text-gray-400">Tracked events in selected period</p>
+              </div>
               <div className="flex items-center space-x-1 overflow-x-auto">
-                {['1D', '1W', '6M', '1Y', 'ALL'].map((period) => (
+                {['1D', '1W', '1M', '3M', '6M', '1Y', 'ALL'].map((period) => (
                   <button
                     key={period}
-                    onClick={() => setSelectedSubscriptionPeriod(period)}
-                    className={`px-2 py-1 text-xs font-light transition-colors whitespace-nowrap ${
-                      selectedSubscriptionPeriod === period
-                        ? 'bg-white/20 text-white border border-white/30'
-                        : 'text-gray-500 hover:text-white'
-                    }`}
+                    onClick={() => setActivityPeriod(period)}
+                    className={`px-2 py-1 text-xs font-light transition-colors whitespace-nowrap ${activityPeriod === period ? 'bg-white/20 text-white border border-white/30' : 'text-gray-500 hover:text-white'
+                      }`}
                   >
                     {period}
                   </button>
                 ))}
               </div>
             </div>
-            <div className="flex justify-between items-end mb-6">
-              <p className="text-4xl text-white font-light">
-                $
-                {totalSubscription.toLocaleString('en-US', {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}
-              </p>
-              <div className="flex items-center gap-1 px-2 py-1">
-                <svg
-                  className={`w-3 h-3 ${newUsersPercentage >= 0 ? 'text-green-500' : 'text-red-500 rotate-180'}`}
-                  viewBox="0 0 12 12"
-                  fill="currentColor"
-                >
-                  <path d="M6 0 L12 12 L0 12 Z" />
-                </svg>
-                <span
-                  className={`text-xs font-medium ${newUsersPercentage >= 0 ? 'text-green-500' : 'text-red-500'}`}
-                >
-                  {Math.abs(newUsersPercentage).toFixed(1)}%
-                </span>
-              </div>
-            </div>
-            {/* Area Chart with X-axis labels and Tooltip */}
             <div className="space-y-2 relative">
-              <div className="h-32 relative">
-                <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                  <defs>
-                    <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <stop
-                        offset="0%"
-                        style={{ stopColor: 'rgba(255, 255, 255, 0.3)', stopOpacity: 1 }}
-                      />
-                      <stop
-                        offset="100%"
-                        style={{ stopColor: 'rgba(255, 255, 255, 0.05)', stopOpacity: 1 }}
-                      />
-                    </linearGradient>
-                  </defs>
-                  {/* Area fill */}
-                  <polygon
-                    points={`0,100 ${getChartData(selectedSubscriptionPeriod, 'newUsers')
-                      .map((val, i, arr) => {
-                        const x = (i / (arr.length - 1)) * 100;
-                        const y = 100 - val;
-                        return `${x},${y}`;
-                      })
-                      .join(' ')} 100,100`}
-                    fill="url(#areaGradient)"
-                  />
-                  {/* Top line */}
-                  <polyline
-                    points={getChartData(selectedSubscriptionPeriod, 'newUsers')
-                      .map((val, i, arr) => {
-                        const x = (i / (arr.length - 1)) * 100;
-                        const y = 100 - val;
-                        return `${x},${y}`;
-                      })
-                      .join(' ')}
-                    fill="none"
-                    stroke="rgba(255, 255, 255, 0.3)"
-                    strokeWidth="0.5"
-                  />
-
-                  {getChartData(selectedSubscriptionPeriod, 'newUsers').map((val, i, arr) => {
-                    const x = (i / (arr.length - 1)) * 100;
-                    const y = 100 - val;
-                    const isHovered = hoveredAreaIndex === i;
-
-                    return (
-                      <g key={`dot-${i}`}>
-                        {/* Dot appears only on hover */}
-                        <circle
-                          cx={x}
-                          cy={y}
-                          r="0.5"
-                          fill="white"
-                          opacity={isHovered ? 1 : 0}
-                          className="transition-all duration-200 ease-out"
-                          style={{
-                            filter: isHovered
-                              ? 'drop-shadow(0 0 3px rgba(255, 255, 255, 0.6))'
-                              : 'none',
-                            pointerEvents: 'none',
-                          }}
-                        />
-                        {/* Invisible hover area */}
-                        <circle
-                          cx={x}
-                          cy={y}
-                          r="8"
-                          fill="transparent"
-                          className="cursor-pointer"
-                          onMouseEnter={(e) => {
-                            const svg = e.currentTarget.ownerSVGElement;
-                            if (svg) {
-                              const rect = svg.getBoundingClientRect();
-                              const pointX = rect.left + (x / 100) * rect.width;
-                              const pointY = rect.top + (y / 100) * rect.height;
-                              // Constrain tooltip within viewport
-                              const tooltipWidth = 150; // Approximate tooltip width
-                              const tooltipHeight = 60; // Approximate tooltip height
-                              const constrainedX = Math.max(
-                                tooltipWidth / 2,
-                                Math.min(window.innerWidth - tooltipWidth / 2, pointX)
-                              );
-                              const constrainedY = Math.max(
-                                tooltipHeight + 10,
-                                Math.min(window.innerHeight - 10, pointY)
-                              );
-                              setHoveredAreaIndex(i);
-                              setHoveredAreaPosition({ x: constrainedX, y: constrainedY });
-                            }
-                          }}
-                          onMouseLeave={() => {
-                            setHoveredAreaIndex(null);
-                            setHoveredAreaPosition(null);
-                          }}
-                        />
-                      </g>
-                    );
-                  })}
-                </svg>
-
-                {/* Tooltip */}
-                {hoveredAreaIndex !== null && hoveredAreaPosition && (
-                  <div
-                    className="fixed z-50 pointer-events-none transition-all duration-200 ease-out animate-in fade-in"
-                    style={{
-                      left: `${hoveredAreaPosition.x}px`,
-                      top: `${hoveredAreaPosition.y}px`,
-                      transform: 'translate(-50%, -100%)',
-                      maxWidth: 'calc(100vw - 20px)',
-                    }}
-                  >
-                    <div className="bg-black border border-white/20 rounded-sm px-3 py-2 shadow-lg whitespace-nowrap">
-                      <div className="text-xs text-gray-400 mb-1 font-mono uppercase">
-                        {
-                          getDetailedLabels(selectedSubscriptionPeriod, 'newUsers')[
-                            hoveredAreaIndex
-                          ]
-                        }
-                      </div>
-                      <div className="text-sm text-white font-sans font-medium">
-                        {newUsersData[hoveredAreaIndex] !== undefined
-                          ? newUsersData[hoveredAreaIndex].toLocaleString()
-                          : '0'}{' '}
-                        <span className="font-mono text-xs text-gray-400">users</span>
-                      </div>
+              <div className="h-40 flex items-end gap-1">
+                {resolvedActivityLabels.map((label, index) => {
+                  const bucketTotal = activityBuckets[index] || 0;
+                  return (
+                    <div
+                      key={`${label}-${index}`}
+                      className="flex-1 flex flex-col justify-end gap-[1px] h-full cursor-pointer"
+                      onMouseEnter={(event) => handleActivityHover(event, index)}
+                      onMouseLeave={() => {
+                        setHoveredAreaIndex(null);
+                        setHoveredAreaPosition(null);
+                      }}
+                    >
+                      {ACTIVITY_STREAMS.map((stream) => {
+                        const value = activitySeries[stream.id]?.[index] ?? 0;
+                        const heightPercent =
+                          bucketTotal === 0 || maxActivityValue === 0
+                            ? 0
+                            : Math.max((value / maxActivityValue) * 100, value > 0 ? 4 : 0);
+                        return (
+                          <div
+                            key={`${stream.id}-${index}`}
+                            className={`w-full ${stream.barClass}`}
+                            style={{ height: `${heightPercent}%` }}
+                          />
+                        );
+                      })}
+                    </div>
+                  );
+                })}
+              </div>
+              {activityLoading && (
+                <div className="absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center text-xs uppercase text-gray-400 pointer-events-none">
+                  Loading activity...
+                </div>
+              )}
+              {hoveredAreaIndex !== null && hoveredAreaPosition && (
+                <div
+                  className="fixed z-50 pointer-events-none transition-all duration-200 ease-out animate-in fade-in"
+                  style={{
+                    left: `${hoveredAreaPosition.x}px`,
+                    top: `${hoveredAreaPosition.y}px`,
+                    transform: 'translate(-50%, -100%)',
+                    maxWidth: 'calc(100vw - 20px)',
+                  }}
+                >
+                  <div className="bg-black border border-white/20 rounded-sm px-3 py-2 shadow-lg min-w-[180px]">
+                    <div className="text-xs text-gray-400 mb-2 font-mono uppercase">
+                      {resolvedActivityLabels[hoveredAreaIndex] || `Bucket ${hoveredAreaIndex + 1}`}
+                    </div>
+                    <div className="space-y-1">
+                      {ACTIVITY_STREAMS.map((stream) => (
+                        <div key={stream.id} className="flex items-center justify-between text-sm">
+                          <div className="flex items-center gap-2 text-gray-300">
+                            <span className={`w-2 h-2 rounded-sm ${stream.dotClass}`} />
+                            {stream.label}
+                          </div>
+                          <span className="text-white font-medium">
+                            {activitySeries[stream.id]?.[hoveredAreaIndex] ?? 0}
+                          </span>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                )}
-              </div>
-              {/* X-axis labels */}
+                </div>
+              )}
               <div
-                className={`flex justify-between ${selectedSubscriptionPeriod === '1M' ? 'text-[10px]' : 'text-xs'} text-gray-500 font-mono`}
+                className={`flex justify-between ${activityPeriod === '1M' ? 'text-[10px]' : 'text-xs'} text-gray-500 font-mono`}
               >
-                {getChartLabels(selectedSubscriptionPeriod, 'newUsers').map((label, i) => (
+                {resolvedActivityLabels.map((label, i) => (
                   <span key={i} className="flex-1 text-center truncate">
                     {label}
                   </span>
+                ))}
+              </div>
+              <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mt-4 pt-4 border-t border-white/10">
+                {ACTIVITY_STREAMS.map((stream) => (
+                  <div key={stream.id} className="flex items-center justify-between text-xs text-gray-400">
+                    <div className="flex items-center gap-2">
+                      <span className={`w-2 h-2 rounded-sm ${stream.dotClass}`} />
+                      {stream.label}
+                    </div>
+                    <span className="text-white font-medium">
+                      {activityLoading ? '...' : formatFullNumber(activityTotals[stream.id] || 0)}
+                    </span>
+                  </div>
                 ))}
               </div>
             </div>
@@ -1921,7 +1961,8 @@ export default function Dashboard() {
         </div>
       </div>
     </div>
-  );
+    );
+  };
 
   return (
     <div
