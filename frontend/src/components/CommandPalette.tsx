@@ -3,6 +3,7 @@ import {
   ArrowRight,
   BarChart3,
   Building2,
+  Database,
   Lock,
   Mail,
   Plus,
@@ -10,6 +11,7 @@ import {
   Settings,
   UserPlus,
   Users,
+  Wrench,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -44,7 +46,7 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
         const response = await fetch('/api/plugins');
         const data = await response.json();
         setPlugins(data);
-      } catch (_error) {}
+      } catch (_error) { }
     };
     fetchPlugins();
   }, []);
@@ -85,6 +87,25 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
       action: () => navigate('/sessions'),
       category: 'Navigation',
       keywords: ['session', 'login', 'active'],
+    },
+    {
+      id: 'tools',
+      title: 'Tools',
+      description: 'View tools and utilities',
+      icon: Wrench,
+      action: () => navigate('/tools'),
+      category: 'Navigation',
+      keywords: ['utilities', 'tools'],
+    },
+    {
+      id: 'database',
+      title: 'Database',
+      description: 'View database and schema',
+      icon: Database,
+      disabled: true,
+      action: () => navigate('/database'),
+      category: 'Navigation',
+      keywords: ['database', 'schema'],
     },
     {
       id: 'settings',
@@ -244,11 +265,10 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
                               onClose();
                             }
                           }}
-                          className={`flex items-center space-x-3 px-0 py-2 rounded-none transition-colors relative ${
-                            isDisabled
+                          className={`flex items-center space-x-3 px-0 py-2 rounded-none transition-colors relative ${isDisabled
                               ? 'opacity-40 cursor-not-allowed blur-[0.5px]'
                               : 'hover:bg-white/5 cursor-pointer'
-                          }`}
+                            }`}
                         >
                           <Icon className="w-4 h-4 text-white" />
                           <div className="flex-1">

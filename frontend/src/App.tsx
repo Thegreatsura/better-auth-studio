@@ -36,7 +36,7 @@ function App() {
             <Route path="/settings" element={<Settings />} />
           </Routes>
         </Layout>
-        <Toaster theme="dark" position="top-right" richColors closeButton />
+        <Toaster className='rounded-none border-dashed border-white/20' theme="dark" position="top-right" richColors closeButton />
       </Router>
     </CountsProvider>
   );
