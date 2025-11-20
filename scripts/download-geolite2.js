@@ -8,7 +8,6 @@ const GEO_DB_URL =
   'https://github.com/P3TERX/GeoLite.mmdb/releases/download/2024.08.13/GeoLite2-City.mmdb';
 const OUTPUT_PATH = path.join(__dirname, '..', 'data', 'GeoLite2-City.mmdb');
 
-// Create data directory if it doesn't exist
 const dataDir = path.dirname(OUTPUT_PATH);
 if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
@@ -24,7 +23,6 @@ https
       file.on('finish', () => {
         file.close();
 
-        // Verify file
         const _stats = fs.statSync(OUTPUT_PATH);
       });
 
