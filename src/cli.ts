@@ -89,13 +89,10 @@ async function startStudioWithWatch(options: StudioWatchOptions) {
 
     watcher.on('change', async (_path: string) => {
       try {
-        // Stop current studio
         if (currentStudio && typeof currentStudio.close === 'function') {
           await currentStudio.close();
-        }
-
-        // Reload config
-        const newAuthConfig = await findAuthConfig(configPath);
+        
+          const newAuthConfig = await findAuthConfig(configPath);
         if (!newAuthConfig) {
           return;
         }

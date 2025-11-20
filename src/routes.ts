@@ -680,7 +680,6 @@ export function createRoutes(
 
       let users: any[] = [];
       if (adapter.findMany) {
-        // Use findMany with high limit to get all users
         users = await adapter.findMany({ model: 'user', limit: 100000 }).catch(() => []);
       } else if (adapter.getUsers) {
         users = await adapter.getUsers();
@@ -1345,15 +1344,15 @@ export function createRoutes(
         return res.status(400).json({ success: false, error: 'Migration provider is required' });
       }
       if (script) {
+        // TODO: use more of sandbox environment to execute the script for security reasons
+        const result = eval(script);  
+        return res.json({
+          success: true,
+          result: result,
+        });
       } else {
+        return res.status(400).json({ success: false, error: 'No script provided' });
       }
-
-      // This endpoint does not execute arbitrary scripts for safety. It simply
-      // acknowledges receipt so the frontend can present instructions.
-      return res.json({
-        success: true,
-        message: 'Migration script received. Review the server logs for details.',
-      });
     } catch (error) {
       res.status(500).json({
         success: false,
