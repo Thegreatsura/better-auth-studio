@@ -66,11 +66,9 @@ async function startStudioWithWatch(options) {
         });
         watcher.on('change', async (_path) => {
             try {
-                // Stop current studio
                 if (currentStudio && typeof currentStudio.close === 'function') {
                     await currentStudio.close();
                 }
-                // Reload config
                 const newAuthConfig = await findAuthConfig(configPath);
                 if (!newAuthConfig) {
                     return;
@@ -160,7 +158,6 @@ program
             process.exit(1);
         }
         let databaseInfo = 'Not configured';
-        // Try to auto-detect database first
         try {
             const detectedDb = await detectDatabaseWithDialect();
             if (detectedDb) {

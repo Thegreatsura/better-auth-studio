@@ -10,7 +10,6 @@ import { loadConfig } from 'c12';
 import { addSvelteKitEnvModules } from './add-svelte-kit-env-modules.js';
 import { getTsconfigInfo } from './get-tsconfig-info.js';
 
-// JitiOptions type definition
 interface JitiOptions {
   transformOptions?: {
     babel?: {
@@ -114,22 +113,19 @@ possiblePaths = [
   ...possiblePaths.map((it) => `server/${it}`),
   ...possiblePaths.map((it) => `lib/${it}`),
   ...possiblePaths.map((it) => `utils/${it}`),
-];
-possiblePaths = [
-  ...possiblePaths,
   ...possiblePaths.map((it) => `src/${it}`),
   ...possiblePaths.map((it) => `app/${it}`),
+  ...possiblePaths.map((it) => `apps/${it}`),
 ];
+
 
 function resolveReferencePath(configDir: string, refPath: string): string {
   const resolvedPath = path.resolve(configDir, refPath);
 
-  // If it ends with .json, treat as direct file reference
   if (refPath.endsWith('.json')) {
     return resolvedPath;
   }
 
-  // If the exact path exists and is a file, use it
   if (fs.existsSync(resolvedPath)) {
     try {
       const stats = fs.statSync(resolvedPath);
@@ -137,11 +133,9 @@ function resolveReferencePath(configDir: string, refPath: string): string {
         return resolvedPath;
       }
     } catch {
-      // Fall through to directory handling
     }
   }
 
-  // Otherwise, assume directory reference
   return path.resolve(configDir, refPath, 'tsconfig.json');
 }
 
@@ -378,8 +372,8 @@ export { possiblePaths };
 
 // Legacy function for backward compatibility - kept for routes.ts
 export function extractBetterAuthConfig(_content: string): AuthConfig | null {
-  // This is a simplified version that returns null
-  // The actual config loading is now handled by the better-auth getConfig function
+  // actual load config here 
+
   return null;
 }
 

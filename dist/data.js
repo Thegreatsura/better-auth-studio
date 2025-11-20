@@ -3,7 +3,6 @@ export async function getAuthData(_authConfig, type = 'stats', options, configPa
     try {
         const adapter = await getAuthAdapter(configPath);
         if (!adapter) {
-            // No adapter available, falling back to mock data
             console.log('No adapter found. if you think this is an issue from our side. please file a github issue at https://github.com/Kinfe123/better-auth/issues');
         }
         switch (type) {

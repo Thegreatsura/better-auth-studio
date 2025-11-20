@@ -19,7 +19,6 @@ export async function startStudio(options) {
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
     let wss = null;
-    // Only start WebSocket server in watch mode
     if (watchMode) {
         wss = new WebSocketServer({ server });
         wss.on('connection', (ws) => {

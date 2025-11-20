@@ -1226,30 +1226,6 @@ export function createRoutes(
           totalPlugins: pluginInfo.length,
         });
       } catch (_error) {
-        try {
-          const { readFileSync } = await import('node:fs');
-          const content = readFileSync(authConfigPath, 'utf-8');
-          const { extractBetterAuthConfig } = await import('./config');
-
-          const config = extractBetterAuthConfig(content);
-          if (config?.plugins) {
-            const pluginInfo = config.plugins.map((plugin: any) => ({
-              id: plugin.id || 'unknown',
-              name: plugin.name || plugin.id || 'unknown',
-              version: plugin.version || 'unknown',
-              description: plugin.description || `${plugin.id || 'unknown'} plugin for Better Auth`,
-              enabled: true,
-            }));
-
-            return res.json({
-              plugins: pluginInfo,
-              configPath: authConfigPath,
-              totalPlugins: pluginInfo.length,
-              fallback: true,
-            });
-          }
-        } catch (_fallbackError) {}
-
         res.json({
           plugins: [],
           error: 'Failed to load auth config - import failed and regex extraction unavailable',
@@ -1290,21 +1266,6 @@ export function createRoutes(
           configPath: authConfigPath,
         });
       } catch (_error) {
-        try {
-          const { readFileSync } = await import('node:fs');
-          const content = readFileSync(authConfigPath, 'utf-8');
-          const { extractBetterAuthConfig } = await import('./config');
-
-          const config = extractBetterAuthConfig(content);
-          if (config?.database) {
-            return res.json({
-              database: config.database,
-              configPath: authConfigPath,
-              fallback: true,
-            });
-          }
-        } catch (_fallbackError) {}
-
         res.json({
           database: null,
           error: 'Failed to load auth config - import failed and regex extraction unavailable',
@@ -2268,28 +2229,6 @@ export function createRoutes(
             });
           }
         }
-        try {
-          const { readFileSync } = await import('node:fs');
-          const content = readFileSync(authConfigPath, 'utf-8');
-          const { extractBetterAuthConfig } = await import('./config.js');
-
-          const config = extractBetterAuthConfig(content);
-          if (config?.plugins) {
-            const organizationPlugin = config.plugins.find(
-              (plugin: any) => plugin.id === 'organization'
-            );
-
-            const teamsEnabled = organizationPlugin?.teams?.enabled === true;
-
-            return res.json({
-              enabled: teamsEnabled,
-              configPath: authConfigPath,
-              organizationPlugin: organizationPlugin || null,
-              fallback: true,
-            });
-          }
-        } catch (_fallbackError) {}
-
         res.json({
           enabled: false,
           error: 'Failed to load auth config - getConfig failed and regex extraction unavailable',
@@ -2986,28 +2925,6 @@ export function createRoutes(
             organizationPlugin: hasOrganizationPlugin || null,
           });
         }
-
-        try {
-          const { readFileSync } = await import('node:fs');
-          const content = readFileSync(authConfigPath, 'utf-8');
-          const { extractBetterAuthConfig } = await import('./config.js');
-
-          const config = extractBetterAuthConfig(content);
-          if (config?.plugins) {
-            const hasOrganizationPlugin = config.plugins.find(
-              (plugin: any) => plugin.id === 'organization'
-            );
-
-            return res.json({
-              enabled: !!hasOrganizationPlugin,
-              configPath: authConfigPath,
-              availablePlugins: config.plugins.map((p: any) => p.id) || [],
-              organizationPlugin: hasOrganizationPlugin || null,
-              fallback: true,
-            });
-          }
-        } catch (_fallbackError) {}
-
         res.json({
           enabled: false,
           error: 'Failed to load auth config - getConfig failed and regex extraction unavailable',
@@ -3487,7 +3404,6 @@ export function createRoutes(
         return res.status(400).json({ success: false, error: 'Provider is required' });
       }
 
-      // Check if provider exists
       const providers = authConfig.socialProviders || [];
       const selectedProvider = providers.find((p: any) => (p.id || p.type) === provider);
 
@@ -3495,10 +3411,8 @@ export function createRoutes(
         return res.status(404).json({ success: false, error: 'Provider not found' });
       }
 
-      // Generate test session ID
       const testSessionId = `oauth-test-${Date.now()}-${Math.random().toString(36).substring(7)}`;
 
-      // Store the test session
       oauthTestSessions.set(testSessionId, {
         provider,
         startTime: Date.now(),

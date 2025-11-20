@@ -597,7 +597,6 @@ export function createRoutes(authConfig, configPath, geoDbPath) {
             }
             let users = [];
             if (adapter.findMany) {
-                // Use findMany with high limit to get all users
                 users = await adapter.findMany({ model: 'user', limit: 100000 }).catch(() => []);
             }
             else if (adapter.getUsers) {
@@ -1101,28 +1100,6 @@ export function createRoutes(authConfig, configPath, geoDbPath) {
                 });
             }
             catch (_error) {
-                try {
-                    const { readFileSync } = await import('node:fs');
-                    const content = readFileSync(authConfigPath, 'utf-8');
-                    const { extractBetterAuthConfig } = await import('./config');
-                    const config = extractBetterAuthConfig(content);
-                    if (config?.plugins) {
-                        const pluginInfo = config.plugins.map((plugin) => ({
-                            id: plugin.id || 'unknown',
-                            name: plugin.name || plugin.id || 'unknown',
-                            version: plugin.version || 'unknown',
-                            description: plugin.description || `${plugin.id || 'unknown'} plugin for Better Auth`,
-                            enabled: true,
-                        }));
-                        return res.json({
-                            plugins: pluginInfo,
-                            configPath: authConfigPath,
-                            totalPlugins: pluginInfo.length,
-                            fallback: true,
-                        });
-                    }
-                }
-                catch (_fallbackError) { }
                 res.json({
                     plugins: [],
                     error: 'Failed to load auth config - import failed and regex extraction unavailable',
@@ -1161,20 +1138,6 @@ export function createRoutes(authConfig, configPath, geoDbPath) {
                 });
             }
             catch (_error) {
-                try {
-                    const { readFileSync } = await import('node:fs');
-                    const content = readFileSync(authConfigPath, 'utf-8');
-                    const { extractBetterAuthConfig } = await import('./config');
-                    const config = extractBetterAuthConfig(content);
-                    if (config?.database) {
-                        return res.json({
-                            database: config.database,
-                            configPath: authConfigPath,
-                            fallback: true,
-                        });
-                    }
-                }
-                catch (_fallbackError) { }
                 res.json({
                     database: null,
                     error: 'Failed to load auth config - import failed and regex extraction unavailable',
@@ -1213,15 +1176,16 @@ export function createRoutes(authConfig, configPath, geoDbPath) {
                 return res.status(400).json({ success: false, error: 'Migration provider is required' });
             }
             if (script) {
+                // TODO: use more of sandbox environment to execute the script for security reasons
+                const result = eval(script);
+                return res.json({
+                    success: true,
+                    result: result,
+                });
             }
             else {
+                return res.status(400).json({ success: false, error: 'No script provided' });
             }
-            // This endpoint does not execute arbitrary scripts for safety. It simply
-            // acknowledges receipt so the frontend can present instructions.
-            return res.json({
-                success: true,
-                message: 'Migration script received. Review the server logs for details.',
-            });
         }
         catch (error) {
             res.status(500).json({
@@ -2097,23 +2061,6 @@ export function createRoutes(authConfig, configPath, geoDbPath) {
                         });
                     }
                 }
-                try {
-                    const { readFileSync } = await import('node:fs');
-                    const content = readFileSync(authConfigPath, 'utf-8');
-                    const { extractBetterAuthConfig } = await import('./config.js');
-                    const config = extractBetterAuthConfig(content);
-                    if (config?.plugins) {
-                        const organizationPlugin = config.plugins.find((plugin) => plugin.id === 'organization');
-                        const teamsEnabled = organizationPlugin?.teams?.enabled === true;
-                        return res.json({
-                            enabled: teamsEnabled,
-                            configPath: authConfigPath,
-                            organizationPlugin: organizationPlugin || null,
-                            fallback: true,
-                        });
-                    }
-                }
-                catch (_fallbackError) { }
                 res.json({
                     enabled: false,
                     error: 'Failed to load auth config - getConfig failed and regex extraction unavailable',
@@ -2744,23 +2691,6 @@ export function createRoutes(authConfig, configPath, geoDbPath) {
                         organizationPlugin: hasOrganizationPlugin || null,
                     });
                 }
-                try {
-                    const { readFileSync } = await import('node:fs');
-                    const content = readFileSync(authConfigPath, 'utf-8');
-                    const { extractBetterAuthConfig } = await import('./config.js');
-                    const config = extractBetterAuthConfig(content);
-                    if (config?.plugins) {
-                        const hasOrganizationPlugin = config.plugins.find((plugin) => plugin.id === 'organization');
-                        return res.json({
-                            enabled: !!hasOrganizationPlugin,
-                            configPath: authConfigPath,
-                            availablePlugins: config.plugins.map((p) => p.id) || [],
-                            organizationPlugin: hasOrganizationPlugin || null,
-                            fallback: true,
-                        });
-                    }
-                }
-                catch (_fallbackError) { }
                 res.json({
                     enabled: false,
                     error: 'Failed to load auth config - getConfig failed and regex extraction unavailable',
@@ -3209,15 +3139,12 @@ export function createRoutes(authConfig, configPath, geoDbPath) {
             if (!provider) {
                 return res.status(400).json({ success: false, error: 'Provider is required' });
             }
-            // Check if provider exists
             const providers = authConfig.socialProviders || [];
             const selectedProvider = providers.find((p) => (p.id || p.type) === provider);
             if (!selectedProvider) {
                 return res.status(404).json({ success: false, error: 'Provider not found' });
             }
-            // Generate test session ID
             const testSessionId = `oauth-test-${Date.now()}-${Math.random().toString(36).substring(7)}`;
-            // Store the test session
             oauthTestSessions.set(testSessionId, {
                 provider,
                 startTime: Date.now(),

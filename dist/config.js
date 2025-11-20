@@ -22,19 +22,15 @@ possiblePaths = [
     ...possiblePaths.map((it) => `server/${it}`),
     ...possiblePaths.map((it) => `lib/${it}`),
     ...possiblePaths.map((it) => `utils/${it}`),
-];
-possiblePaths = [
-    ...possiblePaths,
     ...possiblePaths.map((it) => `src/${it}`),
     ...possiblePaths.map((it) => `app/${it}`),
+    ...possiblePaths.map((it) => `apps/${it}`),
 ];
 function resolveReferencePath(configDir, refPath) {
     const resolvedPath = path.resolve(configDir, refPath);
-    // If it ends with .json, treat as direct file reference
     if (refPath.endsWith('.json')) {
         return resolvedPath;
     }
-    // If the exact path exists and is a file, use it
     if (fs.existsSync(resolvedPath)) {
         try {
             const stats = fs.statSync(resolvedPath);
@@ -43,10 +39,8 @@ function resolveReferencePath(configDir, refPath) {
             }
         }
         catch {
-            // Fall through to directory handling
         }
     }
-    // Otherwise, assume directory reference
     return path.resolve(configDir, refPath, 'tsconfig.json');
 }
 function getPathAliasesRecursive(tsconfigPath, visited = new Set()) {
@@ -222,8 +216,7 @@ export async function getConfig({ cwd, configPath, shouldThrowOnError = false, }
 export { possiblePaths };
 // Legacy function for backward compatibility - kept for routes.ts
 export function extractBetterAuthConfig(_content) {
-    // This is a simplified version that returns null
-    // The actual config loading is now handled by the better-auth getConfig function
+    // actual load config here 
     return null;
 }
 export async function findAuthConfig(configPath) {
