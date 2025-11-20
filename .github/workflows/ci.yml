@@ -53,19 +53,8 @@ jobs:
           ${{ runner.os }}-pnpm-store-
           
     - name: Install dependencies
-      shell: bash
-      run: |
-        set -euo pipefail
-        echo "📦 Installing root dependencies..."
-        pnpm install --frozen-lockfile
+      run: pnpm install --frozen-lockfile
 
-        if [ -d "frontend" ]; then
-          echo "📦 Installing frontend dependencies..."
-          pushd frontend >/dev/null
-          pnpm install
-          popd >/dev/null
-        fi
-        
     - name: Lint packages
       run: pnpm run lint || echo "Linting completed with warnings"
       
