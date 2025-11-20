@@ -52,7 +52,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pnpm-store-
           
-    - name: Install dependencies (root + frontend + docs + tests)
+    - name: Install dependencies
       shell: bash
       run: |
         set -euo pipefail
