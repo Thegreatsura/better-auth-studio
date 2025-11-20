@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "tsc && pnpm run build:frontend",
-    "build:frontend": "cd frontend && pnpm install && pnpm run build",
+    "build:frontend": "cd frontend && pnpm run build",
     "dev": "tsx src/cli.ts",
     "start": "node dist/cli.js",
     "studio": "tsx src/cli.ts",
