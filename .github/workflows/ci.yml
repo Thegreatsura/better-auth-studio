@@ -52,8 +52,19 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pnpm-store-
           
-    - name: Install dependencies
-      run: pnpm install
+    - name: Install dependencies (root + frontend + docs + tests)
+      shell: bash
+      run: |
+        set -euo pipefail
+        echo "📦 Installing root dependencies..."
+        pnpm install
+
+        if [ -d "frontend" ]; then
+          echo "📦 Installing frontend dependencies..."
+          pushd frontend >/dev/null
+          pnpm install
+          popd >/dev/null
+        fi
         
     - name: Lint packages
       run: pnpm run lint || echo "Linting completed with warnings"
@@ -62,7 +73,7 @@ jobs:
       run: pnpm run type-check
       
     - name: Build packages
-      run: pnpm build
+      run: pnpm install && pnpm build
       
     - name: Test build artifacts
       run: |
@@ -115,35 +126,24 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pnpm-store-
         
-    - name: Install dependencies
+    - name: Install dependencies (root + frontend)
       shell: bash
       run: |
         set -euo pipefail
-        echo "📦 Installing root dependencies..."
-        pnpm install
-
+        if [ -f "pnpm-lock.yaml" ]; then
+          echo "✅ pnpm-lock.yaml found, installing with frozen lockfile"
+          pnpm install --frozen-lockfile
+        else
+          echo "⚠️ pnpm-lock.yaml not found, installing without frozen lockfile"
+          pnpm install
+        fi
+        
         if [ -d "frontend" ]; then
           echo "📦 Installing frontend dependencies..."
           pushd frontend >/dev/null
-          pnpm install
+          pnpm install --frozen-lockfile || pnpm install
           popd >/dev/null
         fi
-
-        if [ -d "docs" ]; then
-          echo "📦 Installing docs dependencies..."
-          pushd docs >/dev/null
-          pnpm install
-          popd >/dev/null
-        fi
-
-        if [ -d "tests/drizzle" ]; then
-          echo "📦 Installing tests/drizzle dependencies..."
-          pushd tests/drizzle >/dev/null
-          pnpm install
-          popd >/dev/null
-        fi
-        
-      
     - name: Run security audit
       run: pnpm audit --audit-level moderate
       
