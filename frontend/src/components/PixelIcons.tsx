@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { LucideLoader, LucideTrash } from 'lucide-react';
+import { Clock1, LucideLoader, LucideTrash, SendIcon } from 'lucide-react';
 import type React from 'react';
 
 interface IconProps {
@@ -355,19 +355,7 @@ export const Edit: React.FC<IconProps> = ({ className = '', size = 24 }) => (
 );
 
 export const Clock: React.FC<IconProps> = ({ className = '', size = 24 }) => (
-  <svg
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    className={className}
-    width={size}
-    height={size}
-  >
-    <path
-      d="M15 2h-2v2h2v2h-2v2h-2v2H9V8H7V6H5V4H3v2h2v2h2v2h2v2h2v2h2v-2h2v-2h2V8h2V6h2V4h-2v2h-2v2h-2v2h-2V6h2V4h2V2zm-2 12h2v2h-2v-2zm-2-2h2v2h-2v-2zm-2-2h2v2H9v-2zm-2-2h2v2H7v-2zm8 6h2v2h-2v-2zm2-2h2v2h-2v-2zm2-2h2v2h-2v-2zm2-2h-2v-2h2v2z"
-      fill="currentColor"
-    />
-  </svg>
+  <Clock1  size={size} className={cn(className , 'w-4 h-4')} /> 
 );
 
 export const Database: React.FC<IconProps> = ({ className = '', size = 24 }) => (
@@ -573,16 +561,7 @@ export const Trash2: React.FC<IconProps> = ({ className = '', size = 24 }) => (
 );
 
 export const Send: React.FC<IconProps> = ({ className = '', size = 24 }) => (
-  <svg
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    className={className}
-    width={size}
-    height={size}
-  >
-    <path d="M2 4h20v2H2V4zm0 4h18v2H2V8zm0 4h16v2H2v-2zm0 4h14v2H2v-2z" fill="currentColor" />
-  </svg>
+  <SendIcon className={cn(className, 'w-4 h-4')} size={size} />
 );
 
 export const CheckCircle: React.FC<IconProps> = ({ className = '', size = 24 }) => (
