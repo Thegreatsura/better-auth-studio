@@ -1,4 +1,4 @@
-import { Code, Github, Globe, Key, TestTube, Wrench } from 'lucide-react';
+import { Code, Github, Globe, Key, TestTube } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -451,12 +451,12 @@ export default function Tools() {
         prev.map((line) =>
           line.id === existingId
             ? {
-                ...line,
-                type,
-                message,
-                status,
-                timestamp: new Date(),
-              }
+              ...line,
+              type,
+              message,
+              status,
+              timestamp: new Date(),
+            }
             : line
         )
       );
@@ -614,7 +614,7 @@ export default function Tools() {
         handleOAuthResult(result);
         // Clean up URL
         setSearchParams({});
-      } catch (_error) {}
+      } catch (_error) { }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, setSearchParams, handleOAuthResult]);
@@ -628,7 +628,7 @@ export default function Tools() {
         if (result.success && result.providers) {
           setOauthProviders(result.providers.filter((p: OAuthProvider) => p.enabled));
         }
-      } catch (_error) {}
+      } catch (_error) { }
     };
     fetchProviders();
   }, []);
@@ -741,7 +741,7 @@ export default function Tools() {
               if (storedSession) {
                 try {
                   providerName = JSON.parse(storedSession).provider || providerName;
-                } catch (_) {}
+                } catch (_) { }
               }
               handleOAuthResult({
                 success: false,
@@ -1083,20 +1083,22 @@ export default function Tools() {
   }));
 
   return (
-    <div className="space-y-6 p-6 bg-black w-full min-h-screen">
+    <div className="space-y-8 bg-black w-full min-h-screen">
       <div className="w-full flex flex-col">
-        <div className="mb-8">
-          <div className="flex items-center space-x-3 mb-2">
-            <Wrench className="w-8 h-8 text-white" />
-            <h1 className="text-3xl font-light text-white">Tools</h1>
+        <div className="flex items-center justify-between p-5 pt-7">
+          <div className='pb-8'>
+            <h1 className="text-3xl font-normal text-white tracking-tight">Tools</h1>
+            <p className="text-gray-300 mt-2 uppercase font-mono font-light text-xs">
+              Utility tools for managing and testing your Better Auth setup
+            </p>
           </div>
-          <p className="text-gray-400 font-mono text-xs uppercase">
-            Utility tools for managing and testing your Better Auth setup
-          </p>
         </div>
-
+        <div className='flex flex-col items-center space-y-8'>
+          <hr className="w-full border-white/15 h-px" />
+          <hr className="w-full border-white/15 h-px" />
+        </div>
         {showLogs && toolLogs.length > 0 && (
-          <div className="mb-6">
+          <div className="mb-6 p-6 gap-8">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm uppercase font-mono text-gray-400 tracking-wider">
                 Tool Output
@@ -1119,8 +1121,7 @@ export default function Tools() {
             />
           </div>
         )}
-
-        <div className="space-y-8">
+        <div className="space-y-8 p-6 gap-8">
           {groupedTools.map((category) => (
             <div key={category.id} className="space-y-4">
               <div className="flex items-center space-x-2">
@@ -1142,11 +1143,10 @@ export default function Tools() {
                         isRunning ||
                         runningTool !== null
                       }
-                      className={`relative flex items-center space-x-4 p-4 bg-black/30 border border-dashed border-white/20 rounded-none transition-colors text-left group ${
-                        tool.id !== 'test-oauth' && tool.id !== 'test-db'
-                          ? 'opacity-60 cursor-not-allowed'
-                          : 'hover:bg-black/50 disabled:opacity-50 disabled:cursor-not-allowed'
-                      }`}
+                      className={`relative flex items-center space-x-4 p-4 bg-black/30 border border-dashed border-white/20 rounded-none transition-colors text-left group ${tool.id !== 'test-oauth' && tool.id !== 'test-db'
+                        ? 'opacity-60 cursor-not-allowed'
+                        : 'hover:bg-black/50 disabled:opacity-50 disabled:cursor-not-allowed'
+                        }`}
                     >
                       <div className="p-2 bg-white/10 rounded-none group-hover:bg-white/20 transition-colors">
                         {isRunning ? (
@@ -1223,11 +1223,10 @@ export default function Tools() {
                             startOAuthTest(provider.id);
                           }, 100);
                         }}
-                        className={`w-full flex items-center space-x-4 p-4 border rounded-none transition-all text-left group ${
-                          selectedProvider === provider.id
-                            ? 'border-white/50 bg-white/10'
-                            : 'border-dashed border-white/20 hover:bg-white/5 hover:border-white/30'
-                        }`}
+                        className={`w-full flex items-center space-x-4 p-4 border rounded-none transition-all text-left group ${selectedProvider === provider.id
+                          ? 'border-white/50 bg-white/10'
+                          : 'border-dashed border-white/20 hover:bg-white/5 hover:border-white/30'
+                          }`}
                       >
                         <div className="flex-shrink-0">{getProviderIcon(provider.id)}</div>
                         <div className="flex-1 min-w-0">
@@ -1236,11 +1235,10 @@ export default function Tools() {
                           </p>
                         </div>
                         <ArrowRight
-                          className={`w-5 h-5 transition-colors flex-shrink-0 ${
-                            selectedProvider === provider.id
-                              ? 'text-white'
-                              : 'text-gray-400 group-hover:text-white'
-                          }`}
+                          className={`w-5 h-5 transition-colors flex-shrink-0 ${selectedProvider === provider.id
+                            ? 'text-white'
+                            : 'text-gray-400 group-hover:text-white'
+                            }`}
                         />
                       </button>
                     ))}
@@ -1296,13 +1294,12 @@ export default function Tools() {
                       key={provider.id}
                       onClick={() => handleSelectMigration(provider.id)}
                       disabled={provider.disabled}
-                      className={`w-full flex items-center space-x-3 p-4 border transition-colors rounded-none text-left ${
-                        provider.disabled
-                          ? 'border-dashed border-white/10 bg-black/30 cursor-not-allowed opacity-60'
-                          : isActive
-                            ? 'border-white/60 bg-white/10'
-                            : 'border-dashed border-white/20 hover:bg-white/5 hover:border-white/40'
-                      }`}
+                      className={`w-full flex items-center space-x-3 p-4 border transition-colors rounded-none text-left ${provider.disabled
+                        ? 'border-dashed border-white/10 bg-black/30 cursor-not-allowed opacity-60'
+                        : isActive
+                          ? 'border-white/60 bg-white/10'
+                          : 'border-dashed border-white/20 hover:bg-white/5 hover:border-white/40'
+                        }`}
                     >
                       <div className="flex-shrink-0 w-10 h-10 bg-white/10 flex items-center justify-center">
                         {provider.logo ? provider.logo : <Code className="w-6 h-6 text-white" />}
