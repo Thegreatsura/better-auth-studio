@@ -238,7 +238,6 @@ export default function Dashboard() {
       });
     }
 
-    // Add other security recommendations
     patches.push(
       //   {
       //   id: '1',
@@ -265,16 +264,16 @@ export default function Dashboard() {
     //   cve: '',
     // });
 
-    // patches.push({
-    //   id: '3',
-    //   title: 'Rate Limiting Configuration',
-    //   severity: 'medium',
-    //   date: '2024-01-10',
-    //   description:
-    //     'Configure rate limiting for authentication endpoints to prevent brute force attacks. Better-auth provides built-in rate limiting middleware.',
-    //   affectedComponents: ['Auth Endpoints'],
-    //   status: 'pending',
-    // });
+    patches.push({
+      id: '3',
+      title: 'Rate Limiting Configuration',
+      severity: 'medium',
+      date: new Date().toISOString().split('T')[0],
+      description:
+        'Configure rate limiting for authentication endpoints to prevent brute force attacks. Better-auth provides built-in rate limiting middleware.',
+      affectedComponents: ['Auth Endpoints'],
+      status: 'pending',
+    });
 
     // patches.push({
     //   id: '4',

@@ -3126,7 +3126,6 @@ export function createRoutes(authConfig, configPath, geoDbPath) {
             res.status(500).json({ error: 'Failed to seed organizations' });
         }
     });
-    // OAuth Test Endpoints
     router.get('/api/tools/oauth/providers', async (_req, res) => {
         const _result = await getAuthAdapterWithConfig();
         try {
