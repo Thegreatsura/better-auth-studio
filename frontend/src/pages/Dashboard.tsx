@@ -220,7 +220,7 @@ export default function Dashboard() {
         title: `Update Better-Auth to v${betterAuthVersion.latest}`,
         severity: 'high',
         date: new Date().toISOString().split('T')[0],
-        description: `Your current version is outdated. Update to the latest version to get the latest security fixes, features, and improvements. Run: \`npm install better-auth@latest\``,
+        description: `Your current version is outdated. Update to the latest version to get the latest security fixes, features, and improvements. Run: \`pnpm install better-auth@latest\``,
         affectedComponents: ['All Components'],
         status: 'pending',
         cve: '',
