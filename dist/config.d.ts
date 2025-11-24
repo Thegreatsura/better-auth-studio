@@ -1,3 +1,4 @@
+import type { BetterAuthOptions } from 'better-auth';
 export interface AuthProvider {
     type: string;
     clientId?: string;
@@ -25,17 +26,7 @@ export interface AuthConfig {
         connectionString?: string;
         [key: string]: any;
     };
-    emailAndPassword?: {
-        enabled?: boolean;
-        disableSignUp?: boolean;
-        requireEmailVerification?: boolean;
-        maxPasswordLength?: number;
-        minPasswordLength?: number;
-        resetPasswordTokenExpiresIn?: number;
-        autoSignIn?: boolean;
-        revokeSessionsOnPasswordReset?: boolean;
-        [key: string]: any;
-    };
+    emailAndPassword?: BetterAuthOptions['emailAndPassword'];
     socialProviders?: Array<{
         id: string;
         name: string;
@@ -44,33 +35,9 @@ export interface AuthConfig {
         redirectURI?: string;
         enabled: boolean;
     }>;
-    trustedOrigins?: string[];
-    plugins?: any[];
-    advanced?: {
-        defaultCookieAttributes?: {
-            sameSite?: string;
-            secure?: boolean;
-            httpOnly?: boolean;
-        };
-        ipAddress?: {
-            ipAddressHeaders?: string[];
-            disableIpTracking?: boolean;
-        };
-        useSecureCookies?: boolean;
-        disableCSRFCheck?: boolean;
-        crossSubDomainCookies?: {
-            enabled?: boolean;
-            additionalCookies?: string[];
-            domain?: string;
-        };
-        cookies?: Record<string, any>;
-        cookiePrefix?: string;
-        database?: {
-            defaultFindManyLimit?: number;
-            useNumberId?: boolean;
-        };
-        [key: string]: any;
-    };
+    trustedOrigins?: BetterAuthOptions['trustedOrigins'];
+    plugins?: BetterAuthOptions['plugins'];
+    advanced?: BetterAuthOptions['advanced'] & Record<string, any>;
     [key: string]: any;
 }
 declare let possiblePaths: string[];
@@ -80,6 +47,5 @@ export declare function getConfig({ cwd, configPath, shouldThrowOnError, }: {
     shouldThrowOnError?: boolean;
 }): Promise<any>;
 export { possiblePaths };
-export declare function extractBetterAuthConfig(_content: string): AuthConfig | null;
 export declare function findAuthConfig(configPath?: string): Promise<AuthConfig | null>;
 //# sourceMappingURL=config.d.ts.map

@@ -33,7 +33,6 @@ export async function startStudio(options) {
             ws.on('error', (_error) => {
                 clearInterval(heartbeat);
             });
-            // Send initial connection message
             ws.send(JSON.stringify({
                 type: 'connected',
                 message: 'Connected to Better Auth Studio (watch mode)',

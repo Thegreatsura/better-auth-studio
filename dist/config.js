@@ -215,11 +215,6 @@ export async function getConfig({ cwd, configPath, shouldThrowOnError = false, }
     }
 }
 export { possiblePaths };
-// Legacy function for backward compatibility - kept for routes.ts
-export function extractBetterAuthConfig(_content) {
-    // actual load config here 
-    return null;
-}
 export async function findAuthConfig(configPath) {
     try {
         const betterAuthConfig = await getConfig({

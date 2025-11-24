@@ -39,8 +39,8 @@ export interface AuthConfig {
     connectionString?: string;
     [key: string]: any;
   };
-  emailAndPassword?: 
-    BetterAuthOptions['emailAndPassword'];
+  emailAndPassword?:
+  BetterAuthOptions['emailAndPassword'];
   socialProviders?: Array<{
     id: string;
     name: string;
@@ -328,12 +328,6 @@ export async function getConfig({
 
 export { possiblePaths };
 
-// Legacy function for backward compatibility - kept for routes.ts
-export function extractBetterAuthConfig(_content: string): AuthConfig | null {
-  // actual load config here 
-
-  return null;
-}
 
 export async function findAuthConfig(configPath?: string): Promise<AuthConfig | null> {
   try {
