@@ -10,7 +10,6 @@ import { loadConfig } from 'c12';
 import { addSvelteKitEnvModules } from './add-svelte-kit-env-modules.js';
 import { getTsconfigInfo } from './get-tsconfig-info.js';
 import { JitiOptions as JO } from "jiti/native"
-
 export interface AuthProvider {
   type: string;
   clientId?: string;
@@ -40,17 +39,8 @@ export interface AuthConfig {
     connectionString?: string;
     [key: string]: any;
   };
-  emailAndPassword?: {
-    enabled?: boolean;
-    disableSignUp?: boolean;
-    requireEmailVerification?: boolean;
-    maxPasswordLength?: number;
-    minPasswordLength?: number;
-     resetPasswordTokenExpiresIn?: number;
-    autoSignIn?: boolean;
-    revokeSessionsOnPasswordReset?: boolean;
-    [key: string]: any;
-  };
+  emailAndPassword?: 
+    BetterAuthOptions['emailAndPassword'];
   socialProviders?: Array<{
     id: string;
     name: string;
@@ -59,33 +49,9 @@ export interface AuthConfig {
     redirectURI?: string;
     enabled: boolean;
   }>;
-  trustedOrigins?: string[];
-  plugins?: any[];
-  advanced?: {
-    defaultCookieAttributes?: {
-      sameSite?: string;
-      secure?: boolean;
-      httpOnly?: boolean;
-    };
-    ipAddress?: {
-      ipAddressHeaders?: string[];
-      disableIpTracking?: boolean;
-    };
-    useSecureCookies?: boolean;
-    disableCSRFCheck?: boolean;
-    crossSubDomainCookies?: {
-      enabled?: boolean;
-      additionalCookies?: string[];
-      domain?: string;
-    };
-    cookies?: Record<string, any>;
-    cookiePrefix?: string;
-    database?: {
-      defaultFindManyLimit?: number;
-      useNumberId?: boolean;
-    };
-    [key: string]: any;
-  };
+  trustedOrigins?: BetterAuthOptions['trustedOrigins'];
+  plugins?: BetterAuthOptions['plugins'];
+  advanced?: BetterAuthOptions['advanced'] & Record<string, any>;
   [key: string]: any;
 }
 
@@ -249,13 +215,13 @@ export async function getConfig({
       if (existsSync(configPath)) resolvedPath = configPath; // If the configPath is a file, use it as is, as it means the path wasn't relative.
       const { config } = await loadConfig<
         | {
-            auth: {
-              options: BetterAuthOptions;
-            };
-          }
-        | {
+          auth: {
             options: BetterAuthOptions;
-          }
+          };
+        }
+        | {
+          options: BetterAuthOptions;
+        }
       >({
         configFile: resolvedPath,
         dotenv: true,
@@ -389,19 +355,19 @@ export async function findAuthConfig(configPath?: string): Promise<AuthConfig | 
         },
         socialProviders: betterAuthConfig.socialProviders
           ? Object.keys(betterAuthConfig.socialProviders).map((provider) => {
-              const providerConfig = betterAuthConfig.socialProviders?.[provider];
-              const hasCredentials = Boolean(
-                providerConfig?.clientId && providerConfig?.clientSecret
-              );
-              return {
-                id: provider,
-                name: provider,
-                clientId: providerConfig?.clientId,
-                clientSecret: providerConfig?.clientSecret,
-                redirectURI: providerConfig?.redirectURI,
-                enabled: Boolean(hasCredentials && providerConfig?.redirectURI),
-              };
-            })
+            const providerConfig = betterAuthConfig.socialProviders?.[provider];
+            const hasCredentials = Boolean(
+              providerConfig?.clientId && providerConfig?.clientSecret
+            );
+            return {
+              id: provider,
+              name: provider,
+              clientId: providerConfig?.clientId,
+              clientSecret: providerConfig?.clientSecret,
+              redirectURI: providerConfig?.redirectURI,
+              enabled: Boolean(hasCredentials && providerConfig?.redirectURI),
+            };
+          })
           : [],
         trustedOrigins: Array.isArray(betterAuthConfig.trustedOrigins)
           ? betterAuthConfig.trustedOrigins

@@ -56,7 +56,6 @@ export async function startStudio(options: StudioOptions) {
         clearInterval(heartbeat);
       });
 
-      // Send initial connection message
       ws.send(
         JSON.stringify({
           type: 'connected',
