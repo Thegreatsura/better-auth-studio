@@ -1096,7 +1096,6 @@ export function createRoutes(
             const endIndex = startIndex + limit;
             paginatedUsers = filteredUsers.slice(startIndex, endIndex);
           } else {
-            // Return all users if limit is high
             paginatedUsers = filteredUsers;
           }
 

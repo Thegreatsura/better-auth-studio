@@ -7,7 +7,7 @@ import { Command } from 'commander';
 import { findAuthConfig } from './config.js';
 import { startStudio } from './studio.js';
 import { detectDatabaseWithDialect } from './utils/database-detection.js';
-import { possibleConfigFiles } from './utils';
+import { possibleConfigFiles } from './utils.js';
 async function findAuthConfigPath() {
     let currentDir = process.cwd();
     const maxDepth = 10;
