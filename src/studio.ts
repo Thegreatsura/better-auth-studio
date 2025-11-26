@@ -5,6 +5,7 @@ import cors from 'cors';
 import express from 'express';
 import open from 'open';
 import { WebSocketServer } from 'ws';
+import type { WebSocket } from 'ws';
 import type { AuthConfig } from './config.js';
 import { createRoutes } from './routes.js';
 import chalk from 'chalk';
@@ -19,10 +20,22 @@ interface StudioOptions {
   configPath?: string;
   watchMode?: boolean;
   geoDbPath?: string;
+  onWatchConnection?: (ws: WebSocket) => void;
+  logStartup?: boolean;
 }
 
 export async function startStudio(options: StudioOptions) {
-  const { port, host, openBrowser, authConfig, configPath, watchMode, geoDbPath } = options;
+  const {
+    port,
+    host,
+    openBrowser,
+    authConfig,
+    configPath,
+    watchMode,
+    geoDbPath,
+    onWatchConnection,
+    logStartup = true,
+  } = options;
   const app = express();
   const server = createServer(app);
 
@@ -62,6 +75,12 @@ export async function startStudio(options: StudioOptions) {
           message: 'Connected to Better Auth Studio (watch mode)',
         })
       );
+
+      if (typeof onWatchConnection === 'function') {
+        try {
+          onWatchConnection(ws);
+        } catch (_error) {}
+      }
     });
   }
 
@@ -75,25 +94,27 @@ export async function startStudio(options: StudioOptions) {
 
   server.listen(port, host, () => {
     const url = `http://${host}:${port}`;
+    if (logStartup) {
       process.stdout.write('\n');
       process.stdout.write(chalk.green('✔ Better Auth Studio is running!\n'));
-      process.stdout.write("\n");
+      process.stdout.write('\n');
       process.stdout.write(chalk.white(`🌐 Open your browser and navigate to: `));
       process.stdout.write(chalk.green(chalk.underline(`${url}`)));
-      process.stdout.write("\n");
+      process.stdout.write('\n');
       process.stdout.write(chalk.white(`📊 Dashboard available at: `));
       process.stdout.write(chalk.green(chalk.underline(`${url}`)));
-      process.stdout.write("\n");
+      process.stdout.write('\n');
       process.stdout.write(chalk.white(`🔧 API endpoints available at: `));
       process.stdout.write(chalk.green(chalk.underline(`${url}/api\n`)));
       if (watchMode) {
-        process.stdout.write(chalk.white('👀 Watch mode enabled - config changes will reload automatically\n'));
-        process.stdout.write("\n");
+        process.stdout.write(
+          chalk.white('👀 Watch mode enabled - config changes will reload automatically\n')
+        );
+        process.stdout.write('\n');
       }
-      process.stdout.write("\n")
+      process.stdout.write('\n');
       process.stdout.write(chalk.gray('Press Ctrl+C to stop the studio\n'));
       process.stdout.write('\n');
-    if (watchMode) {
     }
 
     if (openBrowser) {

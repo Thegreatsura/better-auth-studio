@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 
 import { existsSync, readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { basename, dirname, isAbsolute, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import chokidar from 'chokidar';
 import { Command } from 'commander';
+import { WebSocket } from 'ws';
+import chalk from 'chalk';
 import { findAuthConfig } from './config.js';
 import { startStudio } from './studio.js';
 import { detectDatabaseWithDialect } from './utils/database-detection.js';
@@ -48,6 +50,91 @@ let currentStudio: any = null;
 let watcher: any = null;
 let webSocketServer: any = null;
 
+type StoredWatchMessage = 'status' | 'change';
+
+const createDefaultStatusPayload = () => ({
+  type: 'studio_status',
+  status: 'up_to_date',
+  updatedAt: Date.now(),
+});
+
+let lastStatusMessage = JSON.stringify(createDefaultStatusPayload());
+let lastConfigChangeMessage: string | null = null;
+
+const handleWatchConnection = (ws: WebSocket) => {
+  try {
+    if (lastStatusMessage) {
+      ws.send(lastStatusMessage);
+    }
+    if (lastConfigChangeMessage) {
+      ws.send(lastConfigChangeMessage);
+    }
+  } catch (_error) {}
+};
+
+function broadcastWatchMessage(
+  message: Record<string, any>,
+  options?: { remember?: StoredWatchMessage }
+) {
+  const payload = JSON.stringify(message);
+
+  if (options?.remember === 'status') {
+    lastStatusMessage = payload;
+  }
+  if (options?.remember === 'change') {
+    lastConfigChangeMessage = payload;
+  }
+
+  if (!webSocketServer?.clients || webSocketServer.clients.size === 0) {
+    return;
+  }
+
+  webSocketServer.clients.forEach((client: WebSocket) => {
+    if (client.readyState === WebSocket.OPEN) {
+      try {
+        client.send(payload);
+      } catch (_error) {}
+    }
+  });
+}
+
+function normalizeConfigPath(configPath?: string | null): string | null {
+  if (!configPath) {
+    return null;
+  }
+  if (isAbsolute(configPath) && existsSync(configPath)) {
+    return configPath;
+  }
+  const absolutePath = join(process.cwd(), configPath);
+  if (existsSync(absolutePath)) {
+    return absolutePath;
+  }
+  return null;
+}
+
+function getFileDisplayInfo(filePath?: string | null) {
+  if (!filePath) {
+    return {
+      fileName: undefined,
+      filePath: undefined,
+      absolutePath: undefined,
+    };
+  }
+
+  const absolutePath = isAbsolute(filePath) ? filePath : join(process.cwd(), filePath);
+  const relativePath = relative(process.cwd(), absolutePath);
+
+  return {
+    absolutePath,
+    fileName: basename(absolutePath),
+    filePath: relativePath || absolutePath,
+  };
+}
+
+function formatChangeLabel(fileInfo: ReturnType<typeof getFileDisplayInfo>) {
+  return fileInfo.filePath || fileInfo.fileName || 'auth config';
+}
+
 async function startStudioWithWatch(options: StudioWatchOptions) {
   const { port, host, openBrowser, authConfig, configPath, watchMode, geoDbPath } = options;
 
@@ -59,26 +146,79 @@ async function startStudioWithWatch(options: StudioWatchOptions) {
     configPath,
     watchMode,
     geoDbPath,
+    onWatchConnection: handleWatchConnection,
+    logStartup: true,
   });
   currentStudio = studioResult.server;
   webSocketServer = studioResult.wss;
 
   if (configPath) {
-    const resolvedPath = join(process.cwd(), configPath);
+    const resolvedPath = isAbsolute(configPath) ? configPath : join(process.cwd(), configPath);
+    const fileInfo = getFileDisplayInfo(configPath);
+
+    broadcastWatchMessage(
+      {
+        type: 'studio_status',
+        status: 'up_to_date',
+        updatedAt: Date.now(),
+        fileName: fileInfo.fileName,
+        filePath: fileInfo.filePath,
+      },
+      { remember: 'status' }
+    );
 
     watcher = chokidar.watch(resolvedPath, {
       persistent: true,
       ignoreInitial: true,
     });
 
-    watcher.on('change', async (_path: string) => {
+    watcher.on('change', async (changedPath: string) => {
+      const changeInfo = getFileDisplayInfo(changedPath || configPath);
+      const changeLabel = formatChangeLabel(changeInfo);
+
+      process.stdout.write(
+        `${chalk.yellow(`\n↻ Reloading Better Auth Studio (changed ${changeLabel})`)}\n`
+      );
+
       try {
+        broadcastWatchMessage(
+          {
+            type: 'studio_status',
+            status: 'refreshing',
+            updatedAt: Date.now(),
+            fileName: changeInfo.fileName,
+            filePath: changeInfo.filePath,
+          },
+          { remember: 'status' }
+        );
+
+        broadcastWatchMessage({
+          type: 'config_change_detected',
+          message: 'Auth configuration change detected',
+          fileName: changeInfo.fileName,
+          filePath: changeInfo.filePath,
+          changedAt: Date.now(),
+        });
+
+        await new Promise((resolve) => setTimeout(resolve, 75));
+
         if (currentStudio && typeof currentStudio.close === 'function') {
           await currentStudio.close();
         }
 
         const newAuthConfig = await findAuthConfig(configPath);
         if (!newAuthConfig) {
+          broadcastWatchMessage(
+            {
+              type: 'studio_status',
+              status: 'error',
+              updatedAt: Date.now(),
+              message: 'Unable to reload auth configuration.',
+              fileName: changeInfo.fileName,
+              filePath: changeInfo.filePath,
+            },
+            { remember: 'status' }
+          );
           return;
         }
 
@@ -90,27 +230,53 @@ async function startStudioWithWatch(options: StudioWatchOptions) {
           configPath,
           watchMode,
           geoDbPath,
+          onWatchConnection: handleWatchConnection,
+          logStartup: false,
         });
         currentStudio = newStudioResult.server;
         webSocketServer = newStudioResult.wss;
 
-        if (webSocketServer?.clients) {
-          webSocketServer.clients.forEach((client: any) => {
-            if (client.readyState === 1) {
-              // WebSocket.OPEN
-              try {
-                client.send(
-                  JSON.stringify({
-                    type: 'config_changed',
-                    message: 'Configuration has been reloaded',
-                  })
-                );
-              } catch (_error) {}
-            }
-          });
-        } else {
-        }
-      } catch (_error) {}
+        broadcastWatchMessage(
+          {
+            type: 'studio_status',
+            status: 'up_to_date',
+            updatedAt: Date.now(),
+            fileName: changeInfo.fileName,
+            filePath: changeInfo.filePath,
+          },
+          { remember: 'status' }
+        );
+
+        broadcastWatchMessage(
+          {
+            type: 'config_changed',
+            message: 'Configuration has been reloaded',
+            fileName: changeInfo.fileName,
+            filePath: changeInfo.filePath,
+            changedAt: Date.now(),
+          },
+          { remember: 'change' }
+        );
+
+        process.stdout.write(`${chalk.green(`✔ Reload complete (${changeLabel})`)}\n`);
+      } catch (error) {
+        broadcastWatchMessage(
+          {
+            type: 'studio_status',
+            status: 'error',
+            updatedAt: Date.now(),
+            message: error instanceof Error ? error.message : 'Unknown error',
+            fileName: changeInfo.fileName,
+            filePath: changeInfo.filePath,
+          },
+          { remember: 'status' }
+        );
+
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        process.stdout.write(
+          `${chalk.red(`✖ Reload failed (${changeLabel}) - ${errorMessage}`)}\n`
+        );
+      }
     });
 
     watcher.on('error', (_error: any) => {});
@@ -162,7 +328,13 @@ program
   .option('--no-open', 'Do not open browser automatically')
   .action(async (options) => {
     try {
-      const authConfig = await findAuthConfig(options.config);
+    const resolvedConfigPath =
+      normalizeConfigPath(options.config) || (await findAuthConfigPath());
+    const configPathForRoutes = resolvedConfigPath
+      ? relative(process.cwd(), resolvedConfigPath) || resolvedConfigPath
+      : undefined;
+
+    const authConfig = await findAuthConfig(configPathForRoutes);
       if (!authConfig) {
         if (options.config) {
         } else {
@@ -223,13 +395,19 @@ program
         }
       }
 
-      if (options.watch) {
+    if (options.watch && !configPathForRoutes) {
+      console.warn(
+        '⚠ Unable to locate your auth config file. Watch mode will be disabled for this session.'
+      );
+    }
+
+    if (options.watch && configPathForRoutes) {
         await startStudioWithWatch({
           port: parseInt(options.port, 10),
           host: options.host,
           openBrowser: options.open,
           authConfig,
-          configPath: options.config,
+        configPath: configPathForRoutes,
           watchMode: true,
           geoDbPath: options.geoDb,
         });
@@ -239,7 +417,7 @@ program
           host: options.host,
           openBrowser: options.open,
           authConfig,
-          configPath: options.config,
+        configPath: configPathForRoutes,
           watchMode: false,
           geoDbPath: options.geoDb,
         });

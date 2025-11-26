@@ -1,4 +1,5 @@
 import { WebSocketServer } from 'ws';
+import type { WebSocket } from 'ws';
 import type { AuthConfig } from './config.js';
 interface StudioOptions {
     port: number;
@@ -8,6 +9,8 @@ interface StudioOptions {
     configPath?: string;
     watchMode?: boolean;
     geoDbPath?: string;
+    onWatchConnection?: (ws: WebSocket) => void;
+    logStartup?: boolean;
 }
 export declare function startStudio(options: StudioOptions): Promise<{
     server: import("http").Server<typeof import("http").IncomingMessage, typeof import("http").ServerResponse>;
