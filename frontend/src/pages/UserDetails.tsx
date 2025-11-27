@@ -833,11 +833,11 @@ export default function UserDetails() {
                       <User className="w-4 h-4 text-gray-400 mt-1" />
                       <div className="flex-1">
                         <div className="text-xs uppercase font-mono text-gray-500 mb-1">
-                          Username
+                         Name 
                         </div>
                         <div className="text-white font-sans text-sm">
-                          {user.name.toLowerCase().replace(/\s+/g, '')}
-                        </div>
+                        {user.name} 
+                         </div>
                       </div>
                     </div>
                     <div className="flex items-start space-x-3">
