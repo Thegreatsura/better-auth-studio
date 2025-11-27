@@ -55,7 +55,6 @@ app.get('/', async (req, res) => {
       model: 'session',
       limit: 5,
     });
-    console.log({recentAccounts, recentUsers, sessions})
     res.json({
       message: 'Better Auth Test Project',
       description: 'This is a test project for Better Auth Studio',

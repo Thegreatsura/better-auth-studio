@@ -13,7 +13,7 @@ import {
 } from '@xyflow/react';
 import { useCallback, useEffect, useState } from 'react';
 import '@xyflow/react/dist/style.css';
-import { Database, Settings, Sparkles } from 'lucide-react';
+import { Settings } from 'lucide-react';
 import { DatabaseSchemaNode, type DatabaseSchemaNodeData } from '../components/DatabaseSchemaNode';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 
@@ -40,6 +40,7 @@ interface Relationship {
 interface Table {
   name: string;
   displayName: string;
+  origin?: string;
   fields: Field[];
   relationships: Relationship[];
 }
@@ -48,111 +49,46 @@ interface Schema {
   tables: Table[];
 }
 
-interface PluginInfo {
+interface Plugin {
+  id: string;
   name: string;
-  displayName: string;
   description: string;
-  color: string;
+  enabled: boolean;
 }
 
-const AVAILABLE_PLUGINS: PluginInfo[] = [
-  {
-    name: 'organization',
-    displayName: 'Organization',
-    description: 'Multi-tenant organization support',
-    color: 'bg-blue-500',
-  },
-  {
-    name: 'teams',
-    displayName: 'Teams',
-    description: 'Team management within organizations',
-    color: 'bg-green-500',
-  },
-  {
-    name: 'twoFactor',
-    displayName: 'Two Factor',
-    description: 'Two-factor authentication support',
-    color: 'bg-purple-500',
-  },
-  {
-    name: 'apiKey',
-    displayName: 'API Key',
-    description: 'API key authentication',
-    color: 'bg-orange-500',
-  },
-  {
-    name: 'passkey',
-    displayName: 'Passkey',
-    description: 'WebAuthn passkey support',
-    color: 'bg-pink-500',
-  },
-];
-
-const SHOW_COMING_SOON_OVERLAY = true;
+interface PluginContribution {
+  pluginId: string;
+  pluginName: string;
+  tableCount: number;
+  fieldCount: number;
+  relationshipCount: number;
+}
 
 export default function DatabaseVisualizer() {
   const [schema, setSchema] = useState<Schema | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedPlugins, setSelectedPlugins] = useState<string[]>([]);
-  const [availablePlugins, setAvailablePlugins] = useState<PluginInfo[]>([]);
+  const [enabledPlugins, setEnabledPlugins] = useState<Plugin[]>([]);
+  const [pluginContributions, setPluginContributions] = useState<PluginContribution[]>([]);
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
-
-  const getPluginColor = useCallback((pluginId: string): string => {
-    const plugin = AVAILABLE_PLUGINS.find((p) => p.name === pluginId);
-    return plugin?.color || 'bg-gray-500';
-  }, []);
-
-  const getPluginForField = useCallback(
-    (tableName: string, _fieldName: string, plugins: string[]): string => {
-      if (
-        tableName === 'user' ||
-        tableName === 'session' ||
-        tableName === 'account' ||
-        tableName === 'verification'
-      ) {
-        return 'core';
-      }
-
-      for (const plugin of plugins) {
-        if (tableName === plugin || tableName.includes(plugin)) {
-          return plugin;
-        }
-      }
-
-      return 'core';
-    },
-    []
-  );
 
   const fetchEnabledPlugins = useCallback(async () => {
     try {
       const response = await fetch('/api/plugins');
       const data = await response.json();
-
       if (data.plugins && Array.isArray(data.plugins)) {
-        const enabledPlugins = data.plugins.map((plugin: any) => ({
-          name: plugin.id,
-          displayName: plugin.name || plugin.id,
-          description: plugin.description || `${plugin.id} plugin for Better Auth`,
-          color: getPluginColor(plugin.id),
-        }));
-
-        setAvailablePlugins(enabledPlugins);
-        setSelectedPlugins(enabledPlugins.map((p: any) => p.name));
+        setEnabledPlugins(data.plugins.filter((p: Plugin) => p.enabled));
       }
     } catch (_err) {
-      setAvailablePlugins(AVAILABLE_PLUGINS);
-      setSelectedPlugins(['organization']);
+      // Ignore plugin fetch errors
     }
-  }, [getPluginColor]);
+  }, []);
 
-  const fetchSchema = useCallback(async (plugins: string[]) => {
+  const fetchSchema = useCallback(async () => {
     try {
       setLoading(true);
-      const pluginParams = plugins.length > 0 ? `?plugins=${plugins.join(',')}` : '';
-      const response = await fetch(`/api/database/schema${pluginParams}`);
+      const response = await fetch(`/api/database/schema`);
       const data = await response.json();
 
       if (data.success) {
@@ -169,13 +105,39 @@ export default function DatabaseVisualizer() {
 
   useEffect(() => {
     fetchEnabledPlugins();
-  }, [fetchEnabledPlugins]);
+    fetchSchema();
+  }, [fetchEnabledPlugins, fetchSchema]);
 
   useEffect(() => {
-    if (selectedPlugins.length > 0) {
-      fetchSchema(selectedPlugins);
+    if (!schema || enabledPlugins.length === 0) {
+      setPluginContributions([]);
+      return;
     }
-  }, [selectedPlugins, fetchSchema]);
+
+    const contributions: PluginContribution[] = enabledPlugins.map((plugin) => {
+      const pluginTables = schema.tables.filter(
+        (table) => (table.origin || 'core') === plugin.id
+      );
+
+      const tableCount = pluginTables.length;
+      const fieldCount = pluginTables.reduce((sum, table) => sum + table.fields.length, 0);
+      const relationshipCount = pluginTables.reduce(
+        (sum, table) => sum + table.relationships.length,
+        0
+      );
+
+      return {
+        pluginId: plugin.id,
+        pluginName: plugin.name || plugin.id,
+        tableCount,
+        fieldCount,
+        relationshipCount,
+      };
+    });
+
+    // Only show plugins that actually contribute to the schema
+    setPluginContributions(contributions.filter((c) => c.tableCount > 0));
+  }, [schema, enabledPlugins]);
 
   useEffect(() => {
     if (!schema) return;
@@ -184,6 +146,7 @@ export default function DatabaseVisualizer() {
     const newEdges: Edge[] = [];
 
     schema.tables.forEach((table, index) => {
+      const tableOrigin = table.origin || 'core';
       const columns = table.fields.map((field) => ({
         id: `${table.name}-${field.name}`,
         isPrimary: field.primaryKey || false,
@@ -192,7 +155,8 @@ export default function DatabaseVisualizer() {
         isIdentity: false,
         name: field.name,
         format: field.type,
-        plugin: getPluginForField(table.name, field.name, selectedPlugins),
+        plugin: tableOrigin,
+        description: field.description,
       }));
 
       newNodes.push({
@@ -206,11 +170,8 @@ export default function DatabaseVisualizer() {
           name: table.name,
           displayName: table.displayName,
           isForeign: false,
-          plugin: getPluginForField(table.name, '', selectedPlugins),
-          columns: columns.map((col) => ({
-            ...col,
-            description: table.fields.find((f) => f.name === col.name)?.description || '',
-          })),
+          plugin: tableOrigin,
+          columns,
           relationships: table.relationships,
         } as DatabaseSchemaNodeData,
       });
@@ -218,10 +179,6 @@ export default function DatabaseVisualizer() {
 
     schema.tables.forEach((table) => {
       table.relationships.forEach((rel) => {
-        if (rel.type === 'many-to-one') {
-          return;
-        }
-
         const sourceTable = table.name;
         const targetTable = rel.target;
 
@@ -229,7 +186,8 @@ export default function DatabaseVisualizer() {
         const targetNode = newNodes.find((n) => n.id === targetTable);
 
         if (sourceNode && targetNode) {
-          const relationshipLabel = rel.type === 'one-to-one' ? '1:1' : '1:N';
+          const relationshipLabel =
+            rel.type === 'one-to-one' ? '1:1' : rel.type === 'many-to-one' ? 'N:1' : '1:N';
 
           newEdges.push({
             id: `${sourceTable}-${targetTable}-${rel.field}`,
@@ -251,7 +209,7 @@ export default function DatabaseVisualizer() {
             labelBgStyle: {
               fill: 'rgba(0, 0, 0, 0.9)',
               fillOpacity: 1,
-            borderRadius: 4,
+              borderRadius: 4,
             },
             markerEnd: {
               type: 'arrowclosed',
@@ -266,7 +224,7 @@ export default function DatabaseVisualizer() {
 
     setNodes(newNodes);
     setEdges(newEdges);
-  }, [schema, selectedPlugins, setNodes, setEdges, getPluginForField]);
+  }, [schema, setNodes, setEdges]);
 
   const onConnect = useCallback(
     (params: Connection) => setEdges((eds) => addEdge(params, eds)),
@@ -288,9 +246,7 @@ export default function DatabaseVisualizer() {
           <div className="h-8 bg-gray-700 rounded w-1/3 mb-6"></div>
           <div className="h-96 bg-gray-700 rounded"></div>
         </div>
-        <div className="text-center text-gray-500 dark:text-gray-400 mt-4">
-          Loading plugins and schema...
-        </div>
+        <div className="text-center text-gray-500 dark:text-gray-400 mt-4">Loading schema...</div>
       </div>
     );
   }
@@ -306,74 +262,111 @@ export default function DatabaseVisualizer() {
     );
   }
 
-  // Render the main content
   const mainContent = (
     <>
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-1">
-          <div className="flex items-center space-x-3">
-            <Database className="w-6 h-6 text-white" />
-            <h1 className="text-2xl font-light text-white">Schema Visualizer</h1>
-          </div>
+      <div className="space-y-8">
+        <div className="flex items-center justify-between p-5 pt-7">
+        <div>
+          <h1 className="text-3xl font-normal text-white tracking-tight">Schema Visualizer</h1>
+          <p className="text-gray-300 mt-2 uppercase font-mono font-light text-xs">
+            Visualize your Better Auth database schema with interactive tables and relationships.
+          </p>
         </div>
-        <p className="text-gray-400">
-          Visualize your Better Auth database schema with interactive tables and relationships.
-        </p>
       </div>
+          <hr className="w-full border-white/15 h-px" />
+          <hr className="w-full border-white/15 h-px" />
+        </div>
 
       <div className="flex-1 grid grid-cols-4 gap-6">
-        <div className="col-span-1">
+        <div className="col-span-1 space-y-4">
           <Card className="rounded-none bg-black h-fit shadow-sm">
             <CardHeader>
               <CardTitle className="font-light text-xl text-white flex items-center space-x-2">
                 <Settings className="w-5 h-5" />
-                <span>Plugins</span>
+                <span>Detected Tables</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {availablePlugins.length > 0 ? (
-                availablePlugins.map((plugin) => (
-                  <div key={plugin.name} className="flex items-center space-x-3">
-                    <div className={`w-3 h-3 rounded-full ${plugin.color}`} />
-                    <label
-                      htmlFor={plugin.name}
-                      className="text-sm font-medium text-white cursor-pointer"
-                    >
-                      {plugin.displayName.slice(0, 1).toUpperCase() +
-                        plugin.displayName.slice(1).replace('-', ' ')}
-                    </label>
-                  </div>
-                ))
+              {schema && schema.tables.length > 0 ? (
+                <div className="space-y-3 max-h-80 overflow-y-auto pr-1 custom-scroll">
+                  {schema.tables.map((table) => (
+                    <div key={table.name} className="border border-white/10 p-3 rounded-none">
+                      <div className="flex items-center justify-between text-sm text-white">
+                        <span>{table.displayName}</span>
+                        <span className="text-xs uppercase text-gray-400">
+                          {table.origin === 'core' ? 'Core' : 'Extended'}
+                        </span>
+                      </div>
+                      <div className="text-xs text-gray-400 mt-1">
+                        {table.fields.length} fields · {table.relationships.length} relationships
+                      </div>
+                    </div>
+                  ))}
+                </div>
               ) : (
-                <div className="text-sm text-white/70">No plugins detected in configuration</div>
+                <div className="text-sm text-white/70">No tables detected in Better Auth context</div>
               )}
             </CardContent>
           </Card>
 
           {schema && (
-            <Card className="rounded-none bg-black mt-4 shadow-sm">
+            <Card className="rounded-none bg-black shadow-sm">
               <CardHeader>
-                <CardTitle className="text-white text-sm">Schema Info</CardTitle>
+                <CardTitle className="text-white text-sm">Schema Summary</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-white/70">Tables:</span>
+              <CardContent className="space-y-2 text-sm">
+                <div className="flex justify-between text-white/80">
+                  <span>Tables</span>
                   <span className="text-white">{schema.tables.length}</span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-white/70">Relationships:</span>
+                <div className="flex justify-between text-white/80">
+                  <span>Total Fields</span>
+                  <span className="text-white">
+                    {schema.tables.reduce((sum, table) => sum + table.fields.length, 0)}
+                  </span>
+                </div>
+                <div className="flex justify-between text-white/80">
+                  <span>Relationships</span>
                   <span className="text-white">
                     {schema.tables.reduce((sum, table) => sum + table.relationships.length, 0)}
                   </span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-white/70">Available Plugins:</span>
-                  <span className="text-white">{availablePlugins.length}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-white/70">Selected Plugins:</span>
-                  <span className="text-white">{selectedPlugins.length}</span>
-                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {pluginContributions.length > 0 && (
+            <Card className="rounded-none bg-black shadow-sm border border-white/15">
+              <CardHeader>
+                <CardTitle className="text-white text-sm">Enabled Plugins</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm">
+                {pluginContributions.map((contribution) => (
+                  <div
+                    key={contribution.pluginId}
+                    className="p-3 border border-white/15 bg-black/40 rounded-none"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-white font-medium capitalize">
+                        {contribution.pluginName}
+                      </span>
+                    </div>
+                    <div className="space-y-1 text-xs text-gray-400">
+                      <div className="flex justify-between">
+                        <span>Tables:</span>
+                        <span className="text-white/80">{contribution.tableCount}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Fields:</span>
+                        <span className="text-white/80">{contribution.fieldCount}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Relationships:</span>
+                        <span className="text-white/80">{contribution.relationshipCount}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </CardContent>
             </Card>
           )}
@@ -424,49 +417,6 @@ export default function DatabaseVisualizer() {
       </div>
     </>
   );
-  if (SHOW_COMING_SOON_OVERLAY) {
-    return (
-      <div className="overflow-hidden p-6 h-[90vh] flex flex-col opacity-70 bg-black relative">
-        <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none">
-          <div
-            className="absolute inset-0 backdrop-blur-sm"
-            style={{ WebkitBackdropFilter: 'blur(8px)', backdropFilter: 'blur(8px)' }}
-          />
-          <div className="relative -mt-6 bg-black/50 border border-dashed border-white/20 rounded-none p-12 max-w-2xl mx-6 text-center pointer-events-auto">
-            <div className="flex items-center justify-center mb-4">
-              <div className="relative">
-                <Database className="w-16 h-16 text-white opacity-50" />
-                <Sparkles className="w-8 h-8 text-white opacity-80 absolute -top-2 -right-2 animate-pulse" />
-              </div>
-            </div>
-            <h2 className="text-3xl font-mono uppercase font-light text-white mb-3">Coming Soon</h2>
-            <p className="text-lg text-gray-300 font-light mb-6 leading-relaxed">
-              We will be having this feature soon. This feature will allow you to explore your
-              Better Auth database structure with beautiful, interactive graphs showing all tables,
-              relationships, and data flow.
-            </p>
-            <div className="flex items-center justify-center space-x-6 text-sm text-gray-400">
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-blue-500 rounded-full" />
-                <span>Interactive Tables</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full" />
-                <span>Relationship Mapping</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-purple-500 rounded-full" />
-                <span>Real-time Updates</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Blurred Content Behind */}
-        <div className="blur-sm opacity-50 pointer-events-none">{mainContent}</div>
-      </div>
-    );
-  }
 
   return <div className="p-6 h-screen flex flex-col bg-black">{mainContent}</div>;
 }

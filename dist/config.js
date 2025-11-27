@@ -104,6 +104,7 @@ function getPathAliases(cwd) {
 const jitiOptions = (cwd) => {
     const alias = getPathAliases(cwd) || {};
     return {
+        debug: false,
         transformOptions: {
             babel: {
                 presets: [
@@ -118,7 +119,6 @@ const jitiOptions = (cwd) => {
                 ],
             },
         },
-        debug: false,
         extensions: ['.ts', '.tsx', '.js', '.jsx'],
         alias,
     };
@@ -137,7 +137,7 @@ export async function getConfig({ cwd, configPath, shouldThrowOnError = false, }
         if (configPath) {
             let resolvedPath = path.join(cwd, configPath);
             if (existsSync(configPath))
-                resolvedPath = configPath; // If the configPath is a file, use it as is, as it means the path wasn't relative.
+                resolvedPath = configPath;
             const { config } = await loadConfig({
                 configFile: resolvedPath,
                 dotenv: true,

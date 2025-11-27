@@ -115,7 +115,7 @@ export async function safeImportAuthConfig(authConfigPath: string): Promise<any>
       }
 
       const jiti = createJiti(import.meta.url, {
-        debug: true,
+        debug: false, 
         fsCache: true,
         moduleCache: true,
         interopDefault: true,
@@ -2214,7 +2214,7 @@ export function createRoutes(
     },
   };
 
-  function generateSchema(selectedPlugins: string[]) {
+  function generateStaticSchema(selectedPlugins: string[]) {
     const schema: { tables: any[] } = { tables: [] };
 
     const baseTables = Object.values(BASE_SCHEMA).map((table) => ({
@@ -2297,6 +2297,173 @@ export function createRoutes(
     return schema;
   }
 
+  const CONTEXT_CORE_TABLES = new Set(['user', 'session', 'account', 'verification']);
+
+  async function resolveSchemaConfigPath(): Promise<string | null> {
+    if (configPath) {
+      return configPath.startsWith('/') ? configPath : join(process.cwd(), configPath);
+    }
+    return await findAuthConfigPath();
+  }
+
+  async function loadContextTables() {
+    try {
+      const authConfigPath = await resolveSchemaConfigPath();
+      if (!authConfigPath) {
+        return null;
+      }
+      const authModule = await safeImportAuthConfig(authConfigPath);
+      const authInstance = authModule?.auth || authModule?.default;
+      if (!authInstance?.$context) {
+        return null;
+      }
+      const context = await authInstance.$context;
+      return context?.tables || null;
+    } catch (_error) {
+      return null;
+    }
+  }
+
+  function formatDisplayName(name: string) {
+    if (!name) return 'Unknown';
+    return name
+      .replace(/[_-]/g, ' ')
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .replace(/^./, (char) => char.toUpperCase());
+  }
+
+  function formatDefaultValue(value: any) {
+    if (value === undefined || value === null) {
+      return value;
+    }
+    if (typeof value === 'function') {
+      return 'function';
+    }
+    if (value instanceof Date) {
+      return value.toISOString();
+    }
+    if (typeof value === 'object') {
+      try {
+        return JSON.stringify(value);
+      } catch (_error) {
+        return String(value);
+      }
+    }
+    return value;
+  }
+
+  function addRelationshipIfMissing(list: any[], relationship: any) {
+    if (
+      !list.some(
+        (rel: any) =>
+          rel.type === relationship.type &&
+          rel.target === relationship.target &&
+          rel.field === relationship.field
+      )
+    ) {
+      list.push(relationship);
+    }
+  }
+
+  function inferTargetTable(fieldName: string, tableMap: Map<string, any>) {
+    if (!fieldName) return null;
+    const normalized = fieldName.toLowerCase();
+    if (!normalized.endsWith('id')) {
+      return null;
+    }
+    const candidate = normalized.slice(0, -2);
+    const table = tableMap.get(candidate);
+    return table ? table.name : null;
+  }
+
+  function buildSchemaFromContextTables(tables: Record<string, any> | null) {
+    if (!tables) {
+      return null;
+    }
+
+    const tableEntries: any[] = [];
+    const tableLookupByLower = new Map<string, any>();
+
+    Object.entries(tables).forEach(([key, raw]) => {
+      const tableMeta = raw as any;
+      const name = tableMeta?.modelName || key;
+      const lowerName = name.toLowerCase();
+
+      const fields = Object.entries(tableMeta?.fields || {}).map(([fieldName, fieldValue]) => {
+        const meta = fieldValue as any;
+        return {
+          name: fieldName,
+          type: meta?.type || 'unknown',
+          required: Boolean(meta?.required),
+          primaryKey: Boolean(meta?.primaryKey),
+          unique: Boolean(meta?.unique),
+          description: meta?.description || '',
+          sortable: Boolean(meta?.sortable),
+          defaultValue: formatDefaultValue(meta?.defaultValue),
+        };
+      });
+
+      const table = {
+        name,
+        displayName: formatDisplayName(name),
+        origin: tableMeta?.plugin?.id || tableMeta?.pluginId || (CONTEXT_CORE_TABLES.has(name) ? 'core' : 'extended'),
+        order: tableMeta?.order ?? Number.MAX_SAFE_INTEGER,
+        fields,
+        relationships: [] as any[],
+      };
+
+      tableEntries.push(table);
+      tableLookupByLower.set(lowerName, table);
+    });
+
+    tableEntries.forEach((table) => {
+      table.fields.forEach((field: any) => {
+        const target = inferTargetTable(field.name, tableLookupByLower);
+        if (target && target !== table.name) {
+          addRelationshipIfMissing(table.relationships, {
+            type: 'many-to-one',
+            target,
+            field: field.name,
+          });
+
+          const targetTable = tableLookupByLower.get(target.toLowerCase());
+          if (targetTable) {
+            addRelationshipIfMissing(targetTable.relationships, {
+              type: 'one-to-many',
+              target: table.name,
+              field: field.name,
+            });
+          }
+        }
+      });
+    });
+
+    tableEntries.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+    return { tables: tableEntries };
+  }
+
+  async function generateSchemaFromContext(selectedTables?: string[]) {
+    try {
+      const tables = await loadContextTables();
+      if (!tables) {
+        return null;
+      }
+      const schema = buildSchemaFromContextTables(tables);
+      if (!schema) {
+        return null;
+      }
+      if (selectedTables && selectedTables.length > 0) {
+        schema.tables = schema.tables.filter((table) => selectedTables.includes(table.name));
+      }
+      return schema;
+    } catch (_error) {
+      return null;
+    }
+  }
+
   router.get('/api/database/schema', async (req: Request, res: Response) => {
     try {
       const adapter = await getAuthAdapterWithConfig();
@@ -2314,7 +2481,8 @@ export function createRoutes(
         });
       }
 
-      const schema = generateSchema(selectedPlugins);
+      const schema =
+        (await generateSchemaFromContext(selectedPlugins)) || generateStaticSchema(selectedPlugins);
 
       res.json({
         success: true,
