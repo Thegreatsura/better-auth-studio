@@ -1483,6 +1483,391 @@ export function createRoutes(
       });
     }
   });
+
+  router.post('/api/tools/validate-config', async (_req: Request, res: Response) => {
+    try {
+      const results: Array<{
+        category: string;
+        check: string;
+        status: 'pass' | 'fail' | 'warning';
+        message: string;
+        suggestion?: string;
+        severity: 'error' | 'warning' | 'info';
+      }> = [];
+
+      // Helper to add validation result
+      const addResult = (
+        category: string,
+        check: string,
+        status: 'pass' | 'fail' | 'warning',
+        message: string,
+        suggestion?: string,
+        severity: 'error' | 'warning' | 'info' = status === 'fail' ? 'error' : status === 'warning' ? 'warning' : 'info'
+      ) => {
+        results.push({ category, check, status, message, suggestion, severity });
+      };
+
+      // 1. Core Configuration Checks
+      const secret = process.env.BETTER_AUTH_SECRET || process.env.AUTH_SECRET;
+      if (!secret) {
+        addResult(
+          'Core Config',
+          'Secret Key',
+          'fail',
+          'BETTER_AUTH_SECRET or AUTH_SECRET environment variable is not set',
+          'Set BETTER_AUTH_SECRET in your .env file with a strong random string (minimum 32 characters)',
+          'error'
+        );
+      } else if (secret.length < 32) {
+        addResult(
+          'Core Config',
+          'Secret Key',
+          'warning',
+          `Secret key is only ${secret.length} characters. Recommended minimum is 32 characters`,
+          'Generate a longer secret key for better security',
+          'warning'
+        );
+      } else {
+        addResult('Core Config', 'Secret Key', 'pass', 'Secret key is configured and meets length requirements');
+      }
+
+      const baseURL = authConfig.baseURL || process.env.BETTER_AUTH_URL;
+      if (!baseURL) {
+        addResult(
+          'Core Config',
+          'Base URL',
+          'warning',
+          'baseURL is not configured. Using default localhost:3000',
+          'Set baseURL in your auth config or BETTER_AUTH_URL environment variable',
+          'warning'
+        );
+      } else {
+        try {
+          new URL(baseURL);
+          addResult('Core Config', 'Base URL', 'pass', `Base URL is valid: ${baseURL}`);
+        } catch {
+          addResult(
+            'Core Config',
+            'Base URL',
+            'fail',
+            `Base URL format is invalid: ${baseURL}`,
+            'Ensure baseURL is a valid URL (e.g., https://example.com)',
+            'error'
+          );
+        }
+      }
+
+      const basePath = authConfig.basePath || '/api/auth';
+      if (!basePath.startsWith('/')) {
+        addResult(
+          'Core Config',
+          'Base Path',
+          'fail',
+          `Base path must start with '/': ${basePath}`,
+          'Change basePath to start with a forward slash (e.g., /api/auth)',
+          'error'
+        );
+      } else {
+        addResult('Core Config', 'Base Path', 'pass', `Base path is valid: ${basePath}`);
+      }
+
+      // 2. Database Configuration
+      const adapter = await getAuthAdapterWithConfig();
+      if (!adapter) {
+        addResult(
+          'Database',
+          'Adapter',
+          'fail',
+          'Database adapter is not available or not configured',
+          'Ensure your database adapter is properly configured in your auth config',
+          'error'
+        );
+      } else {
+        addResult('Database', 'Adapter', 'pass', 'Database adapter is configured');
+
+        // Test database connection
+        try {
+          if (adapter.findMany) {
+            await adapter.findMany({
+              model: 'user',
+              limit: 1,
+            });
+            addResult('Database', 'Connection', 'pass', 'Database connection is working');
+          } else {
+            addResult(
+              'Database',
+              'Connection',
+              'warning',
+              'Cannot test database connection (findMany method not available)',
+              undefined,
+              'warning'
+            );
+          }
+        } catch (error) {
+          addResult(
+            'Database',
+            'Connection',
+            'fail',
+            `Database connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            'Check your database connection string and ensure the database is accessible',
+            'error'
+          );
+        }
+      }
+
+      const dbUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.MYSQL_URL;
+      if (!dbUrl && !authConfig.database?.url) {
+        addResult(
+          'Database',
+          'Connection String',
+          'warning',
+          'No database connection string found in environment variables',
+          'Set DATABASE_URL, POSTGRES_URL, or MYSQL_URL in your .env file',
+          'warning'
+        );
+      } else {
+        addResult('Database', 'Connection String', 'pass', 'Database connection string is configured');
+      }
+
+      // 3. OAuth/Social Providers
+      const socialProviders = authConfig.socialProviders || [];
+      if (socialProviders.length === 0) {
+        addResult(
+          'OAuth Providers',
+          'Providers',
+          'warning',
+          'No OAuth providers configured',
+          'This is optional. Add social providers if you need OAuth authentication',
+          'info'
+        );
+      } else {
+        addResult('OAuth Providers', 'Providers', 'pass', `${socialProviders.length} OAuth provider(s) configured`);
+
+        socialProviders.forEach((provider) => {
+          if (provider.enabled) {
+            if (!provider.clientId) {
+              addResult(
+                'OAuth Providers',
+                `${provider.name} - Client ID`,
+                'fail',
+                `${provider.name} is enabled but clientId is missing`,
+                `Add clientId for ${provider.name} in your auth config`,
+                'error'
+              );
+            } else {
+              addResult('OAuth Providers', `${provider.name} - Client ID`, 'pass', 'Client ID is configured');
+            }
+
+            if (!provider.clientSecret) {
+              addResult(
+                'OAuth Providers',
+                `${provider.name} - Client Secret`,
+                'fail',
+                `${provider.name} is enabled but clientSecret is missing`,
+                `Add clientSecret for ${provider.name} in your auth config`,
+                'error'
+              );
+            } else {
+              addResult('OAuth Providers', `${provider.name} - Client Secret`, 'pass', 'Client Secret is configured');
+            }
+
+            if (provider.redirectURI) {
+              const baseUrl = authConfig.baseURL || process.env.BETTER_AUTH_URL || 'http://localhost:3000';
+              const expectedRedirect = `${baseUrl}${authConfig.basePath || '/api/auth'}/callback/${provider.id}`;
+              if (!provider.redirectURI.includes(baseUrl)) {
+                addResult(
+                  'OAuth Providers',
+                  `${provider.name} - Redirect URI`,
+                  'warning',
+                  `Redirect URI may not match baseURL: ${provider.redirectURI}`,
+                  `Expected format: ${expectedRedirect}. Ensure this matches your OAuth provider settings`,
+                  'warning'
+                );
+              } else {
+                addResult('OAuth Providers', `${provider.name} - Redirect URI`, 'pass', 'Redirect URI is configured');
+              }
+            } else {
+              addResult(
+                'OAuth Providers',
+                `${provider.name} - Redirect URI`,
+                'warning',
+                'Redirect URI is not explicitly set (will use default)',
+                undefined,
+                'warning'
+              );
+            }
+          }
+        });
+      }
+
+      // 4. Email & Password
+      const emailAndPassword = authConfig.emailAndPassword;
+      if (emailAndPassword?.enabled) {
+        addResult('Email & Password', 'Enabled', 'pass', 'Email and password authentication is enabled');
+
+        if (emailAndPassword.minPasswordLength && emailAndPassword.minPasswordLength < 8) {
+          addResult(
+            'Email & Password',
+            'Password Policy',
+            'warning',
+            `Minimum password length is ${emailAndPassword.minPasswordLength}. Recommended minimum is 8`,
+            'Consider increasing minPasswordLength to 8 or higher',
+            'warning'
+          );
+        } else {
+          addResult('Email & Password', 'Password Policy', 'pass', 'Password policy is configured');
+        }
+      } else {
+        addResult(
+          'Email & Password',
+          'Enabled',
+          'warning',
+          'Email and password authentication is disabled',
+          'Enable emailAndPassword in your config if you need email/password auth',
+          'info'
+        );
+      }
+
+      // 5. Security Settings
+      const advanced = authConfig.advanced || {};
+      const cookieAttrs = advanced.defaultCookieAttributes || {};
+
+      if (process.env.NODE_ENV === 'production') {
+        if (cookieAttrs.secure !== true) {
+          addResult(
+            'Security',
+            'Cookie Security',
+            'fail',
+            'Cookie secure flag is not set to true in production',
+            'Set secure: true in defaultCookieAttributes for production',
+            'error'
+          );
+        } else {
+          addResult('Security', 'Cookie Security', 'pass', 'Cookie secure flag is enabled');
+        }
+
+        if (cookieAttrs.sameSite === 'none' && !cookieAttrs.secure) {
+          addResult(
+            'Security',
+            'Cookie SameSite',
+            'fail',
+            'sameSite: "none" requires secure: true',
+            'Set secure: true when using sameSite: "none"',
+            'error'
+          );
+        }
+      } else {
+        if (cookieAttrs.secure === false) {
+          addResult(
+            'Security',
+            'Cookie Security',
+            'warning',
+            'Cookie secure flag is false (acceptable for development)',
+            'Ensure secure: true in production',
+            'warning'
+          );
+        }
+      }
+
+      if (cookieAttrs.httpOnly !== false) {
+        addResult('Security', 'Cookie HttpOnly', 'pass', 'HttpOnly flag is enabled (recommended)');
+      } else {
+        addResult(
+          'Security',
+          'Cookie HttpOnly',
+          'warning',
+          'HttpOnly flag is disabled',
+          'Enable httpOnly: true for better security',
+          'warning'
+        );
+      }
+
+      // 6. Trusted Origins
+      const trustedOriginsRaw = authConfig.trustedOrigins || [];
+      const trustedOrigins = Array.isArray(trustedOriginsRaw) ? trustedOriginsRaw : [];
+      if (trustedOrigins.length === 0) {
+        addResult(
+          'Security',
+          'Trusted Origins',
+          'warning',
+          'No trusted origins configured',
+          'Configure trustedOrigins to restrict CORS to specific domains',
+          'warning'
+        );
+      } else {
+        const invalidOrigins = trustedOrigins.filter((origin: string) => {
+          try {
+            new URL(origin);
+            return false;
+          } catch {
+            return true;
+          }
+        });
+
+        if (invalidOrigins.length > 0) {
+          addResult(
+            'Security',
+            'Trusted Origins',
+            'fail',
+            `Invalid trusted origin(s): ${invalidOrigins.join(', ')}`,
+            'Ensure all trusted origins are valid URLs',
+            'error'
+          );
+        } else {
+          addResult('Security', 'Trusted Origins', 'pass', `${trustedOrigins.length} trusted origin(s) configured`);
+        }
+      }
+
+      // 7. Plugins
+      const plugins = authConfig.plugins || [];
+      if (plugins.length === 0) {
+        addResult('Plugins', 'Plugins', 'warning', 'No plugins configured', undefined, 'info');
+      } else {
+        addResult('Plugins', 'Plugins', 'pass', `${plugins.length} plugin(s) configured`);
+      }
+
+      // 8. Environment Variables
+      const requiredEnvVars = ['BETTER_AUTH_SECRET', 'AUTH_SECRET'];
+      const missingEnvVars = requiredEnvVars.filter((varName) => !process.env[varName]);
+      if (missingEnvVars.length > 0) {
+        addResult(
+          'Environment',
+          'Required Variables',
+          'fail',
+          `Missing required environment variables: ${missingEnvVars.join(', ')}`,
+          'Set the required environment variables in your .env file',
+          'error'
+        );
+      } else {
+        addResult('Environment', 'Required Variables', 'pass', 'All required environment variables are set');
+      }
+
+      // Summary
+      const errors = results.filter((r) => r.severity === 'error').length;
+      const warnings = results.filter((r) => r.severity === 'warning').length;
+      const passes = results.filter((r) => r.status === 'pass').length;
+      const infos = results.filter((r) => r.severity === 'info').length;
+
+      res.json({
+        success: errors === 0,
+        summary: {
+          total: results.length,
+          passes,
+          errors,
+          warnings,
+          infos,
+        },
+        results,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: 'Failed to validate configuration',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  });
+
   // Database Detection endpoint - Auto-detect database from installed packages
   router.get('/api/database/detect', async (_req: Request, res: Response) => {
     try {

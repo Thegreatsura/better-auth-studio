@@ -1,4 +1,4 @@
-import { Code, Download, Eye, EyeOff, Globe, Key, Shield, TestTube, Zap } from 'lucide-react';
+import { AlertCircle, Code, Download, Eye, EyeOff, Globe, Info, Key, Shield, TestTube, XCircle, Zap } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -362,6 +362,25 @@ export default function Tools() {
   const [hashOutput, setHashOutput] = useState<string | null>(null);
   const [hashingPassword, setHashingPassword] = useState(false);
   const [showPlainPassword, setShowPlainPassword] = useState(false);
+  const [showConfigValidator, setShowConfigValidator] = useState(false);
+  const [configValidationResults, setConfigValidationResults] = useState<{
+    success: boolean;
+    summary: {
+      total: number;
+      passes: number;
+      errors: number;
+      warnings: number;
+      infos: number;
+    };
+    results: Array<{
+      category: string;
+      check: string;
+      status: 'pass' | 'fail' | 'warning';
+      message: string;
+      suggestion?: string;
+      severity: 'error' | 'warning' | 'info';
+    }>;
+  } | null>(null);
   const [showExportModal, setShowExportModal] = useState(false);
   const [availableTables, setAvailableTables] = useState<Array<{ name: string; displayName: string }>>([]);
   const [selectedTables, setSelectedTables] = useState<Set<string>>(new Set());
@@ -942,17 +961,41 @@ export default function Tools() {
     setRunningTool('validate-config');
     setShowLogs(true);
     setToolLogs([]);
+    setConfigValidationResults(null);
+    setShowConfigValidator(true);
 
     addLog('info', 'Validating Better Auth configuration...', 'running');
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      addLog('progress', 'Checking database connection...', 'running');
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      addLog('progress', 'Validating plugins configuration...', 'running');
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      addLog('success', '✅ Configuration is valid!', 'completed');
-      toast.success('Configuration validated successfully');
+      const response = await fetch('/api/tools/validate-config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      const result = await response.json();
+
+      if (result.success !== undefined) {
+        setConfigValidationResults(result);
+        
+        addLog('info', `Found ${result.summary.total} validation checks`, 'completed');
+        if (result.summary.errors > 0) {
+          addLog('error', `❌ ${result.summary.errors} error(s) found`, 'failed');
+        }
+        if (result.summary.warnings > 0) {
+          addLog('progress', `⚠️ ${result.summary.warnings} warning(s) found`, 'completed');
+        }
+        if (result.summary.passes > 0) {
+          addLog('success', `✅ ${result.summary.passes} check(s) passed`, 'completed');
+        }
+
+        if (result.success) {
+          toast.success('Configuration validation completed successfully');
+        } else {
+          toast.error(`Configuration validation found ${result.summary.errors} error(s)`);
+        }
+      } else {
+        throw new Error(result.error || 'Failed to validate configuration');
+      }
     } catch (error) {
       addLog('error', `❌ Configuration validation failed: ${error}`, 'failed');
       toast.error('Configuration validation failed');
@@ -1337,6 +1380,7 @@ export default function Tools() {
     'export-data',
     'jwt-decoder',
     'token-generator',
+    'validate-config',
   ]);
 
   const tools: Tool[] = [
@@ -2392,6 +2436,130 @@ export default function Tools() {
                   )}
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Config Validator Modal */}
+      {showConfigValidator && configValidationResults && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 overflow-hidden">
+          <div className="bg-black border border-dashed border-white/20 rounded-none p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-2">
+                <CheckCircle className="w-5 h-5 text-white" />
+                <h3 className="text-xl text-white font-light uppercase tracking-wider">
+                  Configuration Validator
+                </h3>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setShowConfigValidator(false);
+                  setConfigValidationResults(null);
+                }}
+                className="text-gray-400 hover:text-white rounded-none"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+
+            {/* Summary */}
+            <div className="mb-6 p-4 border border-dashed border-white/10">
+              <div className="text-xs uppercase font-mono text-gray-400 mb-3">Summary</div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="text-left border-r border-dashed border-white/10 pr-4 last:border-r-0">
+                  <div className="text-2xl font-mono text-white">{configValidationResults.summary.total}</div>
+                  <div className="text-xs text-gray-400 uppercase mt-1 font-mono">Total Checks</div>
+                </div>
+                <div className="text-left border-r border-dashed border-white/10 pr-4 last:border-r-0">
+                  <div className="text-2xl font-mono text-white">{configValidationResults.summary.passes}</div>
+                  <div className="text-xs text-gray-400 uppercase mt-1 font-mono">Passed</div>
+                </div>
+                <div className="text-left border-r border-dashed border-white/10 pr-4 last:border-r-0">
+                  <div className="text-2xl font-mono text-white">{configValidationResults.summary.errors}</div>
+                  <div className="text-xs text-gray-400 uppercase mt-1 font-mono">Errors</div>
+                </div>
+                <div className="text-left">
+                  <div className="text-2xl font-mono text-white">{configValidationResults.summary.warnings}</div>
+                  <div className="text-xs text-gray-400 uppercase mt-1 font-mono">Warnings</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Results by Category */}
+            <div className="space-y-4">
+              {Object.entries(
+                configValidationResults.results.reduce((acc, result) => {
+                  if (!acc[result.category]) {
+                    acc[result.category] = [];
+                  }
+                  acc[result.category].push(result);
+                  return acc;
+                }, {} as Record<string, typeof configValidationResults.results>)
+              ).map(([category, results]) => (
+                <div key={category} className="border border-dashed border-white/10 p-4">
+                  <h4 className="text-white font-mono uppercase text-xs mb-4 text-left">
+                    {category}
+                    <span className="text-gray-500 font-normal ml-2">
+                      ({results.length} check{results.length !== 1 ? 's' : ''})
+                    </span>
+                  </h4>
+                  <div className="space-y-3">
+                    {results.map((result, index) => (
+                      <div
+                        key={`${result.category}-${result.check}-${index}`}
+                        className={`p-3 border-l border-dashed border-white/15 ${
+                          result.status === 'pass' ? 'bg-green-600/[7%]' : 'bg-red-600/[7%]'
+                        }`}
+                      >
+                        <div className="flex items-start space-x-3">
+                          <div className="mt-0.5">
+                            {result.severity === 'error' ? (
+                              <XCircle className="w-4 h-4 text-white/60" />
+                            ) : result.severity === 'warning' ? (
+                              <AlertCircle className="w-4 h-4 text-white/60" />
+                            ) : result.status === 'pass' ? (
+                              <Check className="w-4 h-4 text-white/60" />
+                            ) : (
+                              <Info className="w-4 h-4 text-white/40" />
+                            )}
+                          </div>
+                          <div className="flex-1 text-left">
+                            <div className="flex items-center space-x-2 mb-1">
+                              <span className="text-white font-mono text-sm">{result.check}</span>
+                              <span className="text-xs px-2 py-0.5 border border-dashed border-white/20 text-white/60 font-mono">
+                                {result.status.toUpperCase()}
+                              </span>
+                            </div>
+                            <p className="text-gray-300 text-sm">{result.message}</p>
+                            {result.suggestion && (
+                              <div className="mt-2 p-2 bg-black/40 border border-dashed border-white/10">
+                                <p className="text-xs text-gray-400 uppercase mb-1 font-mono">Suggestion</p>
+                                <p className="text-xs text-gray-300">{result.suggestion}</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6 flex justify-end">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowConfigValidator(false);
+                  setConfigValidationResults(null);
+                }}
+                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none"
+              >
+                Close
+              </Button>
             </div>
           </div>
         </div>
