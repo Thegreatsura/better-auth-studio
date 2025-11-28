@@ -381,6 +381,7 @@ export default function Tools() {
       severity: 'error' | 'warning' | 'info';
     }>;
   } | null>(null);
+  const [expandedProviders, setExpandedProviders] = useState<Set<string>>(new Set());
   const [showExportModal, setShowExportModal] = useState(false);
   const [availableTables, setAvailableTables] = useState<Array<{ name: string; displayName: string }>>([]);
   const [selectedTables, setSelectedTables] = useState<Set<string>>(new Set());
@@ -402,6 +403,18 @@ export default function Tools() {
   const [tokenCustomClaims, setTokenCustomClaims] = useState('{\n  \n}');
   const [tokenResult, setTokenResult] = useState<any>(null);
   const [isGeneratingToken, setIsGeneratingToken] = useState(false);
+
+  // Prevent body scroll when Config Validator modal is open
+  useEffect(() => {
+    if (showConfigValidator) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showConfigValidator]);
 
   const addLog = (
     type: 'info' | 'success' | 'error' | 'progress',
@@ -2443,8 +2456,19 @@ export default function Tools() {
 
       {/* Config Validator Modal */}
       {showConfigValidator && configValidationResults && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 overflow-hidden">
-          <div className="bg-black border border-dashed border-white/20 rounded-none p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+        <div 
+          className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 overflow-hidden"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowConfigValidator(false);
+              setConfigValidationResults(null);
+            }
+          }}
+        >
+          <div 
+            className="bg-black border border-dashed border-white/20 rounded-none p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center space-x-2">
                 <CheckCircle className="w-5 h-5 text-white" />
@@ -2498,55 +2522,183 @@ export default function Tools() {
                   acc[result.category].push(result);
                   return acc;
                 }, {} as Record<string, typeof configValidationResults.results>)
-              ).map(([category, results]) => (
-                <div key={category} className="border border-dashed border-white/10 p-4">
-                  <h4 className="text-white font-mono uppercase text-xs mb-4 text-left">
-                    {category}
-                    <span className="text-gray-500 font-normal ml-2">
-                      ({results.length} check{results.length !== 1 ? 's' : ''})
-                    </span>
-                  </h4>
-                  <div className="space-y-3">
-                    {results.map((result, index) => (
-                      <div
-                        key={`${result.category}-${result.check}-${index}`}
-                        className={`p-3 border-l border-dashed border-white/15 ${
-                          result.status === 'pass' ? 'bg-green-600/[7%]' : 'bg-red-600/[7%]'
-                        }`}
-                      >
-                        <div className="flex items-start space-x-3">
-                          <div className="mt-0.5">
-                            {result.severity === 'error' ? (
-                              <XCircle className="w-4 h-4 text-white/60" />
-                            ) : result.severity === 'warning' ? (
-                              <AlertCircle className="w-4 h-4 text-white/60" />
-                            ) : result.status === 'pass' ? (
-                              <Check className="w-4 h-4 text-white/60" />
-                            ) : (
-                              <Info className="w-4 h-4 text-white/40" />
-                            )}
-                          </div>
-                          <div className="flex-1 text-left">
-                            <div className="flex items-center space-x-2 mb-1">
-                              <span className="text-white font-mono text-sm">{result.check}</span>
-                              <span className="text-xs px-2 py-0.5 border border-dashed border-white/20 text-white/60 font-mono">
-                                {result.status.toUpperCase()}
-                              </span>
+              ).map(([category, results]) => {
+                // Group OAuth Providers by provider name
+                if (category === 'OAuth Providers') {
+                  const providerGroups = results.reduce((acc, result) => {
+                    // Extract provider name from check (e.g., "Google - Client ID" -> "Google")
+                    const match = result.check.match(/^(.+?)\s*-\s*(.+)$/);
+                    if (match) {
+                      const providerName = match[1];
+                      const checkType = match[2];
+                      if (!acc[providerName]) {
+                        acc[providerName] = [];
+                      }
+                      acc[providerName].push({ ...result, check: checkType });
+                    } else {
+                      // If no provider name found, put in "General" group
+                      if (!acc['General']) {
+                        acc['General'] = [];
+                      }
+                      acc['General'].push(result);
+                    }
+                    return acc;
+                  }, {} as Record<string, typeof results>);
+
+                  return (
+                    <div key={category} className="border border-dashed border-white/10 p-4">
+                      <h4 className="text-white font-mono uppercase text-xs mb-4 text-left">
+                        {category}
+                        <span className="text-gray-500 font-normal ml-2">
+                          ({results.length} check{results.length !== 1 ? 's' : ''})
+                        </span>
+                      </h4>
+                      <div className="space-y-2">
+                        {Object.entries(providerGroups).map(([providerName, providerResults]) => {
+                          const isExpanded = expandedProviders.has(providerName);
+                          const hasErrors = providerResults.some((r) => r.severity === 'error');
+                          const hasWarnings = providerResults.some((r) => r.severity === 'warning');
+                          const allPassed = providerResults.every((r) => r.status === 'pass');
+
+                          return (
+                            <div key={providerName} className="border border-dashed border-white/10">
+                              <button
+                                onClick={() => {
+                                  setExpandedProviders((prev) => {
+                                    const next = new Set(prev);
+                                    if (next.has(providerName)) {
+                                      next.delete(providerName);
+                                    } else {
+                                      next.add(providerName);
+                                    }
+                                    return next;
+                                  });
+                                }}
+                                className="w-full flex items-center justify-between p-3 hover:bg-white/5 transition-colors text-left"
+                              >
+                                <div className="flex items-center space-x-2">
+                                  <ChevronRight
+                                    className={`w-4 h-4 text-white/60 transition-transform ${
+                                      isExpanded ? 'rotate-90' : ''
+                                    }`}
+                                  />
+                                  <span className="text-white font-mono text-sm">{providerName}</span>
+                                  <span className="text-xs text-gray-500 font-mono">
+                                    ({providerResults.length} check{providerResults.length !== 1 ? 's' : ''})
+                                  </span>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  {hasErrors && (
+                                    <span className="text-xs text-white/60 font-mono">Error</span>
+                                  )}
+                                  {hasWarnings && !hasErrors && (
+                                    <span className="text-xs text-white/60 font-mono">Warning</span>
+                                  )}
+                                  {allPassed && !hasErrors && !hasWarnings && (
+                                    <Check className="w-4 h-4 text-white/60" />
+                                  )}
+                                </div>
+                              </button>
+                              {isExpanded && (
+                                <div className="border-t border-dashed border-white/10 space-y-2 p-2">
+                                  {providerResults.map((result, index) => (
+                                    <div
+                                      key={`${providerName}-${result.check}-${index}`}
+                                      className={`p-3 border-l border-dashed border-white/15 ${
+                                        result.status === 'pass' ? 'bg-green-600/[8%]' : 'bg-red-600/[8%]'
+                                      }`}
+                                    >
+                                      <div className="flex items-start space-x-3">
+                                        <div className="mt-0.5">
+                                          {result.severity === 'error' ? (
+                                            <XCircle className="w-4 h-4 text-white/60" />
+                                          ) : result.severity === 'warning' ? (
+                                            <AlertCircle className="w-4 h-4 text-white/60" />
+                                          ) : result.status === 'pass' ? (
+                                            <Check className="w-4 h-4 text-white/60" />
+                                          ) : (
+                                            <Info className="w-4 h-4 text-white/40" />
+                                          )}
+                                        </div>
+                                        <div className="flex-1 text-left">
+                                          <div className="flex items-center space-x-2 mb-1">
+                                            <span className="text-white font-mono text-sm">{result.check}</span>
+                                            <span className="text-xs px-2 py-0.5 border border-dashed border-white/20 text-white/60 font-mono">
+                                              {result.status.toUpperCase()}
+                                            </span>
+                                          </div>
+                                          <p className="text-gray-300 text-sm">{result.message}</p>
+                                          {result.suggestion && (
+                                            <div className="mt-2 p-2 bg-black/40 border border-dashed border-white/10">
+                                              <p className="text-xs text-gray-400 uppercase mb-1 font-mono">Suggestion</p>
+                                              <p className="text-xs text-gray-300">{result.suggestion}</p>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
                             </div>
-                            <p className="text-gray-300 text-sm">{result.message}</p>
-                            {result.suggestion && (
-                              <div className="mt-2 p-2 bg-black/40 border border-dashed border-white/10">
-                                <p className="text-xs text-gray-400 uppercase mb-1 font-mono">Suggestion</p>
-                                <p className="text-xs text-gray-300">{result.suggestion}</p>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                }
+
+                // Regular rendering for other categories
+                return (
+                  <div key={category} className="border border-dashed border-white/10 p-4">
+                    <h4 className="text-white font-mono uppercase text-xs mb-4 text-left">
+                      {category}
+                      <span className="text-gray-500 font-normal ml-2">
+                        ({results.length} check{results.length !== 1 ? 's' : ''})
+                      </span>
+                    </h4>
+                    <div className="space-y-3">
+                      {results.map((result, index) => (
+                        <div
+                          key={`${result.category}-${result.check}-${index}`}
+                          className={`p-3 border-l border-dashed border-white/15 ${
+                            result.status === 'pass' ? 'bg-green-600/[8%]' : 'bg-red-600/[8%]'
+                          }`}
+                        >
+                          <div className="flex items-start space-x-3">
+                            <div className="mt-0.5">
+                              {result.severity === 'error' ? (
+                                <XCircle className="w-4 h-4 text-white/60" />
+                              ) : result.severity === 'warning' ? (
+                                <AlertCircle className="w-4 h-4 text-white/60" />
+                              ) : result.status === 'pass' ? (
+                                <Check className="w-4 h-4 text-white/60" />
+                              ) : (
+                                <Info className="w-4 h-4 text-white/40" />
+                              )}
+                            </div>
+                            <div className="flex-1 text-left">
+                              <div className="flex items-center space-x-2 mb-1">
+                                <span className="text-white font-mono text-sm">{result.check}</span>
+                                <span className="text-xs px-2 py-0.5 border border-dashed border-white/20 text-white/60 font-mono">
+                                  {result.status.toUpperCase()}
+                                </span>
                               </div>
-                            )}
+                              <p className="text-gray-300 text-sm">{result.message}</p>
+                              {result.suggestion && (
+                                <div className="mt-2 p-2 bg-black/40 border border-dashed border-white/10">
+                                  <p className="text-xs text-gray-400 uppercase mb-1 font-mono">Suggestion</p>
+                                  <p className="text-xs text-gray-300">{result.suggestion}</p>
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <div className="mt-6 flex justify-end">
