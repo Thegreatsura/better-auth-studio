@@ -48,6 +48,64 @@ export default function Changelog() {
 
           <PixelCard className="mb-6">
             <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-light tracking-tight text-white">Email Editor Enhancements & Password Strength Tool</h3>
+              <span className="text-sm font-light tracking-tight text-white/50">2025-01-31</span>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-light tracking-tight mb-2 text-white">📧 Email Editor Improvements</h4>
+                <ul className="list-none space-y-2 text-sm font-light tracking-tight text-white/70 ml-4">
+                  <li className="flex items-start">
+                    <span className="text-white/50 mr-3">•</span>
+                    Code export modal with syntax highlighting.
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-white/50 mr-3">•</span>
+                    Field simulator for real-time preview of email templates with dynamic placeholders
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="font-light tracking-tight mb-2 text-white">🔐 Password Strength Checker</h4>
+                <ul className="list-none space-y-2 text-sm font-light tracking-tight text-white/70 ml-4">
+                  <li className="flex items-start">
+                    <span className="text-white/50 mr-3">•</span>
+                    New utility tool for validating passwords against Better Auth configuration
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-white/50 mr-3">•</span>
+                    Comprehensive strength scoring (1-5) with visual indicators
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-white/50 mr-3">•</span>
+                    Checks for length, uppercase, lowercase, numbers, special characters, and common patterns
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-white/50 mr-3">•</span>
+                    Validates against configured min/max password length requirements
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="font-light tracking-tight mb-2 text-white">🎯 Navigation Enhancements</h4>
+                <ul className="list-none space-y-2 text-sm font-light tracking-tight text-white/70 ml-4">
+                  <li className="flex items-start">
+                    <span className="text-white/50 mr-3">•</span>
+                    Dynamic count badges for Database (schema count), Emails (template count), and Tools (total tools)
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-white/50 mr-3">•</span>
+                    Real-time schema count fetching from database API
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </PixelCard>
+
+          <PixelCard className="mb-6">
+            <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-light tracking-tight text-white">Dashboard Overhaul & Tool Suite</h3>
               <span className="text-sm font-light tracking-tight text-white/50">2025-11-08</span>
             </div>
@@ -544,6 +602,16 @@ export default function Changelog() {
         <section>
           <h2 className="text-2xl font-light tracking-tight mb-6 text-white">VERSION HISTORY</h2>
           <div className="space-y-4">
+            <PixelCard>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-lg font-light tracking-tight text-white">v1.0.31</h3>
+                <span className="text-sm font-light tracking-tight text-white/50">2025-01-31</span>
+              </div>
+              <p className="text-sm font-light tracking-tight text-white/70">
+                Enhanced email editor with code export, field simulator, and alignment icons. Added Password Strength Checker tool with comprehensive validation. Improved navigation with dynamic count badges.
+              </p>
+            </PixelCard>
+
             <PixelCard>
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-lg font-light tracking-tight text-white">v1.0.30</h3>
