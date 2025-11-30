@@ -578,7 +578,7 @@ export const auth = betterAuth({
               </div>
             </>
           ) : (
-            <div className="flex-1 flex items-center justify-center">
+            <div className="flex-1 flex items-center justify-center min-h-0">
               <div className="text-center">
                 <Mail className="w-16 h-16 text-white/20 mx-auto mb-4" />
                 <p className="text-gray-400 font-mono uppercase text-sm">
