@@ -865,7 +865,7 @@ export default function UserDetails() {
         </div>
 
         <div className="border border-dashed border-white/20 rounded-none">
-          <div className="border-b border-dashed border-white/10">
+          <div className="border-b border-dashed border-white/20">
             <nav className="flex space-x-8 px-6">
               {[
                 { id: 'details', name: 'Details', icon: User },
