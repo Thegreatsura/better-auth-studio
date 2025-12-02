@@ -3,9 +3,8 @@ import { auth } from './auth.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-// Middleware
 app.use(express.json());
-// Health check
+
 app.get('/health', (req, res) => {
   res.json({ 
     status: 'ok', 
@@ -14,7 +13,6 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Root endpoint
 app.get('/', async (req, res) => {
   const users = await (await auth.$context).adapter.findMany({
     model: "user",

@@ -891,7 +891,7 @@ export default function Users() {
                             {user.banned && (
                               <span className="relative group inline-block">
                                 <span className="px-2 py-0.5 text-[10px] font-semibold bg-red-500/20 border border-red-500/50 text-red-400 rounded-sm uppercase tracking-wide cursor-help">
-                                Banned
+                                  Banned
                                 </span>
                                 {user.banReason && (
                                   <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1.5 px-2 py-1 text-[10px] font-mono text-gray-300 bg-black border border-dashed border-white/20 rounded-none whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 pointer-events-none z-50">
