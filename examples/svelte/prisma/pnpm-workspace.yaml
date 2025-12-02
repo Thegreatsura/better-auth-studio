@@ -1,0 +1,7 @@
+ignoredBuiltDependencies:
+  - better-sqlite3
+  - esbuild
+
+overrides:
+  better-auth-studio: link:../../../../../Library/pnpm/global/5/node_modules/better-auth-studio
+  ..: link:../..

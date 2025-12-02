@@ -499,7 +499,7 @@ export default function Tools() {
     return () => {
       document.body.style.overflow = '';
     };
-  }, [ showOAuthCredentialsModal]);
+  }, [showOAuthCredentialsModal]);
   useEffect(() => {
     if (showEnvConfirmModal) {
       document.body.style.overflow = 'hidden';
@@ -3793,7 +3793,8 @@ export default function Tools() {
                             <span className="text-green-400 uppercase">
                               ✓ {envWriteResult.message.toLowerCase()}
                               <span className="block normal-case text-gray-400">
-                               <span className="text-gray-400 mr-1">{'>'}</span>  {envWriteResult.path}
+                                <span className="text-gray-400 mr-1">{'>'}</span>{' '}
+                                {envWriteResult.path}
                               </span>
                             </span>
                           ) : (

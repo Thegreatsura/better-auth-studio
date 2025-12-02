@@ -772,8 +772,10 @@ export default function UserDetails() {
                       Banned
                       {user.banReason && (
                         <span className="absolute lowercase left-1/2 -translate-x-1/2 bottom-full mb-3 px-2 py-2 text-[10px] font-mono text-gray-300 bg-black border border-dashed border-white/20 rounded-none whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 pointer-events-none z-50">
-                          <span className='text-gray-400 font-mono text-xs uppercase mr-1'>Banned Reason:</span> 
-                          
+                          <span className="text-gray-400 font-mono text-xs uppercase mr-1">
+                            Banned Reason:
+                          </span>
+
                           {user.banReason}
                           <span className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[4px] border-r-[4px] border-t-[4px] border-transparent border-t-white/20"></span>
                         </span>
