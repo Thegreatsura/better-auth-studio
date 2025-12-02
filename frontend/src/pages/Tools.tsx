@@ -490,7 +490,16 @@ export default function Tools() {
       document.body.style.overflow = '';
     };
   }, [showConfigValidator]);
-
+  useEffect(() => {
+    if (showOAuthCredentialsModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [ showOAuthCredentialsModal]);
   useEffect(() => {
     if (showPasswordStrengthModal) {
       document.body.style.overflow = 'hidden';
