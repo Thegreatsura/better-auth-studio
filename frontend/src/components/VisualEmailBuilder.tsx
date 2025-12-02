@@ -91,8 +91,9 @@ const parseHtmlToBlocks = (html: string): EmailBlock[] => {
           fontWeight: styles.fontWeight || 'bold',
           fontStyle: styles.fontStyle || 'normal',
           color: styles.color || '#000000',
+          backgroundColor: styles.backgroundColor || styles['background-color'] || undefined,
           textAlign: (styles.textAlign as any) || 'left',
-          padding: styles.padding || '0',
+          padding: styles.padding || (styles.backgroundColor || styles['background-color'] ? '8px 12px' : '0'),
           margin: styles.margin || '0 0 16px 0',
           textDecoration: styles.textDecoration || 'none',
         },
@@ -107,8 +108,9 @@ const parseHtmlToBlocks = (html: string): EmailBlock[] => {
           fontWeight: styles.fontWeight || 'normal',
           fontStyle: styles.fontStyle || 'normal',
           color: styles.color || '#333333',
+          backgroundColor: styles.backgroundColor || styles['background-color'] || undefined,
           textAlign: (styles.textAlign as any) || 'left',
-          padding: styles.padding || '0',
+          padding: styles.padding || (styles.backgroundColor || styles['background-color'] ? '8px 12px' : '0'),
           margin: styles.margin || '0 0 16px 0',
           textDecoration: styles.textDecoration || 'none',
         },
@@ -188,6 +190,10 @@ const parseStyles = (styleString: string): Record<string, string> => {
   styleString.split(';').forEach((style) => {
     const [key, value] = style.split(':').map((s) => s.trim());
     if (key && value) {
+      // Convert kebab-case to camelCase (e.g., background-color -> backgroundColor)
+      const camelKey = key.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+      styles[camelKey] = value;
+      // Also keep the original key for backward compatibility
       styles[key] = value;
     }
   });
@@ -595,8 +601,9 @@ export default function VisualEmailBuilder({ html, onChange }: VisualEmailBuilde
                           fontStyle: block.styles.fontStyle || 'normal',
                           fontFamily: block.styles.fontFamily || 'inherit',
                           color: block.styles.color || '#000000',
+                          backgroundColor: block.styles.backgroundColor || undefined,
                           textAlign: block.styles.textAlign || 'left',
-                          padding: block.styles.padding || '0',
+                          padding: block.styles.padding || (block.styles.backgroundColor ? '8px 12px' : '0'),
                           margin: block.styles.margin || '0 0 16px 0',
                           lineHeight: block.styles.lineHeight || '1.2',
                           letterSpacing: block.styles.letterSpacing || '0',
@@ -630,8 +637,9 @@ export default function VisualEmailBuilder({ html, onChange }: VisualEmailBuilde
                           fontStyle: block.styles.fontStyle || 'normal',
                           fontFamily: block.styles.fontFamily || 'inherit',
                           color: block.styles.color || '#333333',
+                          backgroundColor: block.styles.backgroundColor || undefined,
                           textAlign: block.styles.textAlign || 'left',
-                          padding: block.styles.padding || '0',
+                          padding: block.styles.padding || (block.styles.backgroundColor ? '8px 12px' : '0'),
                           margin: block.styles.margin || '0 0 16px 0',
                           lineHeight: block.styles.lineHeight || '1.6',
                           letterSpacing: block.styles.letterSpacing || '0',
@@ -1001,21 +1009,50 @@ export default function VisualEmailBuilder({ html, onChange }: VisualEmailBuilde
               </div>
             )}
 
-            {(selectedBlock.type === 'button' || selectedBlock.type === 'heading') && (
+            {(selectedBlock.type === 'button' || selectedBlock.type === 'heading' || selectedBlock.type === 'paragraph') && (
               <div>
                 <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
                   Background Color
                 </Label>
                 <Input
                   type="color"
-                  value={selectedBlock.styles.backgroundColor || '#000000'}
-                  onChange={(e) =>
+                  value={selectedBlock.styles.backgroundColor || '#ffffff'}
+                  onChange={(e) => {
+                    const newBackgroundColor = e.target.value;
+                    const currentPadding = selectedBlock.styles.padding;
+                    const hasBackgroundColor = newBackgroundColor && newBackgroundColor !== '#ffffff';
+                    // Auto-add padding if background color is set and no padding exists
+                    const shouldAddPadding = hasBackgroundColor && (!currentPadding || currentPadding === '0');
+                    
                     updateBlock(selectedBlock.id, {
-                      styles: { ...selectedBlock.styles, backgroundColor: e.target.value },
-                    })
-                  }
+                      styles: { 
+                        ...selectedBlock.styles, 
+                        backgroundColor: hasBackgroundColor ? newBackgroundColor : undefined,
+                        padding: shouldAddPadding ? '8px 12px' : (hasBackgroundColor ? (currentPadding || '8px 12px') : (currentPadding === '8px 12px' ? '0' : currentPadding)),
+                      },
+                    });
+                  }}
                   className="h-8 w-full bg-black border border-dashed border-white/20 rounded-none"
                 />
+                {selectedBlock.styles.backgroundColor && selectedBlock.styles.backgroundColor !== '#ffffff' && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      const currentPadding = selectedBlock.styles.padding;
+                      updateBlock(selectedBlock.id, {
+                        styles: { 
+                          ...selectedBlock.styles, 
+                          backgroundColor: undefined,
+                          padding: currentPadding === '8px 12px' ? '0' : currentPadding,
+                        },
+                      });
+                    }}
+                    className="text-xs text-gray-400 hover:text-white mt-1 rounded-none"
+                  >
+                    Clear Background
+                  </Button>
+                )}
               </div>
             )}
 

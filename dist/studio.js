@@ -9,6 +9,11 @@ import { WebSocketServer } from 'ws';
 import { createRoutes } from './routes.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+// Helper function to create clickable terminal links while preserving styling
+const createClickableLink = (url, styledText) => {
+    // ANSI escape codes for hyperlinks: \x1b]8;;URL\x1b\\TEXT\x1b]8;;\x1b\\
+    return `\x1b]8;;${url}\x1b\\${styledText}\x1b]8;;\x1b\\`;
+};
 export async function startStudio(options) {
     const { port, host, openBrowser, authConfig, configPath, watchMode, geoDbPath, onWatchConnection, logStartup = true, } = options;
     const app = express();
@@ -58,13 +63,18 @@ export async function startStudio(options) {
             process.stdout.write(chalk.green('✔ Better Auth Studio is running!\n'));
             process.stdout.write('\n');
             process.stdout.write(chalk.white(`🌐 Open your browser and navigate to: `));
-            process.stdout.write(chalk.green(chalk.underline(`${url}`)));
+            const styledUrl1 = chalk.green(chalk.underline(url));
+            process.stdout.write(createClickableLink(url, styledUrl1));
             process.stdout.write('\n');
             process.stdout.write(chalk.white(`📊 Dashboard available at: `));
-            process.stdout.write(chalk.green(chalk.underline(`${url}`)));
+            const styledUrl2 = chalk.green(chalk.underline(url));
+            process.stdout.write(createClickableLink(url, styledUrl2));
             process.stdout.write('\n');
             process.stdout.write(chalk.white(`🔧 API endpoints available at: `));
-            process.stdout.write(chalk.green(chalk.underline(`${url}/api\n`)));
+            const apiUrl = `${url}/api`;
+            const styledApiUrl = chalk.green(chalk.underline(apiUrl));
+            process.stdout.write(createClickableLink(apiUrl, styledApiUrl));
+            process.stdout.write('\n');
             if (watchMode) {
                 process.stdout.write(chalk.white('👀 Watch mode enabled - config changes will reload automatically\n'));
                 process.stdout.write('\n');
