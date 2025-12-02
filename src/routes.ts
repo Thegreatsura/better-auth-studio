@@ -1,5 +1,5 @@
 import { createHmac, randomBytes } from 'node:crypto';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 // @ts-expect-error
@@ -5230,6 +5230,181 @@ export function createRoutes(
       res.status(500).json({
         success: false,
         message: error instanceof Error ? error.message : 'Failed to generate secret',
+      });
+    }
+  });
+
+  router.post('/api/tools/check-env-credentials', async (req: Request, res: Response) => {
+    try {
+      const { provider } = req.body || {};
+
+      if (!provider) {
+        return res.status(400).json({
+          success: false,
+          message: 'Provider is required',
+        });
+      }
+
+      const envPath = join(process.cwd(), '.env');
+      const envLocalPath = join(process.cwd(), '.env.local');
+      
+      // Try .env.local first, then .env
+      let targetPath = existsSync(envLocalPath) ? envLocalPath : envPath;
+      let envContent = existsSync(targetPath) ? readFileSync(targetPath, 'utf-8') : '';
+
+      // Generate environment variable names
+      const providerUpper = provider.toUpperCase();
+      const clientIdKey = `${providerUpper}_CLIENT_ID`;
+      const clientSecretKey = `${providerUpper}_CLIENT_SECRET`;
+
+      // Parse existing .env file
+      const envLines = envContent.split('\n');
+      const existingCredentials: Record<string, string> = {};
+
+      envLines.forEach((line) => {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith('#')) return;
+
+        const match = trimmed.match(/^([^=#]+)=(.*)$/);
+        if (match) {
+          const key = match[1].trim();
+          const value = match[2].trim();
+          if (key === clientIdKey || key === clientSecretKey) {
+            existingCredentials[key] = value;
+          }
+        }
+      });
+
+      const hasExisting = existingCredentials[clientIdKey] || existingCredentials[clientSecretKey];
+
+      res.json({
+        success: true,
+        hasExisting,
+        existingCredentials: hasExisting ? existingCredentials : {},
+        path: targetPath,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to check credentials',
+      });
+    }
+  });
+
+  router.post('/api/tools/write-env-credentials', async (req: Request, res: Response) => {
+    try {
+      const { provider, clientId, clientSecret, action = 'override' } = req.body || {};
+
+      if (!provider || !clientId || !clientSecret) {
+        return res.status(400).json({
+          success: false,
+          message: 'Provider, Client ID, and Client Secret are required',
+        });
+      }
+
+      const envPath = join(process.cwd(), '.env');
+      const envLocalPath = join(process.cwd(), '.env.local');
+      
+      // Try .env.local first, then .env
+      let targetPath = existsSync(envLocalPath) ? envLocalPath : envPath;
+      let envContent = existsSync(targetPath) ? readFileSync(targetPath, 'utf-8') : '';
+
+      // Parse existing .env file
+      const envLines = envContent.split('\n');
+      const envMap = new Map<string, { line: string; index: number }>();
+      const newLines: string[] = [];
+
+      envLines.forEach((line, index) => {
+        const trimmed = line.trim();
+        // Skip empty lines and comments
+        if (!trimmed || trimmed.startsWith('#')) {
+          newLines.push(line);
+          return;
+        }
+
+        // Parse KEY=VALUE format
+        const match = trimmed.match(/^([^=#]+)=(.*)$/);
+        if (match) {
+          const key = match[1].trim();
+          const value = match[2].trim();
+          envMap.set(key, { line, index });
+          newLines.push(line);
+        } else {
+          newLines.push(line);
+        }
+      });
+
+      // Generate environment variable names
+      const providerUpper = provider.toUpperCase();
+      let clientIdKey = `${providerUpper}_CLIENT_ID`;
+      let clientSecretKey = `${providerUpper}_CLIENT_SECRET`;
+
+      // Handle append action - find next available suffix
+      if (action === 'append') {
+        let suffix = 2;
+        while (envMap.has(clientIdKey) || envMap.has(clientSecretKey)) {
+          clientIdKey = `${providerUpper}_CLIENT_ID_${suffix}`;
+          clientSecretKey = `${providerUpper}_CLIENT_SECRET_${suffix}`;
+          suffix++;
+        }
+      }
+
+      // Update or add credentials
+      let updated = false;
+      
+      if (action === 'override' && envMap.has(clientIdKey)) {
+        const existing = envMap.get(clientIdKey)!;
+        newLines[existing.index] = `${clientIdKey}=${clientId}`;
+        updated = true;
+      } else if (!envMap.has(clientIdKey)) {
+        // Remove trailing empty lines
+        while (newLines.length > 0 && !newLines[newLines.length - 1].trim()) {
+          newLines.pop();
+        }
+        // Add newline if file has content
+        if (newLines.length > 0 && newLines[newLines.length - 1] && !newLines[newLines.length - 1].endsWith('\n')) {
+          // Ensure there's a newline before adding
+          if (!newLines[newLines.length - 1].endsWith('\r\n') && !newLines[newLines.length - 1].endsWith('\n')) {
+            newLines.push('');
+          }
+        }
+        newLines.push(`${clientIdKey}=${clientId}`);
+        updated = true;
+      }
+
+      if (action === 'override' && envMap.has(clientSecretKey)) {
+        const existing = envMap.get(clientSecretKey)!;
+        newLines[existing.index] = `${clientSecretKey}=${clientSecret}`;
+        updated = true;
+      } else if (!envMap.has(clientSecretKey)) {
+        // Find the index where we added clientId and add secret right after
+        const clientIdIndex = newLines.findIndex((line) => line.startsWith(`${clientIdKey}=`));
+        if (clientIdIndex >= 0) {
+          newLines.splice(clientIdIndex + 1, 0, `${clientSecretKey}=${clientSecret}`);
+        } else {
+          // If clientId wasn't found (shouldn't happen), add at end
+          newLines.push(`${clientSecretKey}=${clientSecret}`);
+        }
+        updated = true;
+      }
+
+      // Write back to file
+      const newContent = newLines.join('\n');
+      writeFileSync(targetPath, newContent, 'utf-8');
+
+      res.json({
+        success: true,
+        message: 'OAuth credentials written successfully',
+        path: targetPath,
+        variables: {
+          [clientIdKey]: clientId,
+          [clientSecretKey]: '***',
+        },
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to write credentials to .env',
       });
     }
   });

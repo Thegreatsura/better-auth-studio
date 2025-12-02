@@ -456,6 +456,19 @@ export default function Tools() {
   } | null>(null);
   const [isFetchingCredentials, setIsFetchingCredentials] = useState(false);
   const [showOAuthSecret, setShowOAuthSecret] = useState(false);
+  const [isWritingToEnv, setIsWritingToEnv] = useState(false);
+  const [envWriteResult, setEnvWriteResult] = useState<{
+    success: boolean;
+    message: string;
+    path?: string;
+  } | null>(null);
+  const [showEnvConfirmModal, setShowEnvConfirmModal] = useState(false);
+  const [existingEnvCredentials, setExistingEnvCredentials] = useState<{
+    hasExisting: boolean;
+    credentials: Record<string, string>;
+    path?: string;
+  } | null>(null);
+  const [isCheckingEnv, setIsCheckingEnv] = useState(false);
   const [showSecretGeneratorModal, setShowSecretGeneratorModal] = useState(false);
   const [secretResult, setSecretResult] = useState<{
     secret: string;
@@ -499,6 +512,17 @@ export default function Tools() {
       document.body.style.overflow = '';
     };
   }, [showOAuthCredentialsModal]);
+
+  useEffect(() => {
+    if (showEnvConfirmModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showEnvConfirmModal]);
 
   useEffect(() => {
     if (showSecretGeneratorModal) {
@@ -1310,6 +1334,7 @@ export default function Tools() {
 
     setIsFetchingCredentials(true);
     setOauthCredentials(null);
+    setEnvWriteResult(null);
 
     try {
       const response = await fetch(
@@ -1336,6 +1361,99 @@ export default function Tools() {
       toast.error(message);
     } finally {
       setIsFetchingCredentials(false);
+    }
+  };
+
+  const handleWriteToEnv = async () => {
+    if (!selectedProvider || !oauthCredentials) {
+      toast.error('Please fetch credentials first');
+      return;
+    }
+
+    // First check if credentials already exist
+    setIsCheckingEnv(true);
+    setEnvWriteResult(null);
+
+    try {
+      const checkResponse = await fetch('/api/tools/check-env-credentials', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          provider: selectedProvider,
+        }),
+      });
+
+      const checkData = await checkResponse.json();
+
+      if (checkData.success && checkData.hasExisting) {
+        // Show confirmation modal
+        setExistingEnvCredentials({
+          hasExisting: true,
+          credentials: checkData.existingCredentials,
+          path: checkData.path,
+        });
+        setShowEnvConfirmModal(true);
+        setIsCheckingEnv(false);
+        return;
+      }
+
+      // No existing credentials, write directly
+      await writeCredentialsToEnv('override');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to check credentials';
+      toast.error(message);
+      setIsCheckingEnv(false);
+    }
+  };
+
+  const writeCredentialsToEnv = async (action: 'override' | 'append') => {
+    if (!selectedProvider || !oauthCredentials) {
+      return;
+    }
+
+    setIsWritingToEnv(true);
+    setEnvWriteResult(null);
+    setShowEnvConfirmModal(false);
+
+    try {
+      const response = await fetch('/api/tools/write-env-credentials', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          provider: selectedProvider,
+          clientId: oauthCredentials.clientId,
+          clientSecret: oauthCredentials.clientSecret,
+          action,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setEnvWriteResult({
+          success: true,
+          message: data.message,
+          path: data.path,
+        });
+        toast.success(`Credentials written to ${data.path}`);
+        setExistingEnvCredentials(null);
+      } else {
+        throw new Error(data.message || 'Failed to write credentials');
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to write credentials to .env';
+      setEnvWriteResult({
+        success: false,
+        message,
+      });
+      toast.error(message);
+    } finally {
+      setIsWritingToEnv(false);
+      setIsCheckingEnv(false);
     }
   };
 
@@ -3644,6 +3762,45 @@ export default function Tools() {
                       </div>
                     </div>
                   </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-dashed border-white/10">
+                    <div className="flex-1">
+                      {envWriteResult && (
+                        <div className="text-xs font-mono">
+                          {envWriteResult.success ? (
+                            <span className="text-green-400 uppercase">
+                              ✓ {envWriteResult.message.toLowerCase()} →{' '}
+                              <span className="normal-case text-gray-400">{envWriteResult.path}</span>
+                            </span>
+                          ) : (
+                            <span className="text-red-300">✗ {envWriteResult.message}</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    <Button
+                      onClick={handleWriteToEnv}
+                      disabled={isWritingToEnv || isCheckingEnv}
+                      className="rounded-none"
+                    >
+                      {isCheckingEnv ? (
+                        <>
+                          <Loader className="w-4 h-4 mr-2 animate-spin" />
+                          Checking...
+                        </>
+                      ) : isWritingToEnv ? (
+                        <>
+                          <Loader className="w-4 h-4 mr-2 animate-spin" />
+                          Writing...
+                        </>
+                      ) : (
+                        <>
+                          <FileText className="w-4 h-4 mr-2" />
+                          Write to .env
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>
@@ -3825,6 +3982,91 @@ export default function Tools() {
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+      {showEnvConfirmModal && existingEnvCredentials && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[70] overflow-hidden">
+          <div className="bg-black border border-dashed border-white/20 rounded-none p-6 w-full max-w-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-2">
+                <AlertCircle className="w-5 h-5 text-yellow-400" />
+                <h3 className="text-xl text-white font-light uppercase tracking-wider">
+                  Overwrite Existing Credentials?
+                </h3>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setShowEnvConfirmModal(false);
+                  setExistingEnvCredentials(null);
+                  setIsCheckingEnv(false);
+                }}
+                className="text-gray-400 hover:text-white rounded-none"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="border border-dashed border-white/20 p-4">
+                <p className="text-sm border-b border-dashed border-white/20 pb-5 text-gray-300 font-mono mb-3">
+                  The following{' '}
+                  <span className="text-white uppercase">
+                    {selectedProvider?.charAt(0).toUpperCase() + selectedProvider?.slice(1)}
+                  </span>{' '}
+                  credentials already exist in{' '}
+                  <span className="text-gray-400 normal-case">{existingEnvCredentials.path}</span>:
+                </p>
+                <div className="space-y-2 pt-2">
+                  {Object.entries(existingEnvCredentials.credentials).map(([key, value]) => (
+                    <div key={key} className="flex items-center justify-between text-xs font-mono">
+                      <span className="text-gray-400 uppercase">{key}</span>
+                      <span className="text-gray-500">
+                        {value.length > 20 ? `${value.substring(0, 20)}...` : value}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end space-x-3 pt-4 border-t border-dashed border-white/10">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowEnvConfirmModal(false);
+                    setExistingEnvCredentials(null);
+                    setIsCheckingEnv(false);
+                  }}
+                  className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none"
+                >
+                  No, Cancel
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => writeCredentialsToEnv('append')}
+                  disabled={isWritingToEnv}
+                  className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none"
+                >
+                  Append
+                </Button>
+                <Button
+                  onClick={() => writeCredentialsToEnv('override')}
+                  disabled={isWritingToEnv}
+                  className="rounded-none"
+                >
+                  {isWritingToEnv ? (
+                    <>
+                      <Loader className="w-4 h-4 mr-2 animate-spin" />
+                      Writing...
+                    </>
+                  ) : (
+                    'Yes, Overwrite'
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
         </div>
