@@ -54,12 +54,7 @@ export interface AuthConfig {
   [key: string]: any;
 }
 
-let possiblePaths = [
-  'auth.ts',
-  'auth.js',
-  'auth.server.js',
-  'auth.server.ts',
-];
+let possiblePaths = ['auth.ts', 'auth.js', 'auth.server.js', 'auth.server.ts'];
 
 possiblePaths = [
   ...possiblePaths,
@@ -123,11 +118,9 @@ function getPathAliasesRecursive(
       }
     }
 
-    console.log({tsconfigPath , tsConfig}) 
+    console.log({ tsconfigPath, tsConfig });
     if (tsConfig.extends) {
-      const extendsPath = Array.isArray(tsConfig.extends)
-        ? tsConfig.extends[0]
-        : tsConfig.extends;
+      const extendsPath = Array.isArray(tsConfig.extends) ? tsConfig.extends[0] : tsConfig.extends;
       const extendedPath = path.isAbsolute(extendsPath)
         ? extendsPath
         : path.resolve(configDir, extendsPath);
