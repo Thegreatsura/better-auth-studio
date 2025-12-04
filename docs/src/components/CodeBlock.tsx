@@ -11,11 +11,11 @@ interface CodeBlockProps {
   className?: string;
 }
 
-export default function CodeBlock({ 
-  code, 
-  language = 'bash', 
-  showCopy = true, 
-  className = '' 
+export default function CodeBlock({
+  code,
+  language = 'bash',
+  showCopy = true,
+  className = ''
 }: CodeBlockProps) {
   const [copied, setCopied] = useState(false);
 
@@ -28,7 +28,18 @@ export default function CodeBlock({
       console.error('Failed to copy text: ', err);
     }
   };
-
+  const CheckIcon = (props: React.SVGProps<SVGSVGElement>) => <svg
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    className="w-4 h-4 text-white"
+    {...props}
+  >
+    <path
+      d="M18 6h2v2h-2V6zm-2 4V8h2v2h-2zm-2 2v-2h2v2h-2zm-2 2h2v-2h-2v2zm-2 2h2v-2h-2v2zm-2 0v2h2v-2H8zm-2-2h2v2H6v-2zm0 0H4v-2h2v2z"
+      fill="currentColor"
+    />
+  </svg>
   return (
     <div className={`relative group ${className}`}>
       <PixelCard variant="code">
@@ -41,7 +52,7 @@ export default function CodeBlock({
               title={copied ? 'Copied!' : 'Copy code'}
             >
               {copied ? (
-                <Check className="w-4 h-4 text-white" />
+                <CheckIcon />
               ) : (
                 <Copy className="w-4 h-4 text-white/70" />
               )}
