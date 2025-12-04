@@ -335,7 +335,6 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
-    // Fetch additional stats
     const fetchStats = async () => {
       try {
         const response = await fetch('/api/stats');
@@ -344,7 +343,6 @@ export default function Dashboard() {
           setActiveUsersDaily(data.activeUsers || 0);
         }
       } catch (_error) {
-        // Set to 0 if API fails
         setActiveUsersDaily(0);
       }
     };
@@ -394,12 +392,10 @@ export default function Dashboard() {
       currentPeriodEnd = new Date(newUsersDateTo);
       currentPeriodEnd.setHours(23, 59, 59, 999);
 
-      // Previous period is the same duration before current period
       const periodDuration = currentPeriodEnd.getTime() - currentPeriodStart.getTime();
       previousPeriodEnd = new Date(currentPeriodStart.getTime() - 1);
       previousPeriodStart = new Date(previousPeriodEnd.getTime() - periodDuration);
     } else {
-      // Calculate current period
       switch (newUsersPeriod) {
         case 'Daily':
           currentPeriodStart = new Date(now);
@@ -435,14 +431,12 @@ export default function Dashboard() {
       }
     }
 
-    // Filter users for current period
     const currentPeriodUsers = allUsers.filter((user: any) => {
       if (!user.createdAt) return false;
       const createdAt = new Date(user.createdAt);
       return createdAt >= currentPeriodStart && createdAt <= currentPeriodEnd;
     });
 
-    // Filter users for previous period
     const previousPeriodUsers = allUsers.filter((user: any) => {
       if (!user.createdAt) return false;
       const createdAt = new Date(user.createdAt);
@@ -452,7 +446,6 @@ export default function Dashboard() {
     const currentCount = currentPeriodUsers.length;
     const previousCount = previousPeriodUsers.length;
 
-    // Calculate percentage change
     let percentageChange = 0;
     if (previousCount > 0) {
       percentageChange = ((currentCount - previousCount) / previousCount) * 100;
@@ -800,7 +793,6 @@ export default function Dashboard() {
           return monthDate.toLocaleDateString('en-US', { month: 'short' });
         });
       case '1Y':
-        // Last 12 months starting from current month
         return Array.from({ length: 12 }, (_, i) => {
           const monthDate = new Date(now.getFullYear(), now.getMonth() - (11 - i), 1);
           return monthDate.toLocaleDateString('en-US', { month: 'short' });
@@ -1221,9 +1213,8 @@ export default function Dashboard() {
                             const rect = e.currentTarget.getBoundingClientRect();
                             const x = rect.left + rect.width / 2;
                             const y = rect.top;
-                            // Constrain tooltip within viewport
-                            const tooltipWidth = 150; // Approximate tooltip width
-                            const tooltipHeight = 60; // Approximate tooltip height
+                            const tooltipWidth = 150; 
+                            const tooltipHeight = 60; 
                             const constrainedX = Math.max(
                               tooltipWidth / 2,
                               Math.min(window.innerWidth - tooltipWidth / 2, x)
@@ -1309,7 +1300,7 @@ export default function Dashboard() {
                   <p className="text-xs text-gray-400">Tracked events in selected period</p>
                 </div>
                 <div className="flex items-center space-x-1 overflow-x-auto">
-                  {['1D', '1W', '3M', '6M', '1Y', 'ALL'].map((period) => (
+                  {['1D', '1W', '3M', '6M', '1Y'].map((period) => (
                     <button
                       key={period}
                       onClick={() => setActivityPeriod(period)}

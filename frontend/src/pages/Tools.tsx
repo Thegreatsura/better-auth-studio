@@ -3961,7 +3961,7 @@ export default function Tools() {
                         onClick={() => copyToClipboard(secretResult.secret)}
                         className="absolute right-0 top-0 h-full px-3 text-gray-400 hover:text-white rounded-none"
                       >
-                        <Copy className="w-4 h-4" />
+                        <Copy className="w-3 h-3" />
                       </Button>
                     </div>
                   </div>
@@ -3982,7 +3982,7 @@ export default function Tools() {
                         onClick={() => copyToClipboard(secretResult.envFormat)}
                         className="absolute right-0 top-0 h-full px-3 text-gray-400 hover:text-white rounded-none"
                       >
-                        <Copy className="w-4 h-4" />
+                        <Copy className="w-3 h-3" />
                       </Button>
                     </div>
                     <p className="text-[11px] text-gray-500 font-mono mt-2">
