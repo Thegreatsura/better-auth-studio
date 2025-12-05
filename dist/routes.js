@@ -4368,90 +4368,79 @@ ${fields}
             const beforeHooks = hooks.filter((h) => h.timing === 'before').map((hook) => {
                 let matcher = '';
                 if (hook.action === 'sign-up') {
-                    matcher = `(context) => context.path === '/sign-up' || context.path === '/sign-up/email'`;
+                    matcher = `(ctx) => ctx.path.startsWith("/sign-up")`;
                 }
                 else if (hook.action === 'sign-in') {
-                    matcher = `(context) => context.path === '/sign-in' || context.path === '/sign-in/email'`;
+                    matcher = `(ctx) => ctx.path.startsWith("/sign-in")`;
                 }
                 else if (hook.action === 'custom' && hook.customPath) {
-                    matcher = `(context) => context.path === '${hook.customPath}'`;
+                    matcher = `(ctx) => ctx.path === "${hook.customPath}"`;
                     if (hook.customMatcher) {
-                        matcher = `(context) => context.path === '${hook.customPath}' && (${hook.customMatcher})`;
+                        matcher = `(ctx) => ctx.path === "${hook.customPath}" && (${hook.customMatcher})`;
                     }
                 }
                 else {
-                    matcher = `(context) => true`;
+                    matcher = `(ctx) => true`;
                 }
                 return `        {
           matcher: ${matcher},
-          handler: async (ctx) => {
+          handler: createAuthMiddleware(async (ctx) => {
             // ${hook.name || `${hook.timing} ${hook.action} hook`}
             ${hook.hookLogic || '// Hook logic here'}
-          },
+          }),
         }`;
             });
             const afterHooks = hooks.filter((h) => h.timing === 'after').map((hook) => {
                 let matcher = '';
                 if (hook.action === 'sign-up') {
-                    matcher = `(context) => context.path === '/sign-up' || context.path === '/sign-up/email'`;
+                    matcher = `(ctx) => ctx.path.startsWith("/sign-up")`;
                 }
                 else if (hook.action === 'sign-in') {
-                    matcher = `(context) => context.path === '/sign-in' || context.path === '/sign-in/email'`;
+                    matcher = `(ctx) => ctx.path.startsWith("/sign-in")`;
                 }
                 else if (hook.action === 'custom' && hook.customPath) {
-                    matcher = `(context) => context.path === '${hook.customPath}'`;
+                    matcher = `(ctx) => ctx.path === "${hook.customPath}"`;
                     if (hook.customMatcher) {
-                        matcher = `(context) => context.path === '${hook.customPath}' && (${hook.customMatcher})`;
+                        matcher = `(ctx) => ctx.path === "${hook.customPath}" && (${hook.customMatcher})`;
                     }
                 }
                 else {
-                    matcher = `(context) => true`;
+                    matcher = `(ctx) => true`;
                 }
                 return `        {
           matcher: ${matcher},
-          handler: async (ctx) => {
+          handler: createAuthMiddleware(async (ctx) => {
             // ${hook.name || `${hook.timing} ${hook.action} hook`}
             ${hook.hookLogic || '// Hook logic here'}
-          },
+          }),
         }`;
             });
             // Generate middleware
             const middlewareCode = middleware.map((mw) => {
-                let pathMatcher = '';
-                if (mw.pathType === 'exact') {
-                    pathMatcher = `(path: string) => path === "${mw.path}"`;
-                }
-                else if (mw.pathType === 'prefix') {
-                    pathMatcher = `(path: string) => path.startsWith("${mw.path}")`;
-                }
-                else if (mw.pathType === 'regex') {
-                    pathMatcher = `(path: string) => new RegExp("${mw.path.replace(/"/g, '\\"')}").test(path)`;
-                }
-                else {
-                    pathMatcher = `(path: string) => path === "${mw.path}"`;
-                }
                 return `      {
         path: "${mw.path}",
-        middleware: async (req, res, next) => {
+        middleware: createAuthMiddleware(async (ctx) => {
           // ${mw.name || 'Middleware'}
           ${mw.middlewareLogic || '// Middleware logic here'}
-          next();
-        },
+        }),
       }`;
             }).join(',\n');
             // Generate endpoints
             const endpointsCode = endpoints.length > 0 ? endpoints.map((endpoint) => {
                 const endpointName = endpoint.name?.trim() || `endpoint${endpoints.indexOf(endpoint) + 1}`;
                 const sanitizedName = endpointName.toLowerCase().replace(/[^a-zA-Z0-9]/g, '');
-                return `      "${sanitizedName}": {
-        method: "${endpoint.method || 'POST'}" as const,
-        handler: async (ctx) => {
-          // ${endpoint.name || 'Custom endpoint'}
-          ${endpoint.handlerLogic || '// Endpoint handler logic here'}
-          return ctx.json({ success: true });
+                const endpointPath = endpoint.path?.trim() || `/${camelCaseName}/${sanitizedName}`;
+                return `      ${sanitizedName}: createAuthEndpoint(
+        "${endpointPath}",
+        {
+          method: "${endpoint.method || 'POST'}" as const,
         },
-      }`;
-            }).join(',\n') : '';
+        async (ctx) => {
+          // ${endpoint.name || 'Custom endpoint'}
+          ${endpoint.handlerLogic || '// Endpoint handler logic here\n          return ctx.json({ success: true });'}
+        },
+      ),`;
+            }).join('\n') : '';
             // Generate rate limit
             const rateLimitCode = rateLimit ? (() => {
                 const rl = rateLimit;
@@ -4492,7 +4481,7 @@ ${fields}
             // Build plugin object parts
             const pluginParts = [];
             if (schemaCode) {
-                pluginParts.push(`    schema: {\n${schemaCode}\n    } as AuthPluginSchema`);
+                pluginParts.push(`    schema: {\n${schemaCode}\n    }`);
             }
             if (beforeHooks.length > 0 || afterHooks.length > 0) {
                 const hooksParts = [];
@@ -4514,15 +4503,9 @@ ${fields}
                 pluginParts.push(`    rateLimit: [\n${rateLimitCode}\n    ]`);
             }
             // Generate server plugin code
-            const imports = ['import type { BetterAuthPlugin } from "better-auth"'];
-            if (tables.length > 0) {
-                imports.push('import type { AuthPluginSchema } from "better-auth/types"');
-            }
-            if (hooks.length > 0) {
-                imports.push('import type { HookEndpointContext, AuthMiddleware } from "better-auth"');
-            }
-            if (middleware.length > 0 || endpoints.length > 0) {
-                imports.push('import type { Endpoint, Middleware } from "better-call"');
+            const imports = ['import type { BetterAuthPlugin } from "@better-auth/core"'];
+            if (hooks.length > 0 || middleware.length > 0 || endpoints.length > 0) {
+                imports.push('import { createAuthEndpoint, createAuthMiddleware } from "@better-auth/core/api"');
             }
             const serverPluginBody = pluginParts.length > 0
                 ? `    id: "${camelCaseName}" as const,\n${pluginParts.join(',\n')}`
@@ -4530,11 +4513,11 @@ ${fields}
             const serverPluginCode = cleanCode(`${imports.join('\n')}
 
 ${description ? `/**\n * ${description.replace(/\n/g, '\n * ')}\n */` : ''}
-export function ${camelCaseName}(options: Record<string, any> = {}): BetterAuthPlugin {
+export const ${camelCaseName} = (options?: Record<string, any>) => {
   return {
 ${serverPluginBody}
-  };
-}
+  } satisfies BetterAuthPlugin;
+};
 `);
             // Generate client plugin code
             const clientPluginCode = cleanCode(`// Client utilities (optional)
@@ -4546,18 +4529,18 @@ export const ${camelCaseName}Client = {
 };
 `);
             // Generate server setup code
-            const serverSetupCode = cleanCode(`import { betterAuth } from "better-auth";
+            const serverSetupCode = cleanCode(`import { betterAuth } from "@better-auth/core";
 import { ${camelCaseName} } from "./plugins/${camelCaseName}";
 
 export const auth = betterAuth({
   // ... your existing config
   plugins: [
-    ${camelCaseName}({}),
+    ${camelCaseName}(),
   ],
 });
 `);
             // Generate client setup code
-            const clientSetupCode = cleanCode(`import { createAuthClient } from "better-auth/react";
+            const clientSetupCode = cleanCode(`import { createAuthClient } from "@better-auth/react";
 
 export const authClient = createAuthClient({
   baseURL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL || "http://localhost:3000",
