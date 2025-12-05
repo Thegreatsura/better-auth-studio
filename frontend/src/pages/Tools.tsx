@@ -3953,12 +3953,21 @@ export default function Tools() {
                         </Label>
                         <Input
                           type="number"
-                          value={pluginRateLimit.window}
+                          value={pluginRateLimit.window || ''}
                           onChange={(e) => {
+                            const value = e.target.value;
                             setPluginRateLimit({
                               ...pluginRateLimit,
-                              window: parseInt(e.target.value, 10) || 0,
+                              window: value === '' ? 0 : parseInt(value, 10) || 0,
                             });
+                          }}
+                          onBlur={(e) => {
+                            if (!e.target.value || parseInt(e.target.value, 10) <= 0) {
+                              setPluginRateLimit({
+                                ...pluginRateLimit,
+                                window: 15 * 60 * 1000,
+                              });
+                            }
                           }}
                           placeholder="900000"
                           className="bg-black border border-dashed border-white/20 text-white rounded-none"
@@ -3973,12 +3982,21 @@ export default function Tools() {
                         </Label>
                         <Input
                           type="number"
-                          value={pluginRateLimit.max}
+                          value={pluginRateLimit.max || ''}
                           onChange={(e) => {
+                            const value = e.target.value;
                             setPluginRateLimit({
                               ...pluginRateLimit,
-                              max: parseInt(e.target.value, 10) || 0,
+                              max: value === '' ? 0 : parseInt(value, 10) || 0,
                             });
+                          }}
+                          onBlur={(e) => {
+                            if (!e.target.value || parseInt(e.target.value, 10) <= 0) {
+                              setPluginRateLimit({
+                                ...pluginRateLimit,
+                                max: 100,
+                              });
+                            }
                           }}
                           placeholder="100"
                           className="bg-black border border-dashed border-white/20 text-white rounded-none"
@@ -4060,11 +4078,19 @@ export default function Tools() {
                         size="sm"
                         onClick={() => {
                           const code = pluginResult[activeCodeTab];
+                          const filePath = [
+                            { id: 'server', path: pluginResult.filePaths?.server || `plugin/${pluginResult.name}/index.ts` },
+                            { id: 'client', path: pluginResult.filePaths?.client || `plugin/${pluginResult.name}/client/index.ts` },
+                            { id: 'serverSetup', path: pluginResult.filePaths?.serverSetup || 'auth.ts' },
+                            { id: 'clientSetup', path: pluginResult.filePaths?.clientSetup || 'auth-client.ts' },
+                          ].find(t => t.id === activeCodeTab)?.path || `${pluginResult.name}-${activeCodeTab}.ts`;
                           const blob = new Blob([code], { type: 'text/plain' });
                           const url = window.URL.createObjectURL(blob);
                           const a = document.createElement('a');
                           a.href = url;
-                          a.download = `${pluginResult.name}-${activeCodeTab}.ts`;
+                          // Extract just the filename from the path
+                          const fileName = filePath.split('/').pop() || filePath;
+                          a.download = fileName;
                           document.body.appendChild(a);
                           a.click();
                           document.body.removeChild(a);
@@ -4080,10 +4106,10 @@ export default function Tools() {
 
                   <div className="flex space-x-2 border-b border-dashed border-white/10">
                     {[
-                      { id: 'server', label: 'Server Plugin' },
-                      { id: 'client', label: 'Client Plugin' },
-                      { id: 'serverSetup', label: 'Server Setup' },
-                      { id: 'clientSetup', label: 'Client Setup' },
+                      { id: 'server', label: 'Server Plugin', path: pluginResult.filePaths?.server || `plugin/${pluginResult.name}/index.ts` },
+                      { id: 'client', label: 'Client Plugin', path: pluginResult.filePaths?.client || `plugin/${pluginResult.name}/client/index.ts` },
+                      { id: 'serverSetup', label: 'Server Setup', path: pluginResult.filePaths?.serverSetup || 'auth.ts' },
+                      { id: 'clientSetup', label: 'Client Setup', path: pluginResult.filePaths?.clientSetup || 'auth-client.ts' },
                     ].map((tab) => (
                       <button
                         key={tab.id}
@@ -4092,8 +4118,9 @@ export default function Tools() {
                             ? 'border-white text-white'
                             : 'border-transparent text-gray-400 hover:text-white'
                           }`}
+                        title={tab.path}
                       >
-                        {tab.label}
+                        {tab.path}
                       </button>
                     ))}
                   </div>
@@ -4102,7 +4129,12 @@ export default function Tools() {
                     <CodeBlock
                       code={pluginResult[activeCodeTab]}
                       language="typescript"
-                      fileName={`${pluginResult.name}-${activeCodeTab}.ts`}
+                      fileName={[
+                        { id: 'server', path: pluginResult.filePaths?.server || `plugin/${pluginResult.name}/index.ts` },
+                        { id: 'client', path: pluginResult.filePaths?.client || `plugin/${pluginResult.name}/client/index.ts` },
+                        { id: 'serverSetup', path: pluginResult.filePaths?.serverSetup || 'auth.ts' },
+                        { id: 'clientSetup', path: pluginResult.filePaths?.clientSetup || 'auth-client.ts' },
+                      ].find(t => t.id === activeCodeTab)?.path || `${pluginResult.name}-${activeCodeTab}.ts`}
                     />
                   </div>
                 </div>

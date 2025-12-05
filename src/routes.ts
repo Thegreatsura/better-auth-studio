@@ -5036,14 +5036,26 @@ ${fields}
         // Ensure it's valid camelCase identifier (remove any invalid chars, keep camelCase)
         const sanitizedName = endpointName.replace(/[^a-zA-Z0-9]/g, '');
         const endpointPath = endpoint.path?.trim() || `/${camelCaseName}/${sanitizedName}`;
+        // Format handler logic with proper indentation (10 spaces for content inside async function)
+        const handlerLogic = endpoint.handlerLogic || '// Endpoint handler logic here\n          return ctx.json({ success: true });';
+        const formattedHandlerLogic = handlerLogic.split('\n').map((line: string) => {
+          const trimmed = line.trim();
+          if (!trimmed) return '';
+          // If line doesn't have proper indentation, add it (10 spaces for handler content)
+          if (!line.startsWith('          ')) {
+            return '          ' + trimmed;
+          }
+          return line;
+        }).filter(Boolean).join('\n');
+        
         return `      ${sanitizedName}: createAuthEndpoint(
         "${endpointPath}",
         {
           method: "${endpoint.method || 'POST'}" as const,
         },
         async (ctx) => {
-          // ${endpoint.name || 'Custom endpoint'}
-          ${endpoint.handlerLogic || '// Endpoint handler logic here\n          return ctx.json({ success: true });'}
+          // ${endpoint.name || sanitizedName}
+${formattedHandlerLogic}
         },
       ),`;
       }).join('\n') : '';
@@ -5062,9 +5074,12 @@ ${fields}
           pathMatcher = `(path: string) => true`;
         }
         
-        return `    window: ${rl.window || 15 * 60 * 1000},
-    max: ${rl.max || 100},
-    pathMatcher: ${pathMatcher}`;
+        const windowValue = rl.window && rl.window > 0 ? rl.window : 15 * 60 * 1000;
+        const maxValue = rl.max && rl.max > 0 ? rl.max : 100;
+        
+        return `      window: ${windowValue},
+      max: ${maxValue},
+      pathMatcher: ${pathMatcher}`;
       })() : '';
 
       // Helper function to clean up code (remove empty lines, trim spaces)
@@ -5122,7 +5137,8 @@ ${fields}
         ? `    id: "${camelCaseName}" as const,\n${pluginParts.join(',\n')}`
         : `    id: "${camelCaseName}" as const`;
 
-      const serverPluginCode = cleanCode(`${imports.join('\n')}
+      const serverPluginCode = cleanCode(`// plugin/${camelCaseName}/index.ts
+${imports.join('\n')}
 
 ${description ? `/**\n * ${description.replace(/\n/g, '\n * ')}\n */` : ''}
 export const ${camelCaseName} = (options?: Record<string, any>) => {
@@ -5133,7 +5149,8 @@ ${serverPluginBody}
 `);
 
       // Generate client plugin code
-      const clientPluginCode = cleanCode(`// Client utilities (optional)
+      const clientPluginCode = cleanCode(`// plugin/${camelCaseName}/client/index.ts
+// Client utilities (optional)
 // Better Auth plugins work on the server side
 // Add any client-side helper functions here if needed
 
@@ -5143,8 +5160,9 @@ export const ${camelCaseName}Client = {
 `);
 
       // Generate server setup code
-      const serverSetupCode = cleanCode(`import { betterAuth } from "@better-auth/core";
-import { ${camelCaseName} } from "./plugins/${camelCaseName}";
+      const serverSetupCode = cleanCode(`// auth.ts
+import { betterAuth } from "@better-auth/core";
+import { ${camelCaseName} } from "./plugin/${camelCaseName}";
 
 export const auth = betterAuth({
   // ... your existing config
@@ -5155,7 +5173,8 @@ export const auth = betterAuth({
 `);
 
       // Generate client setup code
-      const clientSetupCode = cleanCode(`import { createAuthClient } from "@better-auth/react";
+      const clientSetupCode = cleanCode(`// auth-client.ts
+import { createAuthClient } from "@better-auth/react";
 
 export const authClient = createAuthClient({
   baseURL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL || "http://localhost:3000",
@@ -5171,6 +5190,12 @@ export const authClient = createAuthClient({
           client: clientPluginCode,
           serverSetup: serverSetupCode,
           clientSetup: clientSetupCode,
+          filePaths: {
+            server: `plugin/${camelCaseName}/index.ts`,
+            client: `plugin/${camelCaseName}/client/index.ts`,
+            serverSetup: 'auth.ts',
+            clientSetup: 'auth-client.ts',
+          },
         },
       });
     } catch (error) {
