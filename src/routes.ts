@@ -4941,7 +4941,6 @@ export function createRoutes(
         return res.status(400).json({ success: false, error: 'Plugin name is required' });
       }
 
-      // Validate plugin name (must be valid identifier)
       const validNameRegex = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/;
       if (!validNameRegex.test(pluginName.trim())) {
         return res.status(400).json({
