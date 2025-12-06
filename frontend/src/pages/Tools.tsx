@@ -3281,7 +3281,7 @@ export const authClient = createAuthClient({
                     {pluginTables.map((table, tableIndex) => (
                       <div
                         key={tableIndex}
-                        className="border px-5 border-dashed border-white/10 p-3 relative"
+                        className="border px-5 border-dashed border-white/15 p-3 relative"
                       >
                         <div className="flex items-center space-x-2 relative">
                           <Input
@@ -3309,14 +3309,14 @@ export const authClient = createAuthClient({
                         {table.fields.length > 0 && (
                           <>
                             <div
-                              className="absolute w-px bg-white/20"
+                              className="absolute border border-dashed w-px border-white/30"
                               style={{
                                 left: '7px',
                                 top: '31px',
                                 bottom: '12px'
                               }}
                             />
-                            <div className='absolute h-px w-[15px] bg-white/20' style={{ left: '7px', top: '31px', bottom: '12px' }} />
+                            <div className='absolute border border-dashed h-px w-[11px] border-white/30' style={{ left: '9px', top: '31px', bottom: '12px' }} />
 
                             <div className="mt-3 relative">
                               <div className="space-y-0 pl-6">
@@ -3325,7 +3325,7 @@ export const authClient = createAuthClient({
                                   return (
                                     <div key={fieldIndex} className="relative">
                                           <div
-                                            className="absolute h-px bg-white/30 top-1/2 -translate-y-1/2"
+                                            className="absolute border border-dashed h-px border-white/30 top-1/2 -translate-y-1/2"
                                             style={{
                                               left: '-36px',
                                               width: '36px'
@@ -3350,7 +3350,7 @@ export const authClient = createAuthClient({
                                             setPluginTables(newTables);
                                           }}
                                         >
-                                          <SelectTrigger className="h-full w-56 border px-0 border-dashed border-white/20 text-white/90 text-xs rounded-none py-1">
+                                          <SelectTrigger className="sm:h-full sm:w-56 border px-0 border-dashed border-white/20 text-white/90 text-xs rounded-none py-1">
                                             <SelectValue className='font-mono uppercase text-[10px] px-0 text-white/90' />
                                           </SelectTrigger>
                                           <SelectContent className='font-mono uppercase text-[10px]'>
@@ -3408,11 +3408,10 @@ export const authClient = createAuthClient({
                                 })}
 
                                 <div className="relative pt-2">
-                                  {/* L-shape: Horizontal line for add button */}
                                   <div
-                                    className="absolute h-px bg-white/30"
+                                    className="absolute border border-dashed h-px border-white/30"
                                     style={{
-                                      left: '-36px',
+                                      left: '-35px',
                                       width: '36px',
                                       top: '31px'
                                     }}
