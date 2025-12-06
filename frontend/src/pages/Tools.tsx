@@ -18,7 +18,6 @@ import {
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { CodeBlock } from '../components/CodeBlock';
 import {
   ArrowRight,
   Check,
@@ -36,13 +35,8 @@ import { Checkbox } from '../components/ui/checkbox';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { RadioGroup, RadioGroupItem } from '../components/ui/radio-group';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import { CodeBlock } from '../components/CodeBlock';
 import { getProviderIcon } from '../lib/icons';
 
 interface Tool {
@@ -493,41 +487,30 @@ export default function Tools() {
   const [showPluginGeneratorModal, setShowPluginGeneratorModal] = useState(false);
   const [pluginName, setPluginName] = useState('');
   const [pluginDescription, setPluginDescription] = useState('');
-  const [pluginTables, setPluginTables] = useState<
-    Array<{
-      name: string;
-      fields: Array<{ name: string; type: string; required: boolean; unique: boolean }>;
-    }>
-  >([]);
-  const [pluginHooks, setPluginHooks] = useState<
-    Array<{
-      name: string;
-      timing: 'before' | 'after';
-      action: 'sign-up' | 'sign-in' | 'custom';
-      customPath?: string;
-      customMatcher?: string;
-      hookLogic: string;
-      expanded?: boolean;
-    }>
-  >([]);
-  const [pluginMiddleware, setPluginMiddleware] = useState<
-    Array<{
-      name: string;
-      path: string;
-      pathType: 'exact' | 'prefix' | 'regex';
-      middlewareLogic: string;
-      expanded?: boolean;
-    }>
-  >([]);
-  const [pluginEndpoints, setPluginEndpoints] = useState<
-    Array<{
-      name: string;
-      path: string;
-      method: 'GET' | 'POST';
-      handlerLogic: string;
-      expanded?: boolean;
-    }>
-  >([]);
+  const [pluginTables, setPluginTables] = useState<Array<{ name: string; fields: Array<{ name: string; type: string; required: boolean; unique: boolean }> }>>([]);
+  const [pluginHooks, setPluginHooks] = useState<Array<{
+    name: string;
+    timing: 'before' | 'after';
+    action: 'sign-up' | 'sign-in' | 'custom';
+    customPath?: string;
+    customMatcher?: string;
+    hookLogic: string;
+    expanded?: boolean;
+  }>>([]);
+  const [pluginMiddleware, setPluginMiddleware] = useState<Array<{
+    name: string;
+    path: string;
+    pathType: 'exact' | 'prefix' | 'regex';
+    middlewareLogic: string;
+    expanded?: boolean;
+  }>>([]);
+  const [pluginEndpoints, setPluginEndpoints] = useState<Array<{
+    name: string;
+    path: string;
+    method: 'GET' | 'POST';
+    handlerLogic: string;
+    expanded?: boolean;
+  }>>([]);
   const [pluginRateLimitEnabled, setPluginRateLimitEnabled] = useState(false);
   const [pluginRateLimit, setPluginRateLimit] = useState<{
     path: string;
@@ -544,12 +527,8 @@ export default function Tools() {
   const codeGenerationRef = useRef<HTMLDivElement>(null);
   const [isGeneratingPlugin, setIsGeneratingPlugin] = useState(false);
   const [pluginError, setPluginError] = useState<string | null>(null);
-  const [activeCodeTab, setActiveCodeTab] = useState<
-    'server' | 'client' | 'serverSetup' | 'clientSetup'
-  >('server');
-  const [clientFramework, setClientFramework] = useState<
-    'react' | 'svelte' | 'solid' | 'vue' | 'client'
-  >('client');
+  const [activeCodeTab, setActiveCodeTab] = useState<'server' | 'client' | 'serverSetup' | 'clientSetup'>('server');
+  const [clientFramework, setClientFramework] = useState<'react' | 'svelte' | 'solid' | 'vue' | 'client'>('client');
   useEffect(() => {
     if (showConfigValidator) {
       document.body.style.overflow = 'hidden';
@@ -643,7 +622,8 @@ export default function Tools() {
     return () => {
       document.body.style.overflow = '';
     };
-  }, [showPluginGeneratorModal]);
+  } , [showPluginGeneratorModal])
+  
 
   const addLog = (
     type: 'info' | 'success' | 'error' | 'progress',
@@ -755,12 +735,12 @@ export default function Tools() {
         prev.map((line) =>
           line.id === existingId
             ? {
-                ...line,
-                type,
-                message,
-                status,
-                timestamp: new Date(),
-              }
+              ...line,
+              type,
+              message,
+              status,
+              timestamp: new Date(),
+            }
             : line
         )
       );
@@ -917,7 +897,7 @@ export default function Tools() {
         handleOAuthResult(result);
         // Clean up URL
         setSearchParams({});
-      } catch (_error) {}
+      } catch (_error) { }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, setSearchParams, handleOAuthResult]);
@@ -931,7 +911,7 @@ export default function Tools() {
         if (result.success && result.providers) {
           setOauthProviders(result.providers.filter((p: OAuthProvider) => p.enabled));
         }
-      } catch (_error) {}
+      } catch (_error) { }
     };
     fetchProviders();
   }, []);
@@ -1038,7 +1018,7 @@ export default function Tools() {
               if (storedSession) {
                 try {
                   providerName = JSON.parse(storedSession).provider || providerName;
-                } catch (_) {}
+                } catch (_) { }
               }
               handleOAuthResult({
                 success: false,
@@ -1670,7 +1650,7 @@ export default function Tools() {
   // Convert path to camelCase endpoint name (e.g., /sign-in/anonymous -> signInAnonymous)
   const regenerateClientSetupCode = (framework: string) => {
     if (!pluginResult) return;
-
+    
     const frameworkImportMap: Record<string, string> = {
       react: 'better-auth/react',
       svelte: 'better-auth/svelte',
@@ -1678,9 +1658,9 @@ export default function Tools() {
       vue: 'better-auth/vue',
     };
     const frameworkImport = frameworkImportMap[framework] || 'better-auth/react';
-
+    
     const camelCaseName = pluginResult.name.charAt(0).toLowerCase() + pluginResult.name.slice(1);
-
+    
     // Get baseURL based on framework
     const baseURLMap: Record<string, string> = {
       react: 'process.env.NEXT_PUBLIC_BETTER_AUTH_URL || "http://localhost:3000"',
@@ -1688,9 +1668,8 @@ export default function Tools() {
       solid: 'import.meta.env.PUBLIC_BETTER_AUTH_URL || "http://localhost:5173"',
       vue: 'import.meta.env.PUBLIC_BETTER_AUTH_URL || "http://localhost:5173"',
     };
-    const baseURL =
-      baseURLMap[framework] || 'process.env.NEXT_PUBLIC_BETTER_AUTH_URL || "http://localhost:3000"';
-
+    const baseURL = baseURLMap[framework] || 'process.env.NEXT_PUBLIC_BETTER_AUTH_URL || "http://localhost:3000"';
+    
     const clientSetupCode = `import { createAuthClient } from "${frameworkImport}";
 import { ${camelCaseName}Client } from "./plugin/${camelCaseName}/client";
 
@@ -1710,12 +1689,9 @@ export const authClient = createAuthClient({
   const pathToCamelCase = (path: string): string => {
     if (!path) return '';
     // Remove leading/trailing slashes and split by '/'
-    const segments = path
-      .replace(/^\/+|\/+$/g, '')
-      .split('/')
-      .filter(Boolean);
+    const segments = path.replace(/^\/+|\/+$/g, '').split('/').filter(Boolean);
     if (segments.length === 0) return '';
-
+    
     // Convert each segment: kebab-case to camelCase
     const camelSegments = segments.map((segment, index) => {
       // Split by hyphens
@@ -1729,9 +1705,10 @@ export const authClient = createAuthClient({
       });
       return camelParts.join('');
     });
-
+    
     return camelSegments.join('');
   };
+
 
   const handleGeneratePlugin = async () => {
     if (!pluginName.trim()) {
@@ -1749,9 +1726,7 @@ export const authClient = createAuthClient({
         (table) => table.name.trim() && table.fields.some((f) => f.name.trim())
       );
       const validHooks = pluginHooks.filter((hook) => hook.name.trim() && hook.hookLogic.trim());
-      const validMiddleware = pluginMiddleware.filter(
-        (mw) => mw.name.trim() && mw.middlewareLogic.trim()
-      );
+      const validMiddleware = pluginMiddleware.filter((mw) => mw.name.trim() && mw.middlewareLogic.trim());
 
       const response = await fetch('/api/tools/plugin-generator', {
         method: 'POST',
@@ -1778,22 +1753,18 @@ export const authClient = createAuthClient({
             pathType: mw.pathType,
             middlewareLogic: mw.middlewareLogic.trim(),
           })),
-          endpoints: pluginEndpoints
-            .filter((ep) => ep.name.trim() && ep.path.trim())
-            .map((ep) => ({
-              name: ep.name.trim(),
-              path: ep.path.trim(),
-              method: ep.method,
-              handlerLogic: ep.handlerLogic.trim(),
-            })),
-          rateLimit: pluginRateLimitEnabled
-            ? {
-                path: pluginRateLimit.path.trim(),
-                pathType: pluginRateLimit.pathType,
-                window: pluginRateLimit.window,
-                max: pluginRateLimit.max,
-              }
-            : undefined,
+          endpoints: pluginEndpoints.filter((ep) => ep.name.trim() && ep.path.trim()).map((ep) => ({
+            name: ep.name.trim(),
+            path: ep.path.trim(),
+            method: ep.method,
+            handlerLogic: ep.handlerLogic.trim(),
+          })),
+          rateLimit: pluginRateLimitEnabled ? {
+            path: pluginRateLimit.path.trim(),
+            pathType: pluginRateLimit.pathType,
+            window: pluginRateLimit.window,
+            max: pluginRateLimit.max,
+          } : undefined,
         }),
       });
 
@@ -2293,11 +2264,10 @@ export const authClient = createAuthClient({
                       key={tool.id}
                       onClick={() => tool.action()}
                       disabled={isDisabled}
-                      className={`relative flex items-center space-x-4 p-4 bg-black/30 border border-dashed border-white/20 rounded-none transition-colors text-left group ${
-                        isEnabled
+                      className={`relative flex items-center space-x-4 p-4 bg-black/30 border border-dashed border-white/20 rounded-none transition-colors text-left group ${isEnabled
                           ? 'hover:bg-black/50 disabled:opacity-50 disabled:cursor-not-allowed'
                           : 'opacity-60 cursor-not-allowed'
-                      }`}
+                        }`}
                     >
                       <div className="p-2 bg-white/10 rounded-none group-hover:bg-white/20 transition-colors">
                         {isRunning ? (
@@ -2509,11 +2479,10 @@ export const authClient = createAuthClient({
                             startOAuthTest(provider.id);
                           }, 100);
                         }}
-                        className={`w-full flex items-center space-x-4 p-4 border rounded-none transition-all text-left group ${
-                          selectedProvider === provider.id
+                        className={`w-full flex items-center space-x-4 p-4 border rounded-none transition-all text-left group ${selectedProvider === provider.id
                             ? 'border-white/50 bg-white/10'
                             : 'border-dashed border-white/20 hover:bg-white/5 hover:border-white/30'
-                        }`}
+                          }`}
                       >
                         <div className="flex-shrink-0">{getProviderIcon(provider.id)}</div>
                         <div className="flex-1 min-w-0">
@@ -2522,11 +2491,10 @@ export const authClient = createAuthClient({
                           </p>
                         </div>
                         <ArrowRight
-                          className={`w-5 h-5 transition-colors flex-shrink-0 ${
-                            selectedProvider === provider.id
+                          className={`w-5 h-5 transition-colors flex-shrink-0 ${selectedProvider === provider.id
                               ? 'text-white'
                               : 'text-gray-400 group-hover:text-white'
-                          }`}
+                            }`}
                         />
                       </button>
                     ))}
@@ -2580,13 +2548,12 @@ export const authClient = createAuthClient({
                       key={provider.id}
                       onClick={() => handleSelectMigration(provider.id)}
                       disabled={provider.disabled}
-                      className={`w-full flex items-center space-x-3 p-4 border transition-colors rounded-none text-left ${
-                        provider.disabled
+                      className={`w-full flex items-center space-x-3 p-4 border transition-colors rounded-none text-left ${provider.disabled
                           ? 'border-dashed border-white/10 bg-black/30 cursor-not-allowed opacity-60'
                           : isActive
                             ? 'border-white/60 bg-white/10'
                             : 'border-dashed border-white/20 hover:bg-white/5 hover:border-white/40'
-                      }`}
+                        }`}
                     >
                       <div className="flex-shrink-0 w-10 h-10 bg-white/10 flex items-center justify-center">
                         {provider.logo ? provider.logo : <Code className="w-6 h-6 text-white" />}
@@ -2764,21 +2731,19 @@ export const authClient = createAuthClient({
                 <div className="flex space-x-4">
                   <button
                     onClick={() => setExportFormat('json')}
-                    className={`px-4 py-2 border rounded-none transition-colors ${
-                      exportFormat === 'json'
+                    className={`px-4 py-2 border rounded-none transition-colors ${exportFormat === 'json'
                         ? 'border-white/50 bg-white/10 text-white'
                         : 'border-dashed border-white/20 text-gray-400 hover:border-white/30'
-                    }`}
+                      }`}
                   >
                     JSON
                   </button>
                   <button
                     onClick={() => setExportFormat('csv')}
-                    className={`px-4 py-2 border rounded-none transition-colors ${
-                      exportFormat === 'csv'
+                    className={`px-4 py-2 border rounded-none transition-colors ${exportFormat === 'csv'
                         ? 'border-white/50 bg-white/10 text-white'
                         : 'border-dashed border-white/20 text-gray-400 hover:border-white/30'
-                    }`}
+                      }`}
                   >
                     CSV
                   </button>
@@ -2841,9 +2806,8 @@ export const authClient = createAuthClient({
                           <button
                             key={table.name}
                             onClick={() => toggleTableSelection(table.name)}
-                            className={`w-full text-left p-3 border-b border-dashed border-white/10 last:border-b-0 transition-colors ${
-                              isSelected ? 'bg-white/10 border-white/30' : 'hover:bg-white/5'
-                            }`}
+                            className={`w-full text-left p-3 border-b border-dashed border-white/10 last:border-b-0 transition-colors ${isSelected ? 'bg-white/10 border-white/30' : 'hover:bg-white/5'
+                              }`}
                           >
                             <div className="flex items-center justify-between">
                               <div>
@@ -3082,11 +3046,10 @@ export const authClient = createAuthClient({
                     <button
                       key={option.id}
                       onClick={() => setTokenType(option.id as 'api_key' | 'jwt')}
-                      className={`px-4 py-2 border rounded-none text-sm uppercase font-mono transition-colors ${
-                        tokenType === option.id
+                      className={`px-4 py-2 border rounded-none text-sm uppercase font-mono transition-colors ${tokenType === option.id
                           ? 'border-white/60 bg-white/10 text-white'
                           : 'border-dashed border-white/20 text-gray-400 hover:border-white/40'
-                      }`}
+                        }`}
                     >
                       {option.label}
                     </button>
@@ -3303,13 +3266,10 @@ export const authClient = createAuthClient({
                     onClick={() =>
                       setPluginTables([
                         ...pluginTables,
-                        {
-                          name: '',
-                          fields: [{ name: '', type: 'string', required: false, unique: false }],
-                        },
+                        { name: '', fields: [{ name: '', type: 'string', required: false, unique: false }] },
                       ])
                     }
-                    className="text-xs text-gray-400 hover:text-white rounded-none"
+                    className="text-xs uppercase font-mono text-gray-400 hover:text-white rounded-none"
                   >
                     + Add Table
                   </Button>
@@ -3317,7 +3277,7 @@ export const authClient = createAuthClient({
                 {pluginTables.length === 0 ? (
                   <p className="text-xs text-gray-500 font-mono">No tables added</p>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-2">
                     {pluginTables.map((table, tableIndex) => (
                       <div
                         key={tableIndex}
@@ -3353,13 +3313,10 @@ export const authClient = createAuthClient({
                               style={{
                                 left: '7px',
                                 top: '31px',
-                                bottom: '12px',
+                                bottom: '12px'
                               }}
                             />
-                            <div
-                              className="absolute border border-dashed h-px w-[11px] border-white/30"
-                              style={{ left: '9px', top: '31px', bottom: '12px' }}
-                            />
+                            <div className='absolute border border-dashed h-px w-[11px] border-white/30' style={{ left: '9px', top: '31px', bottom: '12px' }} />
 
                             <div className="mt-3 relative">
                               <div className="space-y-0 pl-6">
@@ -3367,20 +3324,19 @@ export const authClient = createAuthClient({
                                   // const isLast = fieldIndex === table.fields.length - 1;
                                   return (
                                     <div key={fieldIndex} className="relative">
-                                      <div
-                                        className="absolute border border-dashed h-px border-white/30 top-1/2 -translate-y-1/2"
-                                        style={{
-                                          left: '-36px',
-                                          width: '36px',
-                                        }}
-                                      />
-                                      <div className="flex items-center space-x-2 py-2">
+                                          <div
+                                            className="absolute border border-dashed h-px border-white/30 top-1/2 -translate-y-1/2"
+                                            style={{
+                                              left: '-36px',
+                                              width: '36px'
+                                            }}
+                                          />
+                                      <div className="flex items-center space-x-2 py-1">
                                         <Input
                                           value={field.name}
                                           onChange={(e) => {
                                             const newTables = [...pluginTables];
-                                            newTables[tableIndex].fields[fieldIndex].name =
-                                              e.target.value;
+                                            newTables[tableIndex].fields[fieldIndex].name = e.target.value;
                                             setPluginTables(newTables);
                                           }}
                                           placeholder="Field name"
@@ -3395,33 +3351,13 @@ export const authClient = createAuthClient({
                                           }}
                                         >
                                           <SelectTrigger className="sm:h-full sm:w-56 border px-0 border-dashed border-white/20 text-white/90 text-xs rounded-none py-1">
-                                            <SelectValue className="font-mono uppercase text-[10px] px-0 text-white/90" />
+                                            <SelectValue className='font-mono uppercase text-[10px] px-0 text-white/90' />
                                           </SelectTrigger>
-                                          <SelectContent className="font-mono uppercase text-[10px]">
-                                            <SelectItem
-                                              className="sm:text-[11px] text-white/90 border-b border-dashed last:border-b-0"
-                                              value="string"
-                                            >
-                                              string
-                                            </SelectItem>
-                                            <SelectItem
-                                              className="sm:text-[11px] text-white/90 border-b border-dashed last:border-b-0"
-                                              value="number"
-                                            >
-                                              number
-                                            </SelectItem>
-                                            <SelectItem
-                                              className="sm:text-[11px] text-white/90 border-b border-dashed last:border-b-0"
-                                              value="boolean"
-                                            >
-                                              boolean
-                                            </SelectItem>
-                                            <SelectItem
-                                              className="sm:text-[11px] text-white/90 border-b border-dashed last:border-b-0"
-                                              value="date"
-                                            >
-                                              date
-                                            </SelectItem>
+                                          <SelectContent className='font-mono uppercase text-[10px]'>
+                                            <SelectItem className='sm:text-[11px] text-white/90 border-b border-dashed last:border-b-0' value="string">string</SelectItem>
+                                            <SelectItem className='sm:text-[11px] text-white/90 border-b border-dashed last:border-b-0' value="number">number</SelectItem>
+                                            <SelectItem className='sm:text-[11px] text-white/90 border-b border-dashed last:border-b-0' value="boolean">boolean</SelectItem>
+                                            <SelectItem className='sm:text-[11px] text-white/90 border-b border-dashed last:border-b-0' value="date">date</SelectItem>
                                           </SelectContent>
                                         </Select>
                                         <div className="flex items-center space-x-2">
@@ -3430,15 +3366,11 @@ export const authClient = createAuthClient({
                                             checked={field.required}
                                             onCheckedChange={(checked) => {
                                               const newTables = [...pluginTables];
-                                              newTables[tableIndex].fields[fieldIndex].required =
-                                                checked === true;
+                                              newTables[tableIndex].fields[fieldIndex].required = checked === true;
                                               setPluginTables(newTables);
                                             }}
                                           />
-                                          <Label
-                                            htmlFor={`required-${tableIndex}-${fieldIndex}`}
-                                            className="text-xs text-gray-400 font-mono uppercase cursor-pointer"
-                                          >
+                                          <Label htmlFor={`required-${tableIndex}-${fieldIndex}`} className="text-xs text-gray-400 font-mono uppercase cursor-pointer">
                                             Required
                                           </Label>
                                         </div>
@@ -3448,15 +3380,11 @@ export const authClient = createAuthClient({
                                             checked={field.unique}
                                             onCheckedChange={(checked) => {
                                               const newTables = [...pluginTables];
-                                              newTables[tableIndex].fields[fieldIndex].unique =
-                                                checked === true;
+                                              newTables[tableIndex].fields[fieldIndex].unique = checked === true;
                                               setPluginTables(newTables);
                                             }}
                                           />
-                                          <Label
-                                            htmlFor={`unique-${tableIndex}-${fieldIndex}`}
-                                            className="text-xs text-gray-400 font-mono uppercase cursor-pointer"
-                                          >
+                                          <Label htmlFor={`unique-${tableIndex}-${fieldIndex}`} className="text-xs text-gray-400 font-mono uppercase cursor-pointer">
                                             Unique
                                           </Label>
                                         </div>
@@ -3465,9 +3393,9 @@ export const authClient = createAuthClient({
                                           size="sm"
                                           onClick={() => {
                                             const newTables = [...pluginTables];
-                                            newTables[tableIndex].fields = newTables[
-                                              tableIndex
-                                            ].fields.filter((_, i) => i !== fieldIndex);
+                                            newTables[tableIndex].fields = newTables[tableIndex].fields.filter(
+                                              (_, i) => i !== fieldIndex
+                                            );
                                             setPluginTables(newTables);
                                           }}
                                           className="text-red-400 hover:text-red-300 rounded-none"
@@ -3485,7 +3413,7 @@ export const authClient = createAuthClient({
                                     style={{
                                       left: '-35px',
                                       width: '36px',
-                                      top: '31px',
+                                      top: '25px'
                                     }}
                                   />
                                   <Button
@@ -3501,7 +3429,7 @@ export const authClient = createAuthClient({
                                       });
                                       setPluginTables(newTables);
                                     }}
-                                    className="text-xs text-gray-400 hover:text-white rounded-none"
+                                    className="text-xs uppercase font-mono text-gray-400 hover:text-white rounded-none"
                                   >
                                     + Add Field
                                   </Button>
@@ -3511,7 +3439,6 @@ export const authClient = createAuthClient({
                           </>
                         )}
 
-                        {/* Add Field button when no fields exist */}
                         {table.fields.length === 0 && (
                           <div className="mt-3">
                             <Button
@@ -3560,7 +3487,7 @@ export const authClient = createAuthClient({
                         },
                       ])
                     }
-                    className="text-xs text-gray-400 hover:text-white rounded-none"
+                    className="text-xs uppercase font-mono text-gray-400 hover:text-white rounded-none"
                   >
                     + Add Hook
                   </Button>
@@ -3581,9 +3508,8 @@ export const authClient = createAuthClient({
                               {hookLabel}
                             </span>
                             <ChevronRight
-                              className={`w-4 h-4 text-white/60 transition-transform ${
-                                hook.expanded ? 'rotate-90' : ''
-                              }`}
+                              className={`w-4 h-4 text-white/60 transition-transform ${hook.expanded ? 'rotate-90' : ''
+                                }`}
                             />
                           </button>
                           {hook.expanded && (
@@ -3618,26 +3544,14 @@ export const authClient = createAuthClient({
                                     className="flex space-x-4"
                                   >
                                     <div className="flex items-center space-x-2">
-                                      <RadioGroupItem
-                                        value="before"
-                                        id={`hook-timing-before-${index}`}
-                                      />
-                                      <Label
-                                        htmlFor={`hook-timing-before-${index}`}
-                                        className="text-xs text-white font-mono cursor-pointer"
-                                      >
+                                      <RadioGroupItem value="before" id={`hook-timing-before-${index}`} />
+                                      <Label htmlFor={`hook-timing-before-${index}`} className="text-xs text-white font-mono cursor-pointer">
                                         Before
                                       </Label>
                                     </div>
                                     <div className="flex items-center space-x-2">
-                                      <RadioGroupItem
-                                        value="after"
-                                        id={`hook-timing-after-${index}`}
-                                      />
-                                      <Label
-                                        htmlFor={`hook-timing-after-${index}`}
-                                        className="text-xs text-white font-mono cursor-pointer"
-                                      >
+                                      <RadioGroupItem value="after" id={`hook-timing-after-${index}`} />
+                                      <Label htmlFor={`hook-timing-after-${index}`} className="text-xs text-white font-mono cursor-pointer">
                                         After
                                       </Label>
                                     </div>
@@ -3657,38 +3571,20 @@ export const authClient = createAuthClient({
                                     className="flex space-x-4"
                                   >
                                     <div className="flex items-center space-x-2">
-                                      <RadioGroupItem
-                                        value="sign-up"
-                                        id={`hook-action-signup-${index}`}
-                                      />
-                                      <Label
-                                        htmlFor={`hook-action-signup-${index}`}
-                                        className="text-xs text-white font-mono cursor-pointer"
-                                      >
+                                      <RadioGroupItem value="sign-up" id={`hook-action-signup-${index}`} />
+                                      <Label htmlFor={`hook-action-signup-${index}`} className="text-xs text-white font-mono cursor-pointer">
                                         Sign-up
                                       </Label>
                                     </div>
                                     <div className="flex items-center space-x-2">
-                                      <RadioGroupItem
-                                        value="sign-in"
-                                        id={`hook-action-signin-${index}`}
-                                      />
-                                      <Label
-                                        htmlFor={`hook-action-signin-${index}`}
-                                        className="text-xs text-white font-mono cursor-pointer"
-                                      >
+                                      <RadioGroupItem value="sign-in" id={`hook-action-signin-${index}`} />
+                                      <Label htmlFor={`hook-action-signin-${index}`} className="text-xs text-white font-mono cursor-pointer">
                                         Sign-in
                                       </Label>
                                     </div>
                                     <div className="flex items-center space-x-2">
-                                      <RadioGroupItem
-                                        value="custom"
-                                        id={`hook-action-custom-${index}`}
-                                      />
-                                      <Label
-                                        htmlFor={`hook-action-custom-${index}`}
-                                        className="text-xs text-white font-mono cursor-pointer"
-                                      >
+                                      <RadioGroupItem value="custom" id={`hook-action-custom-${index}`} />
+                                      <Label htmlFor={`hook-action-custom-${index}`} className="text-xs text-white font-mono cursor-pointer">
                                         Custom
                                       </Label>
                                     </div>
@@ -3738,10 +3634,7 @@ export const authClient = createAuthClient({
                                   </Label>
                                 </div>
                                 <p className="text-xs text-gray-400 mb-2 font-mono">
-                                  This is the TypeScript code that will be executed when the hook is
-                                  triggered. This function has properties like ctx so you can access
-                                  the request context, headers, body, etc. Here is a simple example
-                                  of a hook logic:
+                                  This is the TypeScript code that will be executed when the hook is triggered. This function has properties like ctx so you can access the request context, headers, body, etc. Here is a simple example of a hook logic:
                                 </p>
                                 <textarea
                                   value={hook.hookLogic}
@@ -3794,7 +3687,7 @@ export const authClient = createAuthClient({
                         },
                       ])
                     }
-                    className="text-xs text-gray-400 hover:text-white rounded-none"
+                    className="text-xs uppercase font-mono text-gray-400 hover:text-white rounded-none"
                   >
                     + Add Middleware
                   </Button>
@@ -3815,9 +3708,8 @@ export const authClient = createAuthClient({
                               {mwLabel}
                             </span>
                             <ChevronRight
-                              className={`w-4 h-4 text-white/60 transition-transform ${
-                                mw.expanded ? 'rotate-90' : ''
-                              }`}
+                              className={`w-4 h-4 text-white/60 transition-transform ${mw.expanded ? 'rotate-90' : ''
+                                }`}
                             />
                           </button>
                           {mw.expanded && (
@@ -3882,9 +3774,7 @@ export const authClient = createAuthClient({
                                   </Label>
                                 </div>
                                 <p className="text-xs text-gray-400 mb-2 font-mono">
-                                  This is the TypeScript code that will be executed when the
-                                  middleware is triggered. You can access the request context,
-                                  headers, body, etc.
+                                  This is the TypeScript code that will be executed when the middleware is triggered. You can access the request context, headers, body, etc.
                                 </p>
                                 <textarea
                                   value={mw.middlewareLogic}
@@ -3900,9 +3790,7 @@ export const authClient = createAuthClient({
                               <Button
                                 variant="outline"
                                 onClick={() => {
-                                  setPluginMiddleware(
-                                    pluginMiddleware.filter((_, i) => i !== index)
-                                  );
+                                  setPluginMiddleware(pluginMiddleware.filter((_, i) => i !== index));
                                 }}
                                 className="w-full border border-dashed border-red-500/50 text-red-400 hover:bg-red-500/10 rounded-none"
                               >
@@ -3936,13 +3824,12 @@ export const authClient = createAuthClient({
                           name: defaultName,
                           path: defaultPath,
                           method: 'POST',
-                          handlerLogic:
-                            '// Endpoint handler logic here\nreturn ctx.json({ success: true });',
+                          handlerLogic: '// Endpoint handler logic here\nreturn ctx.json({ success: true });',
                           expanded: true,
                         },
                       ]);
                     }}
-                    className="text-xs text-gray-400 hover:text-white rounded-none"
+                    className="text-xs uppercase font-mono text-gray-400 hover:text-white rounded-none"
                   >
                     + Add Endpoint
                   </Button>
@@ -4030,8 +3917,7 @@ export const authClient = createAuthClient({
                                   </Label>
                                 </div>
                                 <p className="text-xs text-gray-400 mb-2 font-mono">
-                                  This is the TypeScript code that will be executed when the
-                                  endpoint is called. You can access the context via ctx parameter.
+                                  This is the TypeScript code that will be executed when the endpoint is called. You can access the context via ctx parameter.
                                 </p>
                                 <textarea
                                   value={endpoint.handlerLogic}
@@ -4070,10 +3956,7 @@ export const authClient = createAuthClient({
                     checked={pluginRateLimitEnabled}
                     onCheckedChange={(checked) => setPluginRateLimitEnabled(checked === true)}
                   />
-                  <Label
-                    htmlFor="rate-limit"
-                    className="text-xs uppercase font-mono text-gray-400 cursor-pointer"
-                  >
+                  <Label htmlFor="rate-limit" className="text-xs uppercase font-mono text-gray-400 cursor-pointer">
                     Enable Rate Limiting
                   </Label>
                 </div>
@@ -4194,12 +4077,12 @@ export const authClient = createAuthClient({
                     setPluginMiddleware([]);
                     setPluginEndpoints([]);
                     setPluginRateLimitEnabled(false);
-                    setPluginRateLimit({
-                      path: '/my-plugin/*',
-                      pathType: 'prefix',
-                      window: 15 * 60 * 1000,
-                      max: 100,
-                    });
+    setPluginRateLimit({
+      path: '/my-plugin/*',
+      pathType: 'prefix',
+      window: 15 * 60 * 1000,
+      max: 100,
+    });
                     setPluginResult(null);
                     setPluginError(null);
                   }}
@@ -4230,10 +4113,7 @@ export const authClient = createAuthClient({
               )}
 
               {pluginResult && (
-                <div
-                  ref={codeGenerationRef}
-                  className="space-y-4 border border-dashed border-white/15 p-4"
-                >
+                <div ref={codeGenerationRef} className="space-y-4 border border-dashed border-white/15 p-4">
                   <div className="flex items-center justify-between mb-4">
                     <p className="text-xs uppercase font-mono text-gray-400">Generated Code</p>
                     <div className="flex items-center space-x-2">
@@ -4242,8 +4122,8 @@ export const authClient = createAuthClient({
                           <Label className="text-xs uppercase font-mono text-gray-400 whitespace-nowrap">
                             Framework:
                           </Label>
-                          <Select
-                            value={clientFramework}
+                          <Select 
+                            value={clientFramework} 
                             onValueChange={(value: any) => {
                               setClientFramework(value);
                               regenerateClientSetupCode(value);
@@ -4253,34 +4133,10 @@ export const authClient = createAuthClient({
                               <SelectValue className="font-mono uppercase text-xs text-white" />
                             </SelectTrigger>
                             <SelectContent className="font-mono uppercase text-[10px] bg-black border border-dashed border-white/20">
-                              <SelectItem
-                                value="react"
-                                className="sm:text-[11px] text-white/90 border-b border-dashed last:border-b-0"
-                              >
-                                {' '}
-                                React
-                              </SelectItem>
-                              <SelectItem
-                                value="svelte"
-                                className="sm:text-[11px] text-white/90 border-b border-dashed last:border-b-0"
-                              >
-                                {' '}
-                                Svelte
-                              </SelectItem>
-                              <SelectItem
-                                value="solid"
-                                className="sm:text-[11px] text-white/90 border-b border-dashed last:border-b-0"
-                              >
-                                {' '}
-                                Solid
-                              </SelectItem>
-                              <SelectItem
-                                value="vue"
-                                className="sm:text-[11px] text-white/90 border-b border-dashed last:border-b-0"
-                              >
-                                {' '}
-                                Vue
-                              </SelectItem>
+                              <SelectItem value="react" className="sm:text-[11px] text-white/90 border-b border-dashed last:border-b-0"> React</SelectItem>
+                              <SelectItem value="svelte" className="sm:text-[11px] text-white/90 border-b border-dashed last:border-b-0"> Svelte</SelectItem>
+                              <SelectItem value="solid" className="sm:text-[11px] text-white/90 border-b border-dashed last:border-b-0"> Solid</SelectItem>
+                              <SelectItem value="vue" className="sm:text-[11px] text-white/90 border-b border-dashed last:border-b-0"> Vue</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
@@ -4302,30 +4158,12 @@ export const authClient = createAuthClient({
                         size="sm"
                         onClick={() => {
                           const code = pluginResult[activeCodeTab];
-                          const filePath =
-                            [
-                              {
-                                id: 'server',
-                                path:
-                                  pluginResult.filePaths?.server ||
-                                  `plugin/${pluginResult.name}/index.ts`,
-                              },
-                              {
-                                id: 'client',
-                                path:
-                                  pluginResult.filePaths?.client ||
-                                  `plugin/${pluginResult.name}/client/index.ts`,
-                              },
-                              {
-                                id: 'serverSetup',
-                                path: pluginResult.filePaths?.serverSetup || 'auth.ts',
-                              },
-                              {
-                                id: 'clientSetup',
-                                path: pluginResult.filePaths?.clientSetup || 'auth-client.ts',
-                              },
-                            ].find((t) => t.id === activeCodeTab)?.path ||
-                            `${pluginResult.name}-${activeCodeTab}.ts`;
+                          const filePath = [
+                            { id: 'server', path: pluginResult.filePaths?.server || `plugin/${pluginResult.name}/index.ts` },
+                            { id: 'client', path: pluginResult.filePaths?.client || `plugin/${pluginResult.name}/client/index.ts` },
+                            { id: 'serverSetup', path: pluginResult.filePaths?.serverSetup || 'auth.ts' },
+                            { id: 'clientSetup', path: pluginResult.filePaths?.clientSetup || 'auth-client.ts' },
+                          ].find(t => t.id === activeCodeTab)?.path || `${pluginResult.name}-${activeCodeTab}.ts`;
                           const blob = new Blob([code], { type: 'text/plain' });
                           const url = window.URL.createObjectURL(blob);
                           const a = document.createElement('a');
@@ -4347,38 +4185,18 @@ export const authClient = createAuthClient({
 
                   <div className="flex space-x-2 border-b border-dashed border-white/10">
                     {[
-                      {
-                        id: 'server',
-                        label: 'Server Plugin',
-                        path:
-                          pluginResult.filePaths?.server || `plugin/${pluginResult.name}/index.ts`,
-                      },
-                      {
-                        id: 'client',
-                        label: 'Client Plugin',
-                        path:
-                          pluginResult.filePaths?.client ||
-                          `plugin/${pluginResult.name}/client/index.ts`,
-                      },
-                      {
-                        id: 'serverSetup',
-                        label: 'Server Setup',
-                        path: pluginResult.filePaths?.serverSetup || 'auth.ts',
-                      },
-                      {
-                        id: 'clientSetup',
-                        label: 'Client Setup',
-                        path: pluginResult.filePaths?.clientSetup || 'auth-client.ts',
-                      },
+                      { id: 'server', label: 'Server Plugin', path: pluginResult.filePaths?.server || `plugin/${pluginResult.name}/index.ts` },
+                      { id: 'client', label: 'Client Plugin', path: pluginResult.filePaths?.client || `plugin/${pluginResult.name}/client/index.ts` },
+                      { id: 'serverSetup', label: 'Server Setup', path: pluginResult.filePaths?.serverSetup || 'auth.ts' },
+                      { id: 'clientSetup', label: 'Client Setup', path: pluginResult.filePaths?.clientSetup || 'auth-client.ts' },
                     ].map((tab) => (
                       <button
                         key={tab.id}
                         onClick={() => setActiveCodeTab(tab.id as any)}
-                        className={`px-3 py-2 text-xs uppercase font-mono border-b-2 transition-colors ${
-                          activeCodeTab === tab.id
+                        className={`px-3 py-2 text-xs uppercase font-mono border-b-2 transition-colors ${activeCodeTab === tab.id
                             ? 'border-white text-white'
                             : 'border-transparent text-gray-400 hover:text-white'
-                        }`}
+                          }`}
                         title={tab.path}
                       >
                         {tab.label}
@@ -4390,31 +4208,12 @@ export const authClient = createAuthClient({
                     <CodeBlock
                       code={pluginResult[activeCodeTab]}
                       language="typescript"
-                      fileName={
-                        [
-                          {
-                            id: 'server',
-                            path:
-                              pluginResult.filePaths?.server ||
-                              `plugin/${pluginResult.name}/index.ts`,
-                          },
-                          {
-                            id: 'client',
-                            path:
-                              pluginResult.filePaths?.client ||
-                              `plugin/${pluginResult.name}/client/index.ts`,
-                          },
-                          {
-                            id: 'serverSetup',
-                            path: pluginResult.filePaths?.serverSetup || 'auth.ts',
-                          },
-                          {
-                            id: 'clientSetup',
-                            path: pluginResult.filePaths?.clientSetup || 'auth-client.ts',
-                          },
-                        ].find((t) => t.id === activeCodeTab)?.path ||
-                        `${pluginResult.name}-${activeCodeTab}.ts`
-                      }
+                      fileName={[
+                        { id: 'server', path: pluginResult.filePaths?.server || `plugin/${pluginResult.name}/index.ts` },
+                        { id: 'client', path: pluginResult.filePaths?.client || `plugin/${pluginResult.name}/client/index.ts` },
+                        { id: 'serverSetup', path: pluginResult.filePaths?.serverSetup || 'auth.ts' },
+                        { id: 'clientSetup', path: pluginResult.filePaths?.clientSetup || 'auth-client.ts' },
+                      ].find(t => t.id === activeCodeTab)?.path || `${pluginResult.name}-${activeCodeTab}.ts`}
                     />
                   </div>
                 </div>
@@ -4561,9 +4360,8 @@ export const authClient = createAuthClient({
                               >
                                 <div className="flex items-center space-x-2">
                                   <ChevronRight
-                                    className={`w-4 h-4 text-white/60 transition-transform ${
-                                      isExpanded ? 'rotate-90' : ''
-                                    }`}
+                                    className={`w-4 h-4 text-white/60 transition-transform ${isExpanded ? 'rotate-90' : ''
+                                      }`}
                                   />
                                   <span className="text-white font-mono text-sm">
                                     {providerName}
@@ -4590,11 +4388,10 @@ export const authClient = createAuthClient({
                                   {providerResults.map((result, index) => (
                                     <div
                                       key={`${providerName}-${result.check}-${index}`}
-                                      className={`p-3 border-l border-dashed border-white/15 ${
-                                        result.status === 'pass'
+                                      className={`p-3 border-l border-dashed border-white/15 ${result.status === 'pass'
                                           ? 'bg-green-600/[8%]'
                                           : 'bg-red-600/[8%]'
-                                      }`}
+                                        }`}
                                     >
                                       <div className="flex items-start space-x-3">
                                         <div className="mt-0.5">
@@ -4654,9 +4451,8 @@ export const authClient = createAuthClient({
                       {results.map((result, index) => (
                         <div
                           key={`${result.category}-${result.check}-${index}`}
-                          className={`p-3 border-l border-dashed border-white/15 ${
-                            result.status === 'pass' ? 'bg-green-600/[8%]' : 'bg-red-600/[8%]'
-                          }`}
+                          className={`p-3 border-l border-dashed border-white/15 ${result.status === 'pass' ? 'bg-green-600/[8%]' : 'bg-red-600/[8%]'
+                            }`}
                         >
                           <div className="flex items-start space-x-3">
                             <div className="mt-0.5">
@@ -4759,12 +4555,10 @@ export const authClient = createAuthClient({
                       value={uuidCount}
                       onChange={(event) => {
                         const value = event.target.value;
-                        // Allow empty string for typing
                         if (value === '') {
                           setUuidCount('');
                           return;
                         }
-                        // Only update if it's a valid number
                         const num = parseInt(value);
                         if (!isNaN(num)) {
                           setUuidCount(value);
@@ -4836,11 +4630,10 @@ export const authClient = createAuthClient({
                 </div>
                 {uuidValidation && (
                   <div
-                    className={`mt-2 border border-dashed p-3 rounded-none ${
-                      uuidValidation.isValid
+                    className={`mt-2 border border-dashed p-3 rounded-none ${uuidValidation.isValid
                         ? 'border-white/10 bg-black/40'
                         : 'border-red-500/30 bg-red-500/10'
-                    }`}
+                      }`}
                   >
                     <div className="text-xs font-mono space-y-1">
                       <div
@@ -4999,8 +4792,7 @@ export const authClient = createAuthClient({
                     <div className="border border-dashed border-white/10 p-3 space-y-2">
                       <div className="text-gray-400 uppercase tracking-wider">Strength</div>
                       <p
-                        className={`text-sm font-medium ${
-                          passwordStrength.strength === 'very-strong'
+                        className={`text-sm font-medium ${passwordStrength.strength === 'very-strong'
                             ? 'text-green-400'
                             : passwordStrength.strength === 'strong'
                               ? 'text-green-300'
@@ -5009,7 +4801,7 @@ export const authClient = createAuthClient({
                                 : passwordStrength.strength === 'fair'
                                   ? 'text-orange-300'
                                   : 'text-red-300'
-                        }`}
+                          }`}
                       >
                         {passwordStrength.strength
                           .split('-')
@@ -5018,8 +4810,7 @@ export const authClient = createAuthClient({
                       </p>
                       <div className="w-full bg-black/40 h-2 rounded-none">
                         <div
-                          className={`h-full transition-all ${
-                            passwordStrength.strength === 'very-strong'
+                          className={`h-full transition-all ${passwordStrength.strength === 'very-strong'
                               ? 'bg-green-400 w-full'
                               : passwordStrength.strength === 'strong'
                                 ? 'bg-green-300 w-4/5'
@@ -5028,7 +4819,7 @@ export const authClient = createAuthClient({
                                   : passwordStrength.strength === 'fair'
                                     ? 'bg-orange-300 w-2/5'
                                     : 'bg-red-300 w-1/5'
-                          }`}
+                            }`}
                         />
                       </div>
                     </div>
@@ -5050,9 +4841,8 @@ export const authClient = createAuthClient({
                     <div className="border border-dashed border-white/10 p-3 space-y-2">
                       <div className="text-gray-400 uppercase tracking-wider">Config Match</div>
                       <p
-                        className={`text-sm ${
-                          passwordStrength.meetsConfig ? 'text-green-400' : 'text-red-300'
-                        }`}
+                        className={`text-sm ${passwordStrength.meetsConfig ? 'text-green-400' : 'text-red-300'
+                          }`}
                       >
                         {passwordStrength.meetsConfig
                           ? '✓ Meets Requirements'
@@ -5076,9 +4866,8 @@ export const authClient = createAuthClient({
                           <span className="text-white font-mono text-xs">{check.name}</span>
                           <div className="flex items-center space-x-2">
                             <span
-                              className={`text-xs font-mono ${
-                                check.passed ? 'text-green-400' : 'text-red-300'
-                              }`}
+                              className={`text-xs font-mono ${check.passed ? 'text-green-400' : 'text-red-300'
+                                }`}
                             >
                               {check.passed ? '✓' : '✗'}
                             </span>
@@ -5127,11 +4916,10 @@ export const authClient = createAuthClient({
                       <button
                         key={providerId}
                         onClick={() => setSelectedProvider(providerId)}
-                        className={`px-4 py-2 border rounded-none text-sm uppercase font-mono transition-colors ${
-                          isSelected
+                        className={`px-4 py-2 border rounded-none text-sm uppercase font-mono transition-colors ${isSelected
                             ? 'border-white/60 bg-white/10 text-white'
                             : 'border-dashed border-white/20 text-gray-400 hover:border-white/40'
-                        }`}
+                          }`}
                       >
                         {providerId.charAt(0).toUpperCase() + providerId.slice(1)}
                       </button>
@@ -5346,11 +5134,10 @@ export const authClient = createAuthClient({
                       <button
                         key={option.id}
                         onClick={() => setSecretFormat(option.id as 'hex' | 'base64')}
-                        className={`px-4 py-2 border rounded-none text-sm uppercase font-mono transition-colors flex-1 ${
-                          secretFormat === option.id
+                        className={`px-4 py-2 border rounded-none text-sm uppercase font-mono transition-colors flex-1 ${secretFormat === option.id
                             ? 'border-white/60 bg-white/10 text-white'
                             : 'border-dashed border-white/20 text-gray-400 hover:border-white/40'
-                        }`}
+                          }`}
                       >
                         {option.label}
                       </button>
