@@ -3350,7 +3350,7 @@ export const authClient = createAuthClient({
                                             setPluginTables(newTables);
                                           }}
                                         >
-                                          <SelectTrigger className="sm:h-full sm:w-56 border px-0 border-dashed border-white/20 text-white/90 text-xs rounded-none py-1">
+                                          <SelectTrigger className="sm:h-10 sm:w-56 border px-0 border-dashed border-white/20 text-white/90 text-xs rounded-none py-1">
                                             <SelectValue className='font-mono uppercase text-[10px] px-0 text-white/90' />
                                           </SelectTrigger>
                                           <SelectContent className='font-mono uppercase text-[10px]'>
@@ -3360,7 +3360,7 @@ export const authClient = createAuthClient({
                                             <SelectItem className='sm:text-[11px] text-white/90 border-b border-dashed last:border-b-0' value="date">date</SelectItem>
                                           </SelectContent>
                                         </Select>
-                                        <div className="flex items-center space-x-2">
+                                        <div className="h-8 flex items-end space-x-2">
                                           <Checkbox
                                             id={`required-${tableIndex}-${fieldIndex}`}
                                             checked={field.required}
@@ -3374,7 +3374,7 @@ export const authClient = createAuthClient({
                                             Required
                                           </Label>
                                         </div>
-                                        <div className="flex items-center space-x-2">
+                                        <div className="flex h-8 items-end space-x-2">
                                           <Checkbox
                                             id={`unique-${tableIndex}-${fieldIndex}`}
                                             checked={field.unique}
@@ -3406,7 +3406,6 @@ export const authClient = createAuthClient({
                                     </div>
                                   );
                                 })}
-
                                 <div className="relative pt-2">
                                   <div
                                     className="absolute border border-dashed h-px border-white/30"
