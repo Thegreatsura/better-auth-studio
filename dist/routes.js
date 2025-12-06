@@ -4354,11 +4354,18 @@ export function createRoutes(authConfig, configPath, geoDbPath) {
                     const fields = table.fields
                         ?.filter((f) => f.name.trim())
                         .map((field) => {
-                        let attrStr = `type: "${field.type}"`;
-                        if (field.required)
-                            attrStr += ',\n            required: true';
-                        if (field.unique)
-                            attrStr += ',\n            unique: true';
+                        const attrs = [`type: "${field.type}"`];
+                        // Always include required (default to false)
+                        attrs.push(`required: ${field.required ? 'true' : 'false'}`);
+                        // Always include unique (default to false)
+                        attrs.push(`unique: ${field.unique ? 'true' : 'false'}`);
+                        // Always include input (default to false)
+                        attrs.push('input: false');
+                        // Add defaultValue for boolean fields
+                        if (field.type === 'boolean') {
+                            attrs.push('defaultValue: false');
+                        }
+                        const attrStr = attrs.join(',\n            ');
                         return `          ${field.name}: {\n            ${attrStr}\n          }`;
                     })
                         .join(',\n') || '';
@@ -4577,7 +4584,7 @@ import type { ${camelCaseName} } from "..";
 
 export const ${camelCaseName}Client = () => {
   return {
-    id: "${camelCaseName}" as const,
+    id: "${camelCaseName}",
     $InferServerPlugin: {} as ReturnType<typeof ${camelCaseName}>,${pathMethods ? `\n    pathMethods: {\n${pathMethods}\n    },` : ''}${atomListenersCode}
   } satisfies BetterAuthClientPlugin;
 };

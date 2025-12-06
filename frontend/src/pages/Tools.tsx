@@ -622,8 +622,8 @@ export default function Tools() {
     return () => {
       document.body.style.overflow = '';
     };
-  } , [showPluginGeneratorModal])
-  
+  }, [showPluginGeneratorModal])
+
 
   const addLog = (
     type: 'info' | 'success' | 'error' | 'progress',
@@ -1650,7 +1650,7 @@ export default function Tools() {
   // Convert path to camelCase endpoint name (e.g., /sign-in/anonymous -> signInAnonymous)
   const regenerateClientSetupCode = (framework: string) => {
     if (!pluginResult) return;
-    
+
     const frameworkImportMap: Record<string, string> = {
       react: 'better-auth/react',
       svelte: 'better-auth/svelte',
@@ -1658,9 +1658,9 @@ export default function Tools() {
       vue: 'better-auth/vue',
     };
     const frameworkImport = frameworkImportMap[framework] || 'better-auth/react';
-    
+
     const camelCaseName = pluginResult.name.charAt(0).toLowerCase() + pluginResult.name.slice(1);
-    
+
     // Get baseURL based on framework
     const baseURLMap: Record<string, string> = {
       react: 'process.env.NEXT_PUBLIC_BETTER_AUTH_URL || "http://localhost:3000"',
@@ -1669,7 +1669,7 @@ export default function Tools() {
       vue: 'import.meta.env.PUBLIC_BETTER_AUTH_URL || "http://localhost:5173"',
     };
     const baseURL = baseURLMap[framework] || 'process.env.NEXT_PUBLIC_BETTER_AUTH_URL || "http://localhost:3000"';
-    
+
     const clientSetupCode = `import { createAuthClient } from "${frameworkImport}";
 import { ${camelCaseName}Client } from "./plugin/${camelCaseName}/client";
 
@@ -1691,7 +1691,7 @@ export const authClient = createAuthClient({
     // Remove leading/trailing slashes and split by '/'
     const segments = path.replace(/^\/+|\/+$/g, '').split('/').filter(Boolean);
     if (segments.length === 0) return '';
-    
+
     // Convert each segment: kebab-case to camelCase
     const camelSegments = segments.map((segment, index) => {
       // Split by hyphens
@@ -1705,7 +1705,7 @@ export const authClient = createAuthClient({
       });
       return camelParts.join('');
     });
-    
+
     return camelSegments.join('');
   };
 
@@ -2265,8 +2265,8 @@ export const authClient = createAuthClient({
                       onClick={() => tool.action()}
                       disabled={isDisabled}
                       className={`relative flex items-center space-x-4 p-4 bg-black/30 border border-dashed border-white/20 rounded-none transition-colors text-left group ${isEnabled
-                          ? 'hover:bg-black/50 disabled:opacity-50 disabled:cursor-not-allowed'
-                          : 'opacity-60 cursor-not-allowed'
+                        ? 'hover:bg-black/50 disabled:opacity-50 disabled:cursor-not-allowed'
+                        : 'opacity-60 cursor-not-allowed'
                         }`}
                     >
                       <div className="p-2 bg-white/10 rounded-none group-hover:bg-white/20 transition-colors">
@@ -2480,8 +2480,8 @@ export const authClient = createAuthClient({
                           }, 100);
                         }}
                         className={`w-full flex items-center space-x-4 p-4 border rounded-none transition-all text-left group ${selectedProvider === provider.id
-                            ? 'border-white/50 bg-white/10'
-                            : 'border-dashed border-white/20 hover:bg-white/5 hover:border-white/30'
+                          ? 'border-white/50 bg-white/10'
+                          : 'border-dashed border-white/20 hover:bg-white/5 hover:border-white/30'
                           }`}
                       >
                         <div className="flex-shrink-0">{getProviderIcon(provider.id)}</div>
@@ -2492,8 +2492,8 @@ export const authClient = createAuthClient({
                         </div>
                         <ArrowRight
                           className={`w-5 h-5 transition-colors flex-shrink-0 ${selectedProvider === provider.id
-                              ? 'text-white'
-                              : 'text-gray-400 group-hover:text-white'
+                            ? 'text-white'
+                            : 'text-gray-400 group-hover:text-white'
                             }`}
                         />
                       </button>
@@ -2549,10 +2549,10 @@ export const authClient = createAuthClient({
                       onClick={() => handleSelectMigration(provider.id)}
                       disabled={provider.disabled}
                       className={`w-full flex items-center space-x-3 p-4 border transition-colors rounded-none text-left ${provider.disabled
-                          ? 'border-dashed border-white/10 bg-black/30 cursor-not-allowed opacity-60'
-                          : isActive
-                            ? 'border-white/60 bg-white/10'
-                            : 'border-dashed border-white/20 hover:bg-white/5 hover:border-white/40'
+                        ? 'border-dashed border-white/10 bg-black/30 cursor-not-allowed opacity-60'
+                        : isActive
+                          ? 'border-white/60 bg-white/10'
+                          : 'border-dashed border-white/20 hover:bg-white/5 hover:border-white/40'
                         }`}
                     >
                       <div className="flex-shrink-0 w-10 h-10 bg-white/10 flex items-center justify-center">
@@ -2732,8 +2732,8 @@ export const authClient = createAuthClient({
                   <button
                     onClick={() => setExportFormat('json')}
                     className={`px-4 py-2 border rounded-none transition-colors ${exportFormat === 'json'
-                        ? 'border-white/50 bg-white/10 text-white'
-                        : 'border-dashed border-white/20 text-gray-400 hover:border-white/30'
+                      ? 'border-white/50 bg-white/10 text-white'
+                      : 'border-dashed border-white/20 text-gray-400 hover:border-white/30'
                       }`}
                   >
                     JSON
@@ -2741,8 +2741,8 @@ export const authClient = createAuthClient({
                   <button
                     onClick={() => setExportFormat('csv')}
                     className={`px-4 py-2 border rounded-none transition-colors ${exportFormat === 'csv'
-                        ? 'border-white/50 bg-white/10 text-white'
-                        : 'border-dashed border-white/20 text-gray-400 hover:border-white/30'
+                      ? 'border-white/50 bg-white/10 text-white'
+                      : 'border-dashed border-white/20 text-gray-400 hover:border-white/30'
                       }`}
                   >
                     CSV
@@ -3047,8 +3047,8 @@ export const authClient = createAuthClient({
                       key={option.id}
                       onClick={() => setTokenType(option.id as 'api_key' | 'jwt')}
                       className={`px-4 py-2 border rounded-none text-sm uppercase font-mono transition-colors ${tokenType === option.id
-                          ? 'border-white/60 bg-white/10 text-white'
-                          : 'border-dashed border-white/20 text-gray-400 hover:border-white/40'
+                        ? 'border-white/60 bg-white/10 text-white'
+                        : 'border-dashed border-white/20 text-gray-400 hover:border-white/40'
                         }`}
                     >
                       {option.label}
@@ -3239,7 +3239,7 @@ export const authClient = createAuthClient({
                     className="bg-black border border-dashed border-white/20 text-white rounded-none"
                   />
                   <p className="text-[11px] text-gray-500 mt-1 font-mono">
-                    Must to be filled 
+                    Must to be filled
                   </p>
                 </div>
                 <div>
@@ -3252,6 +3252,9 @@ export const authClient = createAuthClient({
                     placeholder="Plugin description"
                     className="bg-black border border-dashed border-white/20 text-white rounded-none"
                   />
+                  <p className="text-[11px] text-gray-500 mt-1 font-mono">
+                    Leave empty to use the default description
+                  </p>
                 </div>
               </div>
 
@@ -3324,13 +3327,13 @@ export const authClient = createAuthClient({
                                   // const isLast = fieldIndex === table.fields.length - 1;
                                   return (
                                     <div key={fieldIndex} className="relative">
-                                          <div
-                                            className="absolute border border-dashed h-px border-white/30 top-1/2 -translate-y-1/2"
-                                            style={{
-                                              left: '-36px',
-                                              width: '36px'
-                                            }}
-                                          />
+                                      <div
+                                        className="absolute border border-dashed h-px border-white/30 top-1/2 -translate-y-1/2"
+                                        style={{
+                                          left: '-36px',
+                                          width: '36px'
+                                        }}
+                                      />
                                       <div className="flex items-center space-x-2 py-1">
                                         <Input
                                           value={field.name}
@@ -4076,12 +4079,12 @@ export const authClient = createAuthClient({
                     setPluginMiddleware([]);
                     setPluginEndpoints([]);
                     setPluginRateLimitEnabled(false);
-    setPluginRateLimit({
-      path: '/my-plugin/*',
-      pathType: 'prefix',
-      window: 15 * 60 * 1000,
-      max: 100,
-    });
+                    setPluginRateLimit({
+                      path: '/my-plugin/*',
+                      pathType: 'prefix',
+                      window: 15 * 60 * 1000,
+                      max: 100,
+                    });
                     setPluginResult(null);
                     setPluginError(null);
                   }}
@@ -4121,8 +4124,8 @@ export const authClient = createAuthClient({
                           <Label className="text-xs uppercase font-mono text-gray-400 whitespace-nowrap">
                             Framework:
                           </Label>
-                          <Select 
-                            value={clientFramework} 
+                          <Select
+                            value={clientFramework}
                             onValueChange={(value: any) => {
                               setClientFramework(value);
                               regenerateClientSetupCode(value);
@@ -4193,8 +4196,8 @@ export const authClient = createAuthClient({
                         key={tab.id}
                         onClick={() => setActiveCodeTab(tab.id as any)}
                         className={`px-3 py-2 text-xs uppercase font-mono border-b-2 transition-colors ${activeCodeTab === tab.id
-                            ? 'border-white text-white'
-                            : 'border-transparent text-gray-400 hover:text-white'
+                          ? 'border-white text-white'
+                          : 'border-transparent text-gray-400 hover:text-white'
                           }`}
                         title={tab.path}
                       >
@@ -4388,8 +4391,8 @@ export const authClient = createAuthClient({
                                     <div
                                       key={`${providerName}-${result.check}-${index}`}
                                       className={`p-3 border-l border-dashed border-white/15 ${result.status === 'pass'
-                                          ? 'bg-green-600/[8%]'
-                                          : 'bg-red-600/[8%]'
+                                        ? 'bg-green-600/[8%]'
+                                        : 'bg-red-600/[8%]'
                                         }`}
                                     >
                                       <div className="flex items-start space-x-3">
@@ -4630,8 +4633,8 @@ export const authClient = createAuthClient({
                 {uuidValidation && (
                   <div
                     className={`mt-2 border border-dashed p-3 rounded-none ${uuidValidation.isValid
-                        ? 'border-white/10 bg-black/40'
-                        : 'border-red-500/30 bg-red-500/10'
+                      ? 'border-white/10 bg-black/40'
+                      : 'border-red-500/30 bg-red-500/10'
                       }`}
                   >
                     <div className="text-xs font-mono space-y-1">
@@ -4792,14 +4795,14 @@ export const authClient = createAuthClient({
                       <div className="text-gray-400 uppercase tracking-wider">Strength</div>
                       <p
                         className={`text-sm font-medium ${passwordStrength.strength === 'very-strong'
-                            ? 'text-green-400'
-                            : passwordStrength.strength === 'strong'
-                              ? 'text-green-300'
-                              : passwordStrength.strength === 'good'
-                                ? 'text-yellow-300'
-                                : passwordStrength.strength === 'fair'
-                                  ? 'text-orange-300'
-                                  : 'text-red-300'
+                          ? 'text-green-400'
+                          : passwordStrength.strength === 'strong'
+                            ? 'text-green-300'
+                            : passwordStrength.strength === 'good'
+                              ? 'text-yellow-300'
+                              : passwordStrength.strength === 'fair'
+                                ? 'text-orange-300'
+                                : 'text-red-300'
                           }`}
                       >
                         {passwordStrength.strength
@@ -4810,14 +4813,14 @@ export const authClient = createAuthClient({
                       <div className="w-full bg-black/40 h-2 rounded-none">
                         <div
                           className={`h-full transition-all ${passwordStrength.strength === 'very-strong'
-                              ? 'bg-green-400 w-full'
-                              : passwordStrength.strength === 'strong'
-                                ? 'bg-green-300 w-4/5'
-                                : passwordStrength.strength === 'good'
-                                  ? 'bg-yellow-300 w-3/5'
-                                  : passwordStrength.strength === 'fair'
-                                    ? 'bg-orange-300 w-2/5'
-                                    : 'bg-red-300 w-1/5'
+                            ? 'bg-green-400 w-full'
+                            : passwordStrength.strength === 'strong'
+                              ? 'bg-green-300 w-4/5'
+                              : passwordStrength.strength === 'good'
+                                ? 'bg-yellow-300 w-3/5'
+                                : passwordStrength.strength === 'fair'
+                                  ? 'bg-orange-300 w-2/5'
+                                  : 'bg-red-300 w-1/5'
                             }`}
                         />
                       </div>
@@ -4916,8 +4919,8 @@ export const authClient = createAuthClient({
                         key={providerId}
                         onClick={() => setSelectedProvider(providerId)}
                         className={`px-4 py-2 border rounded-none text-sm uppercase font-mono transition-colors ${isSelected
-                            ? 'border-white/60 bg-white/10 text-white'
-                            : 'border-dashed border-white/20 text-gray-400 hover:border-white/40'
+                          ? 'border-white/60 bg-white/10 text-white'
+                          : 'border-dashed border-white/20 text-gray-400 hover:border-white/40'
                           }`}
                       >
                         {providerId.charAt(0).toUpperCase() + providerId.slice(1)}
@@ -5134,8 +5137,8 @@ export const authClient = createAuthClient({
                         key={option.id}
                         onClick={() => setSecretFormat(option.id as 'hex' | 'base64')}
                         className={`px-4 py-2 border rounded-none text-sm uppercase font-mono transition-colors flex-1 ${secretFormat === option.id
-                            ? 'border-white/60 bg-white/10 text-white'
-                            : 'border-dashed border-white/20 text-gray-400 hover:border-white/40'
+                          ? 'border-white/60 bg-white/10 text-white'
+                          : 'border-dashed border-white/20 text-gray-400 hover:border-white/40'
                           }`}
                       >
                         {option.label}

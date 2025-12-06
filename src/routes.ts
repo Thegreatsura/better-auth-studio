@@ -4962,9 +4962,23 @@ export function createRoutes(
                   table.fields
                     ?.filter((f: any) => f.name.trim())
                     .map((field: any) => {
-                      let attrStr = `type: "${field.type}"`;
-                      if (field.required) attrStr += ',\n            required: true';
-                      if (field.unique) attrStr += ',\n            unique: true';
+                      const attrs: string[] = [`type: "${field.type}"`];
+                      
+                      // Always include required (default to false)
+                      attrs.push(`required: ${field.required ? 'true' : 'false'}`);
+                      
+                      // Always include unique (default to false)
+                      attrs.push(`unique: ${field.unique ? 'true' : 'false'}`);
+                      
+                      // Always include input (default to false)
+                      attrs.push('input: false');
+                      
+                      // Add defaultValue for boolean fields
+                      if (field.type === 'boolean') {
+                        attrs.push('defaultValue: false');
+                      }
+                      
+                      const attrStr = attrs.join(',\n            ');
                       return `          ${field.name}: {\n            ${attrStr}\n          }`;
                     })
                     .join(',\n') || '';
