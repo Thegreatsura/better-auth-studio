@@ -4130,14 +4130,14 @@ export const authClient = createAuthClient({
                               regenerateClientSetupCode(value);
                             }}
                           >
-                            <SelectTrigger className="bg-black border border-dashed border-white/20 text-white rounded-none w-[220px] h-10 text-xs font-mono uppercase px-4 py-2">
+                            <SelectTrigger className="bg-black sm:w-56 border border-dashed border-white/20 text-white rounded-none w-[220px] h-10 text-xs font-mono uppercase px-4 py-2">
                               <SelectValue className="font-mono uppercase text-xs text-white" />
                             </SelectTrigger>
-                            <SelectContent className="font-mono uppercase text-xs bg-black border border-dashed border-white/20">
-                              <SelectItem value="react" className="text-white/90 border-b border-dashed border-white/10 last:border-b-0 py-3 px-4 hover:bg-white/5 cursor-pointer">React (better-auth/react)</SelectItem>
-                              <SelectItem value="svelte" className="text-white/90 border-b border-dashed border-white/10 last:border-b-0 py-3 px-4 hover:bg-white/5 cursor-pointer">Svelte (better-auth/svelte)</SelectItem>
-                              <SelectItem value="solid" className="text-white/90 border-b border-dashed border-white/10 last:border-b-0 py-3 px-4 hover:bg-white/5 cursor-pointer">Solid (better-auth/solid)</SelectItem>
-                              <SelectItem value="vue" className="text-white/90 border-b border-dashed border-white/10 last:border-b-0 py-3 px-4 hover:bg-white/5 cursor-pointer">Vue (better-auth/vue)</SelectItem>
+                            <SelectContent className="font-mono uppercase text-[10px] bg-black border border-dashed border-white/20">
+                              <SelectItem value="react" className="sm:text-[11px] text-white/90 border-b border-dashed last:border-b-0"> React</SelectItem>
+                              <SelectItem value="svelte" className="sm:text-[11px] text-white/90 border-b border-dashed last:border-b-0"> Svelte</SelectItem>
+                              <SelectItem value="solid" className="sm:text-[11px] text-white/90 border-b border-dashed last:border-b-0"> Solid</SelectItem>
+                              <SelectItem value="vue" className="sm:text-[11px] text-white/90 border-b border-dashed last:border-b-0"> Vue</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
