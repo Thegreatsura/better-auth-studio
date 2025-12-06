@@ -7,6 +7,10 @@ import { hex } from '@better-auth/utils/hex';
 import { scryptAsync } from '@noble/hashes/scrypt.js';
 import { Router } from 'express';
 import { createJiti } from 'jiti';
+import { execSync } from 'node:child_process';
+import { writeFileSync as writeFile, unlinkSync, readFileSync as readFile } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join as pathJoin } from 'node:path';
 import { createMockAccount, createMockSession, createMockUser, createMockVerification, getAuthAdapter, } from './auth-adapter.js';
 import { getAuthData } from './data.js';
 import { initializeGeoService, resolveIPLocation, setGeoDbPath } from './geo-service.js';
@@ -4518,6 +4522,39 @@ ${formattedHandlerLogic}
                     .replace(/\n{3,}/g, '\n\n')
                     .trim();
             };
+            const formatCode = (code) => {
+                try {
+                    // Create a temporary file
+                    const tempFile = pathJoin(tmpdir(), `biome-format-${Date.now()}-${Math.random().toString(36).substring(7)}.ts`);
+                    writeFile(tempFile, code, 'utf-8');
+                    try {
+                        // Format using Biome CLI
+                        execSync(`npx @biomejs/biome format --write ${tempFile}`, {
+                            stdio: 'pipe',
+                            cwd: process.cwd(),
+                        });
+                        // Read formatted code
+                        const formatted = readFile(tempFile, 'utf-8');
+                        unlinkSync(tempFile);
+                        return formatted;
+                    }
+                    catch (formatError) {
+                        // Clean up temp file on error
+                        try {
+                            unlinkSync(tempFile);
+                        }
+                        catch {
+                            // Ignore cleanup errors
+                        }
+                        // If formatting fails, return original code
+                        return code;
+                    }
+                }
+                catch (error) {
+                    // If anything fails, return original code
+                    return code;
+                }
+            };
             const pluginParts = [];
             if (schemaCode) {
                 pluginParts.push(`    schema: {\n${schemaCode}\n    }`);
@@ -4549,7 +4586,7 @@ ${formattedHandlerLogic}
             const serverPluginBody = pluginParts.length > 0
                 ? `    id: "${camelCaseName}",\n${pluginParts.join(',\n')}`
                 : `    id: "${camelCaseName}"`;
-            const serverPluginCode = cleanCode(`import type { BetterAuthPlugin } from "@better-auth/core";
+            const serverPluginCode = formatCode(cleanCode(`import type { BetterAuthPlugin } from "@better-auth/core";
 ${imports.join('\n')}
 
 ${description ? `/**\n * ${description.replace(/\n/g, '\n * ')}\n */` : ''}
@@ -4558,7 +4595,7 @@ export const ${camelCaseName} = (options?: Record<string, any>) => {
 ${serverPluginBody}
   } satisfies BetterAuthPlugin;
 };
-`);
+`));
             const pathMethods = endpoints.length > 0
                 ? endpoints
                     .map((endpoint) => {
@@ -4583,7 +4620,7 @@ ${serverPluginBody}
             const atomListenersCode = sessionAffectingPaths.length > 0
                 ? `\n    atomListeners: [\n${sessionAffectingPaths.join(',\n')}\n    ],`
                 : '';
-            const clientPluginCode = cleanCode(`import type { BetterAuthClientPlugin } from "@better-auth/core";
+            const clientPluginCode = formatCode(cleanCode(`import type { BetterAuthClientPlugin } from "@better-auth/core";
 import type { ${camelCaseName} } from "..";
 
 export const ${camelCaseName}Client = () => {
@@ -4592,9 +4629,9 @@ export const ${camelCaseName}Client = () => {
     $InferServerPlugin: {} as ReturnType<typeof ${camelCaseName}>,${pathMethods ? `\n    pathMethods: {\n${pathMethods}\n    },` : ''}${atomListenersCode}
   } satisfies BetterAuthClientPlugin;
 };
-`);
+`));
             // Generate server setup code
-            const serverSetupCode = cleanCode(`import { betterAuth } from "@better-auth/core";
+            const serverSetupCode = formatCode(cleanCode(`import { betterAuth } from "@better-auth/core";
 import { ${camelCaseName} } from "./plugin/${camelCaseName}";
 
 export const auth = betterAuth({
@@ -4603,7 +4640,7 @@ export const auth = betterAuth({
     ${camelCaseName}(),
   ],
 });
-`);
+`));
             const frameworkImportMap = {
                 react: 'better-auth/react',
                 svelte: 'better-auth/svelte',
@@ -4620,7 +4657,7 @@ export const auth = betterAuth({
             };
             const baseURL = baseURLMap[clientFramework] ||
                 'process.env.NEXT_PUBLIC_BETTER_AUTH_URL || "http://localhost:3000"';
-            const clientSetupCode = cleanCode(`import { createAuthClient } from "${frameworkImport}";
+            const clientSetupCode = formatCode(cleanCode(`import { createAuthClient } from "${frameworkImport}";
 import { ${camelCaseName}Client } from "./plugin/${camelCaseName}/client";
 
 export const authClient = createAuthClient({
@@ -4629,7 +4666,7 @@ export const authClient = createAuthClient({
     ${camelCaseName}Client(),
   ],
 });
-`);
+`));
             return res.json({
                 success: true,
                 plugin: {
