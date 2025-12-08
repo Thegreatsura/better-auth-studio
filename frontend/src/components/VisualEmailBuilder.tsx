@@ -207,6 +207,16 @@ const parseStyles = (styleString: string): Record<string, string> => {
   return styles;
 };
 
+const linkifyText = (text: string): string => {
+  if (!text) return '';
+  const urlRegex = /((?:https?:\/\/|www\.)[^\s<>"']+)/gi;
+
+  return text.replace(urlRegex, (match) => {
+    const href = match.startsWith('http') ? match : `https://${match}`;
+    return `<a href="${href}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">${match}</a>`;
+  });
+};
+
 const blocksToHtml = (blocks: EmailBlock[]): string => {
   const bodyContent = blocks
     .map((block) => {
@@ -217,9 +227,9 @@ const blocksToHtml = (blocks: EmailBlock[]): string => {
 
       switch (block.type) {
         case 'heading':
-          return `<h1 style="${styleString}">${block.content}</h1>`;
+          return `<h1 style="${styleString}">${linkifyText(block.content)}</h1>`;
         case 'paragraph':
-          return `<p style="${styleString}">${block.content}</p>`;
+          return `<p style="${styleString}">${linkifyText(block.content)}</p>`;
         case 'button': {
           const href = block.attributes?.href || '{{url}}';
           const buttonStyles = { ...block.styles };
