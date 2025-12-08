@@ -507,7 +507,13 @@ export default function Tools() {
       name: string;
       isExtending: boolean;
       extendedTableName?: string;
-      fields: Array<{ name: string; type: string; required: boolean; unique: boolean; defaultValue?: string }>;
+      fields: Array<{
+        name: string;
+        type: string;
+        required: boolean;
+        unique: boolean;
+        defaultValue?: string;
+      }>;
     }>
   >([]);
   const [availableTablesForExtension, setAvailableTablesForExtension] = useState<
@@ -3587,8 +3593,9 @@ export const authClient = createAuthClient({
                                                 value={field.defaultValue || ''}
                                                 onChange={(e) => {
                                                   const newTables = [...pluginTables];
-                                                  newTables[tableIndex].fields[fieldIndex].defaultValue =
-                                                    e.target.value;
+                                                  newTables[tableIndex].fields[
+                                                    fieldIndex
+                                                  ].defaultValue = e.target.value;
                                                   setPluginTables(newTables);
                                                 }}
                                                 placeholder="Default value"
@@ -3600,13 +3607,17 @@ export const authClient = createAuthClient({
                                                 value={field.defaultValue || ''}
                                                 onValueChange={(value: string) => {
                                                   const newTables = [...pluginTables];
-                                                  newTables[tableIndex].fields[fieldIndex].defaultValue =
-                                                    value;
+                                                  newTables[tableIndex].fields[
+                                                    fieldIndex
+                                                  ].defaultValue = value;
                                                   setPluginTables(newTables);
                                                 }}
                                               >
                                                 <SelectTrigger className="sm:h-10 sm:w-56 border px-0 border-dashed border-white/20 text-white/90 text-xs rounded-none py-1">
-                                                  <SelectValue className="font-mono uppercase text-[10px] px-0 text-white/90" placeholder="Default value" />
+                                                  <SelectValue
+                                                    className="font-mono uppercase text-[10px] px-0 text-white/90"
+                                                    placeholder="Default value"
+                                                  />
                                                 </SelectTrigger>
                                                 <SelectContent className="font-mono uppercase text-[10px]">
                                                   <SelectItem
@@ -3627,30 +3638,61 @@ export const authClient = createAuthClient({
                                             {field.type === 'date' && (
                                               <div className="flex items-center space-x-2">
                                                 <Select
-                                                  value={field.defaultValue === 'now()' ? 'now()' : field.defaultValue && field.defaultValue !== 'now()' ? 'custom' : ''}
+                                                  value={
+                                                    field.defaultValue === 'now()'
+                                                      ? 'now()'
+                                                      : field.defaultValue &&
+                                                          field.defaultValue !== 'now()'
+                                                        ? 'custom'
+                                                        : ''
+                                                  }
                                                   onValueChange={(value: string) => {
                                                     const newTables = [...pluginTables];
                                                     if (value === 'now()') {
-                                                      newTables[tableIndex].fields[fieldIndex].defaultValue = 'now()';
+                                                      newTables[tableIndex].fields[
+                                                        fieldIndex
+                                                      ].defaultValue = 'now()';
                                                     } else if (value === 'custom') {
                                                       // Set a default date if empty, or keep existing custom date
-                                                      if (!newTables[tableIndex].fields[fieldIndex].defaultValue || newTables[tableIndex].fields[fieldIndex].defaultValue === 'now()') {
+                                                      if (
+                                                        !newTables[tableIndex].fields[fieldIndex]
+                                                          .defaultValue ||
+                                                        newTables[tableIndex].fields[fieldIndex]
+                                                          .defaultValue === 'now()'
+                                                      ) {
                                                         const now = new Date();
                                                         const year = now.getFullYear();
-                                                        const month = String(now.getMonth() + 1).padStart(2, '0');
-                                                        const day = String(now.getDate()).padStart(2, '0');
-                                                        const hours = String(now.getHours()).padStart(2, '0');
-                                                        const minutes = String(now.getMinutes()).padStart(2, '0');
-                                                        newTables[tableIndex].fields[fieldIndex].defaultValue = `${year}-${month}-${day}T${hours}:${minutes}`;
+                                                        const month = String(
+                                                          now.getMonth() + 1
+                                                        ).padStart(2, '0');
+                                                        const day = String(now.getDate()).padStart(
+                                                          2,
+                                                          '0'
+                                                        );
+                                                        const hours = String(
+                                                          now.getHours()
+                                                        ).padStart(2, '0');
+                                                        const minutes = String(
+                                                          now.getMinutes()
+                                                        ).padStart(2, '0');
+                                                        newTables[tableIndex].fields[
+                                                          fieldIndex
+                                                        ].defaultValue =
+                                                          `${year}-${month}-${day}T${hours}:${minutes}`;
                                                       }
                                                     } else {
-                                                      newTables[tableIndex].fields[fieldIndex].defaultValue = undefined;
+                                                      newTables[tableIndex].fields[
+                                                        fieldIndex
+                                                      ].defaultValue = undefined;
                                                     }
                                                     setPluginTables(newTables);
                                                   }}
                                                 >
                                                   <SelectTrigger className="sm:h-10 sm:w-40 border px-0 border-dashed border-white/20 text-white/90 text-xs rounded-none py-1">
-                                                    <SelectValue className="font-mono uppercase text-[10px] px-0 text-white/90" placeholder="Default" />
+                                                    <SelectValue
+                                                      className="font-mono uppercase text-[10px] px-0 text-white/90"
+                                                      placeholder="Default"
+                                                    />
                                                   </SelectTrigger>
                                                   <SelectContent className="font-mono uppercase text-[10px]">
                                                     <SelectItem
@@ -3667,19 +3709,21 @@ export const authClient = createAuthClient({
                                                     </SelectItem>
                                                   </SelectContent>
                                                 </Select>
-                                                {field.defaultValue && field.defaultValue !== 'now()' && (
-                                                  <Input
-                                                    type="datetime-local"
-                                                    value={field.defaultValue}
-                                                    onChange={(e) => {
-                                                      const newTables = [...pluginTables];
-                                                      newTables[tableIndex].fields[fieldIndex].defaultValue =
-                                                        e.target.value;
-                                                      setPluginTables(newTables);
-                                                    }}
-                                                    className="sm:h-10 sm:w-40 border px-0 border-dashed border-white/20 text-white/90 text-xs rounded-none py-1 font-mono uppercase text-[10px]"
-                                                  />
-                                                )}
+                                                {field.defaultValue &&
+                                                  field.defaultValue !== 'now()' && (
+                                                    <Input
+                                                      type="datetime-local"
+                                                      value={field.defaultValue}
+                                                      onChange={(e) => {
+                                                        const newTables = [...pluginTables];
+                                                        newTables[tableIndex].fields[
+                                                          fieldIndex
+                                                        ].defaultValue = e.target.value;
+                                                        setPluginTables(newTables);
+                                                      }}
+                                                      className="sm:h-10 sm:w-40 border px-0 border-dashed border-white/20 text-white/90 text-xs rounded-none py-1 font-mono uppercase text-[10px]"
+                                                    />
+                                                  )}
                                               </div>
                                             )}
                                             {field.type === 'number' && (
@@ -3688,8 +3732,9 @@ export const authClient = createAuthClient({
                                                 value={field.defaultValue || ''}
                                                 onChange={(e) => {
                                                   const newTables = [...pluginTables];
-                                                  newTables[tableIndex].fields[fieldIndex].defaultValue =
-                                                    e.target.value;
+                                                  newTables[tableIndex].fields[
+                                                    fieldIndex
+                                                  ].defaultValue = e.target.value;
                                                   setPluginTables(newTables);
                                                 }}
                                                 placeholder="Default value"
@@ -3707,7 +3752,9 @@ export const authClient = createAuthClient({
                                               newTables[tableIndex].fields[fieldIndex].required =
                                                 checked === true;
                                               if (checked === false) {
-                                                newTables[tableIndex].fields[fieldIndex].defaultValue = undefined;
+                                                newTables[tableIndex].fields[
+                                                  fieldIndex
+                                                ].defaultValue = undefined;
                                               }
                                               setPluginTables(newTables);
                                             }}

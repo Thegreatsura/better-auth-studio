@@ -313,7 +313,7 @@ export default function VisualEmailBuilder({ html, onChange }: VisualEmailBuilde
         iframeDoc.open();
         iframeDoc.write(emailHtml);
         iframeDoc.close();
-        
+
         // Ensure links work by allowing navigation
         iframe.onload = () => {
           const doc = iframe.contentDocument || iframe.contentWindow?.document;
@@ -331,7 +331,7 @@ export default function VisualEmailBuilder({ html, onChange }: VisualEmailBuilde
                 }
               });
             });
-            
+
             // Auto-resize iframe to content height
             const body = doc.body;
             if (body) {
@@ -440,18 +440,14 @@ export default function VisualEmailBuilder({ html, onChange }: VisualEmailBuilde
           } else {
             const clickPoint = selection.rangeCount > 0 ? selection.getRangeAt(0).startOffset : 0;
             let textNode: Node | null = null;
-            
+
             if (element.firstChild && element.firstChild.nodeType === Node.TEXT_NODE) {
               textNode = element.firstChild;
             } else {
-              const walker = document.createTreeWalker(
-                element,
-                NodeFilter.SHOW_TEXT,
-                null
-              );
+              const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null);
               textNode = walker.nextNode();
             }
-            
+
             if (textNode && textNode.nodeType === Node.TEXT_NODE) {
               const maxPosition = textNode.textContent?.length || 0;
               const safePosition = Math.min(clickPoint, maxPosition);
@@ -517,11 +513,7 @@ export default function VisualEmailBuilder({ html, onChange }: VisualEmailBuilde
     const selection = window.getSelection();
     if (!selection) return false;
 
-    const walker = document.createTreeWalker(
-      element,
-      NodeFilter.SHOW_TEXT,
-      null
-    );
+    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null);
 
     let currentPosition = 0;
     let node: Node | null = null;
@@ -556,7 +548,7 @@ export default function VisualEmailBuilder({ html, onChange }: VisualEmailBuilde
   const handleInput = (blockId: string, newContent: string) => {
     const element = editingRefs.current.get(blockId);
     let cursorPosition = 0;
-    
+
     if (element) {
       cursorPosition = getAbsoluteCursorPosition(element);
     }
@@ -608,494 +600,661 @@ export default function VisualEmailBuilder({ html, onChange }: VisualEmailBuilde
               </Button>
             </div>
             {viewMode === 'edit' && (
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => addBlock('heading')}
-                className="h-7 px-2 text-xs rounded-none border border-dashed border-white/20 hover:bg-white/10"
-                title="Add Heading"
-              >
-                <Type className="w-3 h-3 mr-1" />
-                Heading
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => addBlock('paragraph')}
-                className="h-7 px-2 text-xs rounded-none border border-dashed border-white/20 hover:bg-white/10"
-                title="Add Paragraph"
-              >
-                <Type className="w-3 h-3 mr-1" />
-                Text
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => addBlock('button')}
-                className="h-7 px-2 text-xs rounded-none border border-dashed border-white/20 hover:bg-white/10"
-                title="Add Button"
-              >
-                <MousePointerClick className="w-3 h-3 mr-1" />
-                Button
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => addBlock('image')}
-                className="h-7 px-2 text-xs rounded-none border border-dashed border-white/20 hover:bg-white/10"
-                title="Add Image"
-              >
-                <ImageIcon className="w-3 h-3 mr-1" />
-                Image
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => addBlock('divider')}
-                className="h-7 px-2 text-xs rounded-none border border-dashed border-white/20 hover:bg-white/10"
-                title="Add Divider"
-              >
-                <Minus className="w-3 h-3" />
-              </Button>
-            </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => addBlock('heading')}
+                  className="h-7 px-2 text-xs rounded-none border border-dashed border-white/20 hover:bg-white/10"
+                  title="Add Heading"
+                >
+                  <Type className="w-3 h-3 mr-1" />
+                  Heading
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => addBlock('paragraph')}
+                  className="h-7 px-2 text-xs rounded-none border border-dashed border-white/20 hover:bg-white/10"
+                  title="Add Paragraph"
+                >
+                  <Type className="w-3 h-3 mr-1" />
+                  Text
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => addBlock('button')}
+                  className="h-7 px-2 text-xs rounded-none border border-dashed border-white/20 hover:bg-white/10"
+                  title="Add Button"
+                >
+                  <MousePointerClick className="w-3 h-3 mr-1" />
+                  Button
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => addBlock('image')}
+                  className="h-7 px-2 text-xs rounded-none border border-dashed border-white/20 hover:bg-white/10"
+                  title="Add Image"
+                >
+                  <ImageIcon className="w-3 h-3 mr-1" />
+                  Image
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => addBlock('divider')}
+                  className="h-7 px-2 text-xs rounded-none border border-dashed border-white/20 hover:bg-white/10"
+                  title="Add Divider"
+                >
+                  <Minus className="w-3 h-3" />
+                </Button>
+              </div>
             )}
           </div>
         </div>
 
         {viewMode === 'edit' ? (
-        <div
-          className="flex-1 overflow-y-auto overflow-x-hidden p-8 bg-gray-50 min-h-0"
-          style={{ overscrollBehavior: 'contain' }}
-        >
           <div
-            className="max-w-2xl mx-auto bg-white shadow-lg p-8"
-            style={{ width: '100%', paddingBottom: '2rem' }}
+            className="flex-1 overflow-y-auto overflow-x-hidden p-8 bg-gray-50 min-h-0"
+            style={{ overscrollBehavior: 'contain' }}
           >
-            {blocks.length === 0 ? (
-              <div className="text-center py-20 text-gray-400">
-                <p className="text-sm mb-4">
-                  No blocks yet. Click the buttons above to add content.
-                </p>
-              </div>
-            ) : (
-              blocks.map((block, index) => {
-                const isSelected = selectedBlockId === block.id;
-                const isEditing = editingBlockId === block.id;
+            <div
+              className="max-w-2xl mx-auto bg-white shadow-lg p-8"
+              style={{ width: '100%', paddingBottom: '2rem' }}
+            >
+              {blocks.length === 0 ? (
+                <div className="text-center py-20 text-gray-400">
+                  <p className="text-sm mb-4">
+                    No blocks yet. Click the buttons above to add content.
+                  </p>
+                </div>
+              ) : (
+                blocks.map((block, index) => {
+                  const isSelected = selectedBlockId === block.id;
+                  const isEditing = editingBlockId === block.id;
 
-                return (
-                  <div
-                    key={block.id}
-                    className={`relative group mb-4 ${isSelected ? 'ring-2 ring-blue-500' : ''}`}
-                    onClick={(e) => {
-                      if ((e.target as HTMLElement).contentEditable !== 'true') {
-                        setSelectedBlockId(block.id);
-                      }
-                    }}
-                  >
-                    {isSelected && (
-                      <div className="absolute -left-12 top-0 flex flex-col gap-1 z-10">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            moveBlock(block.id, 'up');
-                          }}
-                          disabled={index === 0}
-                          className="h-7 w-7 p-0 bg-black/90 border border-dashed border-white/30 hover:bg-black/30 hover:border-white/60 rounded-none transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                          title="Move up"
-                        >
-                          <ChevronUp className="w-4 h-4 text-white" />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            moveBlock(block.id, 'down');
-                          }}
-                          disabled={index === blocks.length - 1}
-                          className="h-7 w-7 p-0 bg-black/90 border border-dashed border-white/30 hover:bg-black/30 hover:border-white/60 rounded-none transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                          title="Move down"
-                        >
-                          <ChevronDown className="w-4 h-4 text-white" />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            duplicateBlock(block.id);
-                          }}
-                          className="h-7 w-7 p-0 bg-black/90 border border-dashed border-white/30 hover:bg-black/30 hover:border-white/60 rounded-none transition-all flex items-center justify-center"
-                          title="Duplicate"
-                        >
-                          <Copy className="w-4 h-4 text-white" />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deleteBlock(block.id);
-                          }}
-                          className="h-7 w-7 p-0 bg-black/90 border border-dashed border-white/30 hover:bg-red-500/40 hover:border-red-500/70 rounded-none transition-all flex items-center justify-center"
-                          title="Delete"
-                        >
-                          <Trash2 className="w-4 h-4 text-white" />
-                        </button>
-                      </div>
-                    )}
-
-                    {block.type === 'heading' && (
-                      <h1
-                        ref={(el) => {
-                          if (el) editingRefs.current.set(block.id, el);
-                          else editingRefs.current.delete(block.id);
-                        }}
-                        contentEditable={isEditing}
-                        suppressContentEditableWarning
-                        onClick={(e) => handleClick(block.id, e)}
-                        onDoubleClick={() => {
+                  return (
+                    <div
+                      key={block.id}
+                      className={`relative group mb-4 ${isSelected ? 'ring-2 ring-blue-500' : ''}`}
+                      onClick={(e) => {
+                        if ((e.target as HTMLElement).contentEditable !== 'true') {
                           setSelectedBlockId(block.id);
-                          handleDoubleClick(block.id);
-                        }}
-                        onBlur={createBlurHandler(block.id)}
-                        onKeyDown={handleKeyDown}
-                        onInput={(e) => handleInput(block.id, e.currentTarget.textContent || '')}
-                        style={{
-                          fontSize: block.styles.fontSize || '24px',
-                          fontWeight: block.styles.fontWeight || 'bold',
-                          fontStyle: block.styles.fontStyle || 'normal',
-                          fontFamily: block.styles.fontFamily || 'inherit',
-                          color: block.styles.color || '#000000',
-                          backgroundColor: block.styles.backgroundColor || undefined,
-                          textAlign: block.styles.textAlign || 'left',
-                          padding:
-                            block.styles.padding ||
-                            (block.styles.backgroundColor ? '8px 12px' : '0'),
-                          margin: block.styles.margin || '0 0 16px 0',
-                          lineHeight: block.styles.lineHeight || '1.2',
-                          letterSpacing: block.styles.letterSpacing || '0',
-                          textDecoration: block.styles.textDecoration || 'none',
-                          outline: isEditing ? '2px dashed #3b82f6' : 'none',
-                          minHeight: '1.5em',
-                        }}
-                      >
-                        {block.content}
-                      </h1>
-                    )}
+                        }
+                      }}
+                    >
+                      {isSelected && (
+                        <div className="absolute -left-12 top-0 flex flex-col gap-1 z-10">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              moveBlock(block.id, 'up');
+                            }}
+                            disabled={index === 0}
+                            className="h-7 w-7 p-0 bg-black/90 border border-dashed border-white/30 hover:bg-black/30 hover:border-white/60 rounded-none transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                            title="Move up"
+                          >
+                            <ChevronUp className="w-4 h-4 text-white" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              moveBlock(block.id, 'down');
+                            }}
+                            disabled={index === blocks.length - 1}
+                            className="h-7 w-7 p-0 bg-black/90 border border-dashed border-white/30 hover:bg-black/30 hover:border-white/60 rounded-none transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                            title="Move down"
+                          >
+                            <ChevronDown className="w-4 h-4 text-white" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              duplicateBlock(block.id);
+                            }}
+                            className="h-7 w-7 p-0 bg-black/90 border border-dashed border-white/30 hover:bg-black/30 hover:border-white/60 rounded-none transition-all flex items-center justify-center"
+                            title="Duplicate"
+                          >
+                            <Copy className="w-4 h-4 text-white" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteBlock(block.id);
+                            }}
+                            className="h-7 w-7 p-0 bg-black/90 border border-dashed border-white/30 hover:bg-red-500/40 hover:border-red-500/70 rounded-none transition-all flex items-center justify-center"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-4 h-4 text-white" />
+                          </button>
+                        </div>
+                      )}
 
-                    {block.type === 'paragraph' && (
-                      <p
-                        ref={(el) => {
-                          if (el) editingRefs.current.set(block.id, el);
-                          else editingRefs.current.delete(block.id);
-                        }}
-                        contentEditable={isEditing}
-                        suppressContentEditableWarning
-                        onClick={(e) => handleClick(block.id, e)}
-                        onDoubleClick={() => {
-                          setSelectedBlockId(block.id);
-                          handleDoubleClick(block.id);
-                        }}
-                        onBlur={createBlurHandler(block.id)}
-                        onKeyDown={handleKeyDown}
-                        onInput={(e) => handleInput(block.id, e.currentTarget.textContent || '')}
-                        style={{
-                          fontSize: block.styles.fontSize || '16px',
-                          fontWeight: block.styles.fontWeight || 'normal',
-                          fontStyle: block.styles.fontStyle || 'normal',
-                          fontFamily: block.styles.fontFamily || 'inherit',
-                          color: block.styles.color || '#333333',
-                          backgroundColor: block.styles.backgroundColor || undefined,
-                          textAlign: block.styles.textAlign || 'left',
-                          padding:
-                            block.styles.padding ||
-                            (block.styles.backgroundColor ? '8px 12px' : '0'),
-                          margin: block.styles.margin || '0 0 16px 0',
-                          lineHeight: block.styles.lineHeight || '1.6',
-                          letterSpacing: block.styles.letterSpacing || '0',
-                          textDecoration: block.styles.textDecoration || 'none',
-                          outline: isEditing ? '2px dashed #3b82f6' : 'none',
-                          minHeight: '1.5em',
-                        }}
-                      >
-                        {block.content}
-                      </p>
-                    )}
-
-                    {block.type === 'button' && (
-                      <div
-                        style={{
-                          textAlign: block.styles.textAlign || 'center',
-                          margin: block.styles.margin || '16px 0',
-                        }}
-                        onClick={(e) => {
-                          if (isSelected || isEditing) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                          }
-                        }}
-                      >
-                        <span
+                      {block.type === 'heading' && (
+                        <h1
                           ref={(el) => {
                             if (el) editingRefs.current.set(block.id, el);
                             else editingRefs.current.delete(block.id);
                           }}
                           contentEditable={isEditing}
                           suppressContentEditableWarning
-                          onDoubleClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
+                          onClick={(e) => handleClick(block.id, e)}
+                          onDoubleClick={() => {
                             setSelectedBlockId(block.id);
                             handleDoubleClick(block.id);
-                          }}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleClick(block.id, e);
                           }}
                           onBlur={createBlurHandler(block.id)}
                           onKeyDown={handleKeyDown}
                           onInput={(e) => handleInput(block.id, e.currentTarget.textContent || '')}
                           style={{
-                            display: 'inline-block',
+                            fontSize: block.styles.fontSize || '24px',
+                            fontWeight: block.styles.fontWeight || 'bold',
+                            fontStyle: block.styles.fontStyle || 'normal',
+                            fontFamily: block.styles.fontFamily || 'inherit',
+                            color: block.styles.color || '#000000',
+                            backgroundColor: block.styles.backgroundColor || undefined,
+                            textAlign: block.styles.textAlign || 'left',
+                            padding:
+                              block.styles.padding ||
+                              (block.styles.backgroundColor ? '8px 12px' : '0'),
+                            margin: block.styles.margin || '0 0 16px 0',
+                            lineHeight: block.styles.lineHeight || '1.2',
+                            letterSpacing: block.styles.letterSpacing || '0',
+                            textDecoration: block.styles.textDecoration || 'none',
+                            outline: isEditing ? '2px dashed #3b82f6' : 'none',
+                            minHeight: '1.5em',
+                          }}
+                        >
+                          {block.content}
+                        </h1>
+                      )}
+
+                      {block.type === 'paragraph' && (
+                        <p
+                          ref={(el) => {
+                            if (el) editingRefs.current.set(block.id, el);
+                            else editingRefs.current.delete(block.id);
+                          }}
+                          contentEditable={isEditing}
+                          suppressContentEditableWarning
+                          onClick={(e) => handleClick(block.id, e)}
+                          onDoubleClick={() => {
+                            setSelectedBlockId(block.id);
+                            handleDoubleClick(block.id);
+                          }}
+                          onBlur={createBlurHandler(block.id)}
+                          onKeyDown={handleKeyDown}
+                          onInput={(e) => handleInput(block.id, e.currentTarget.textContent || '')}
+                          style={{
                             fontSize: block.styles.fontSize || '16px',
                             fontWeight: block.styles.fontWeight || 'normal',
                             fontStyle: block.styles.fontStyle || 'normal',
                             fontFamily: block.styles.fontFamily || 'inherit',
-                            color: block.styles.color || '#ffffff',
-                            backgroundColor: block.styles.backgroundColor || '#000000',
-                            padding: block.styles.padding || '12px 30px',
-                            borderRadius: block.styles.borderRadius || '4px',
-                            border: block.styles.border || 'none',
+                            color: block.styles.color || '#333333',
+                            backgroundColor: block.styles.backgroundColor || undefined,
+                            textAlign: block.styles.textAlign || 'left',
+                            padding:
+                              block.styles.padding ||
+                              (block.styles.backgroundColor ? '8px 12px' : '0'),
+                            margin: block.styles.margin || '0 0 16px 0',
+                            lineHeight: block.styles.lineHeight || '1.6',
                             letterSpacing: block.styles.letterSpacing || '0',
                             textDecoration: block.styles.textDecoration || 'none',
-                            outline: isEditing
-                              ? '2px dashed #3b82f6'
-                              : isSelected
-                                ? '2px solid #3b82f6'
-                                : 'none',
-                            minWidth: '100px',
-                            cursor: isEditing ? 'text' : 'default',
-                            userSelect: 'text',
-                            transition: 'border-radius 0.2s ease',
+                            outline: isEditing ? '2px dashed #3b82f6' : 'none',
+                            minHeight: '1.5em',
                           }}
                         >
                           {block.content}
-                        </span>
-                      </div>
-                    )}
+                        </p>
+                      )}
 
-                    {block.type === 'image' && (
-                      <div
-                        style={{
-                          margin: block.styles.margin || '0 0 30px 0',
-                          textAlign: block.styles.textAlign || 'left',
-                        }}
-                      >
-                        <img
-                          src={block.attributes?.src || 'https://via.placeholder.com/600x300'}
-                          alt={block.attributes?.alt || ''}
+                      {block.type === 'button' && (
+                        <div
                           style={{
-                            width: block.styles.width || '70px',
-                            maxWidth: block.styles.maxWidth || '70px',
-                            height: block.styles.height || 'auto',
-                            display: 'inline-block',
+                            textAlign: block.styles.textAlign || 'center',
+                            margin: block.styles.margin || '16px 0',
+                          }}
+                          onClick={(e) => {
+                            if (isSelected || isEditing) {
+                              e.preventDefault();
+                              e.stopPropagation();
+                            }
+                          }}
+                        >
+                          <span
+                            ref={(el) => {
+                              if (el) editingRefs.current.set(block.id, el);
+                              else editingRefs.current.delete(block.id);
+                            }}
+                            contentEditable={isEditing}
+                            suppressContentEditableWarning
+                            onDoubleClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setSelectedBlockId(block.id);
+                              handleDoubleClick(block.id);
+                            }}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleClick(block.id, e);
+                            }}
+                            onBlur={createBlurHandler(block.id)}
+                            onKeyDown={handleKeyDown}
+                            onInput={(e) =>
+                              handleInput(block.id, e.currentTarget.textContent || '')
+                            }
+                            style={{
+                              display: 'inline-block',
+                              fontSize: block.styles.fontSize || '16px',
+                              fontWeight: block.styles.fontWeight || 'normal',
+                              fontStyle: block.styles.fontStyle || 'normal',
+                              fontFamily: block.styles.fontFamily || 'inherit',
+                              color: block.styles.color || '#ffffff',
+                              backgroundColor: block.styles.backgroundColor || '#000000',
+                              padding: block.styles.padding || '12px 30px',
+                              borderRadius: block.styles.borderRadius || '4px',
+                              border: block.styles.border || 'none',
+                              letterSpacing: block.styles.letterSpacing || '0',
+                              textDecoration: block.styles.textDecoration || 'none',
+                              outline: isEditing
+                                ? '2px dashed #3b82f6'
+                                : isSelected
+                                  ? '2px solid #3b82f6'
+                                  : 'none',
+                              minWidth: '100px',
+                              cursor: isEditing ? 'text' : 'default',
+                              userSelect: 'text',
+                              transition: 'border-radius 0.2s ease',
+                            }}
+                          >
+                            {block.content}
+                          </span>
+                        </div>
+                      )}
+
+                      {block.type === 'image' && (
+                        <div
+                          style={{
+                            margin: block.styles.margin || '0 0 30px 0',
+                            textAlign: block.styles.textAlign || 'left',
+                          }}
+                        >
+                          <img
+                            src={block.attributes?.src || 'https://via.placeholder.com/600x300'}
+                            alt={block.attributes?.alt || ''}
+                            style={{
+                              width: block.styles.width || '70px',
+                              maxWidth: block.styles.maxWidth || '70px',
+                              height: block.styles.height || 'auto',
+                              display: 'inline-block',
+                              outline: isSelected ? '2px dashed #3b82f6' : 'none',
+                            }}
+                          />
+                        </div>
+                      )}
+
+                      {block.type === 'divider' && (
+                        <hr
+                          style={{
+                            border: block.styles.border || '1px solid #eeeeee',
+                            margin: block.styles.margin || '30px 0',
                             outline: isSelected ? '2px dashed #3b82f6' : 'none',
                           }}
                         />
-                      </div>
-                    )}
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        ) : (
+          <div
+            className="flex-1 overflow-y-auto overflow-x-hidden p-8 bg-gray-50 min-h-0"
+            style={{ overscrollBehavior: 'contain' }}
+          >
+            <div
+              className="max-w-2xl mx-auto bg-white shadow-lg p-8"
+              style={{ width: '100%', paddingBottom: '2rem' }}
+            >
+              <iframe
+                ref={previewIframeRef}
+                className="w-full border-0"
+                title="Email Preview"
+                style={{ minHeight: '100%', display: 'block' }}
+                sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-top-navigation"
+              />
+            </div>
+          </div>
+        )}
 
-                    {block.type === 'divider' && (
-                      <hr
-                        style={{
-                          border: block.styles.border || '1px solid #eeeeee',
-                          margin: block.styles.margin || '30px 0',
-                          outline: isSelected ? '2px dashed #3b82f6' : 'none',
+        {selectedBlock && viewMode === 'edit' && (
+          <div
+            className="w-96 h-[calc(100vh-400px)] border-l border-dashed border-white/20 bg-black/40 flex flex-col flex-shrink-0 overflow-scroll"
+            style={{ minWidth: '384px', maxWidth: '384px' }}
+          >
+            <div className="p-4 border-b border-dashed border-white/10 bg-black/40 z-10 flex-shrink-0">
+              <Label className="text-xs uppercase font-mono text-gray-400">
+                {selectedBlock.type.charAt(0).toUpperCase() + selectedBlock.type.slice(1)}{' '}
+                Properties
+              </Label>
+            </div>
+
+            <div
+              className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-4"
+              style={{ overscrollBehavior: 'contain', minHeight: 0 }}
+            >
+              {selectedBlock.type !== 'divider' && selectedBlock.type !== 'image' && (
+                <div>
+                  <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
+                    Content
+                  </Label>
+                  <Input
+                    value={selectedBlock.content}
+                    onChange={(e) => updateBlock(selectedBlock.id, { content: e.target.value })}
+                    className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Double-click on canvas to edit inline
+                  </p>
+                </div>
+              )}
+              {(selectedBlock.type === 'heading' ||
+                selectedBlock.type === 'paragraph' ||
+                selectedBlock.type === 'button') && (
+                <div>
+                  <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
+                    Text Formatting
+                  </Label>
+                  <div className="flex gap-2">
+                    <Button
+                      variant={selectedBlock.styles.fontWeight === 'bold' ? 'default' : 'ghost'}
+                      size="sm"
+                      onClick={() =>
+                        updateBlock(selectedBlock.id, {
+                          styles: {
+                            ...selectedBlock.styles,
+                            fontWeight:
+                              selectedBlock.styles.fontWeight === 'bold' ? 'normal' : 'bold',
+                          },
+                        })
+                      }
+                      className="h-8 w-8 p-0 rounded-none border border-dashed border-white/20 hover:bg-white/10"
+                      title="Bold"
+                    >
+                      <Bold className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant={selectedBlock.styles.fontStyle === 'italic' ? 'default' : 'ghost'}
+                      size="sm"
+                      onClick={() =>
+                        updateBlock(selectedBlock.id, {
+                          styles: {
+                            ...selectedBlock.styles,
+                            fontStyle:
+                              selectedBlock.styles.fontStyle === 'italic' ? 'normal' : 'italic',
+                          },
+                        })
+                      }
+                      className="h-8 w-8 p-0 rounded-none border border-dashed border-white/20 hover:bg-white/10"
+                      title="Italic"
+                    >
+                      <Italic className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant={
+                        selectedBlock.styles.textDecoration === 'underline' ? 'default' : 'ghost'
+                      }
+                      size="sm"
+                      onClick={() =>
+                        updateBlock(selectedBlock.id, {
+                          styles: {
+                            ...selectedBlock.styles,
+                            textDecoration:
+                              selectedBlock.styles.textDecoration === 'underline'
+                                ? 'none'
+                                : 'underline',
+                          },
+                        })
+                      }
+                      className="h-8 w-8 p-0 rounded-none border border-dashed border-white/20 hover:bg-white/10"
+                      title="Underline"
+                    >
+                      <Underline className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant={
+                        selectedBlock.styles.textDecoration === 'line-through' ? 'default' : 'ghost'
+                      }
+                      size="sm"
+                      onClick={() =>
+                        updateBlock(selectedBlock.id, {
+                          styles: {
+                            ...selectedBlock.styles,
+                            textDecoration:
+                              selectedBlock.styles.textDecoration === 'line-through'
+                                ? 'none'
+                                : 'line-through',
+                          },
+                        })
+                      }
+                      className="h-8 w-8 p-0 rounded-none border border-dashed border-white/20 hover:bg-white/10"
+                      title="Strikethrough"
+                    >
+                      <Strikethrough className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {selectedBlock.type === 'button' && (
+                <div>
+                  <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
+                    Link URL
+                  </Label>
+                  <Input
+                    value={selectedBlock.attributes?.href || ''}
+                    onChange={(e) =>
+                      updateBlock(selectedBlock.id, {
+                        attributes: { ...selectedBlock.attributes, href: e.target.value },
+                      })
+                    }
+                    placeholder="{{url}}"
+                    className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
+                  />
+                </div>
+              )}
+
+              {selectedBlock.type === 'image' && (
+                <div>
+                  <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
+                    Image URL
+                  </Label>
+                  <Input
+                    value={selectedBlock.attributes?.src || ''}
+                    onChange={(e) =>
+                      updateBlock(selectedBlock.id, {
+                        attributes: { ...selectedBlock.attributes, src: e.target.value },
+                      })
+                    }
+                    placeholder="https://example.com/image.jpg"
+                    className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
+                  />
+                  <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block mt-3">
+                    Alt Text
+                  </Label>
+                  <Input
+                    value={selectedBlock.attributes?.alt || ''}
+                    onChange={(e) =>
+                      updateBlock(selectedBlock.id, {
+                        attributes: { ...selectedBlock.attributes, alt: e.target.value },
+                      })
+                    }
+                    placeholder="Image description"
+                    className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
+                  />
+                  <div className="mt-3">
+                    <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
+                      Alignment
+                    </Label>
+                    <div className="flex gap-2">
+                      {[
+                        { value: 'left' as const, icon: AlignLeft },
+                        { value: 'center' as const, icon: AlignCenter },
+                        { value: 'right' as const, icon: AlignRight },
+                      ].map(({ value: align, icon: Icon }) => (
+                        <Button
+                          key={align}
+                          variant={selectedBlock.styles.textAlign === align ? 'default' : 'ghost'}
+                          size="sm"
+                          onClick={() =>
+                            updateBlock(selectedBlock.id, {
+                              styles: { ...selectedBlock.styles, textAlign: align },
+                            })
+                          }
+                          className="flex-1 rounded-none border border-dashed border-white/20 flex items-center justify-center"
+                          title={align.charAt(0).toUpperCase() + align.slice(1)}
+                        >
+                          <Icon className="w-4 h-4" />
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {(selectedBlock.type === 'heading' ||
+                selectedBlock.type === 'paragraph' ||
+                selectedBlock.type === 'button') && (
+                <div>
+                  <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
+                    Font Family
+                  </Label>
+                  <select
+                    value={selectedBlock.styles.fontFamily || 'inherit'}
+                    onChange={(e) =>
+                      updateBlock(selectedBlock.id, {
+                        styles: { ...selectedBlock.styles, fontFamily: e.target.value },
+                      })
+                    }
+                    className="w-full bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs p-2 focus:outline-none focus:border-white/40"
+                  >
+                    <option value="inherit">System Default</option>
+                    <option value="Arial, sans-serif">Arial</option>
+                    <option value="'Helvetica Neue', Helvetica, sans-serif">Helvetica</option>
+                    <option value="'Times New Roman', serif">Times New Roman</option>
+                    <option value="Georgia, serif">Georgia</option>
+                    <option value="'Courier New', monospace">Courier New</option>
+                    <option value="Verdana, sans-serif">Verdana</option>
+                    <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+                    <option value="'Comic Sans MS', cursive">Comic Sans MS</option>
+                  </select>
+                </div>
+              )}
+
+              {(selectedBlock.type === 'heading' ||
+                selectedBlock.type === 'paragraph' ||
+                selectedBlock.type === 'button') && (
+                <div>
+                  <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
+                    Font Size
+                  </Label>
+                  <Input
+                    value={selectedBlock.styles.fontSize ?? ''}
+                    onChange={(e) =>
+                      updateBlock(selectedBlock.id, {
+                        styles: { ...selectedBlock.styles, fontSize: e.target.value || undefined },
+                      })
+                    }
+                    placeholder="16px"
+                    className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
+                  />
+                </div>
+              )}
+
+              {selectedBlock.type !== 'divider' && selectedBlock.type !== 'image' && (
+                <div>
+                  <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
+                    Text Color
+                  </Label>
+                  <Input
+                    type="color"
+                    value={selectedBlock.styles.color || '#333333'}
+                    onChange={(e) =>
+                      updateBlock(selectedBlock.id, {
+                        styles: { ...selectedBlock.styles, color: e.target.value },
+                      })
+                    }
+                    className="h-8 w-full bg-black border border-dashed border-white/20 rounded-none"
+                  />
+                </div>
+              )}
+
+              {(selectedBlock.type === 'button' ||
+                selectedBlock.type === 'heading' ||
+                selectedBlock.type === 'paragraph') && (
+                <div>
+                  <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
+                    Background Color
+                  </Label>
+                  <Input
+                    type="color"
+                    value={selectedBlock.styles.backgroundColor || '#ffffff'}
+                    onChange={(e) => {
+                      const newBackgroundColor = e.target.value;
+                      const currentPadding = selectedBlock.styles.padding;
+                      const hasBackgroundColor =
+                        newBackgroundColor && newBackgroundColor !== '#ffffff';
+                      // Auto-add padding if background color is set and no padding exists
+                      const shouldAddPadding =
+                        hasBackgroundColor && (!currentPadding || currentPadding === '0');
+
+                      updateBlock(selectedBlock.id, {
+                        styles: {
+                          ...selectedBlock.styles,
+                          backgroundColor: hasBackgroundColor ? newBackgroundColor : undefined,
+                          padding: shouldAddPadding
+                            ? '8px 12px'
+                            : hasBackgroundColor
+                              ? currentPadding || '8px 12px'
+                              : currentPadding === '8px 12px'
+                                ? '0'
+                                : currentPadding,
+                        },
+                      });
+                    }}
+                    className="h-8 w-full bg-black border border-dashed border-white/20 rounded-none"
+                  />
+                  {selectedBlock.styles.backgroundColor &&
+                    selectedBlock.styles.backgroundColor !== '#ffffff' && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          const currentPadding = selectedBlock.styles.padding;
+                          updateBlock(selectedBlock.id, {
+                            styles: {
+                              ...selectedBlock.styles,
+                              backgroundColor: undefined,
+                              padding: currentPadding === '8px 12px' ? '0' : currentPadding,
+                            },
+                          });
                         }}
-                      />
+                        className="text-xs text-gray-400 hover:text-white mt-1 rounded-none"
+                      >
+                        Clear Background
+                      </Button>
                     )}
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
-      ) : (
-        <div className="flex-1 overflow-y-auto overflow-x-hidden p-8 bg-gray-50 min-h-0" style={{ overscrollBehavior: 'contain' }}>
-          <div className="max-w-2xl mx-auto bg-white shadow-lg p-8" style={{ width: '100%', paddingBottom: '2rem' }}>
-            <iframe
-              ref={previewIframeRef}
-              className="w-full border-0"
-              title="Email Preview"
-              style={{ minHeight: '100%', display: 'block' }}
-              sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-top-navigation"
-            />
-          </div>
-        </div>
-      )}
-
-      {selectedBlock && viewMode === 'edit' && (
-        <div
-          className="w-96 h-[calc(100vh-400px)] border-l border-dashed border-white/20 bg-black/40 flex flex-col flex-shrink-0 overflow-scroll"
-          style={{ minWidth: '384px', maxWidth: '384px' }}
-        >
-          <div className="p-4 border-b border-dashed border-white/10 bg-black/40 z-10 flex-shrink-0">
-            <Label className="text-xs uppercase font-mono text-gray-400">
-              {selectedBlock.type.charAt(0).toUpperCase() + selectedBlock.type.slice(1)} Properties
-            </Label>
-          </div>
-
-          <div
-            className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-4"
-            style={{ overscrollBehavior: 'contain', minHeight: 0 }}
-          >
-            {selectedBlock.type !== 'divider' && selectedBlock.type !== 'image' && (
-              <div>
-                <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
-                  Content
-                </Label>
-                <Input
-                  value={selectedBlock.content}
-                  onChange={(e) => updateBlock(selectedBlock.id, { content: e.target.value })}
-                  className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
-                />
-                <p className="text-xs text-gray-500 mt-1">Double-click on canvas to edit inline</p>
-              </div>
-            )}
-            {(selectedBlock.type === 'heading' ||
-              selectedBlock.type === 'paragraph' ||
-              selectedBlock.type === 'button') && (
-              <div>
-                <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
-                  Text Formatting
-                </Label>
-                <div className="flex gap-2">
-                  <Button
-                    variant={selectedBlock.styles.fontWeight === 'bold' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() =>
-                      updateBlock(selectedBlock.id, {
-                        styles: {
-                          ...selectedBlock.styles,
-                          fontWeight:
-                            selectedBlock.styles.fontWeight === 'bold' ? 'normal' : 'bold',
-                        },
-                      })
-                    }
-                    className="h-8 w-8 p-0 rounded-none border border-dashed border-white/20 hover:bg-white/10"
-                    title="Bold"
-                  >
-                    <Bold className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant={selectedBlock.styles.fontStyle === 'italic' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() =>
-                      updateBlock(selectedBlock.id, {
-                        styles: {
-                          ...selectedBlock.styles,
-                          fontStyle:
-                            selectedBlock.styles.fontStyle === 'italic' ? 'normal' : 'italic',
-                        },
-                      })
-                    }
-                    className="h-8 w-8 p-0 rounded-none border border-dashed border-white/20 hover:bg-white/10"
-                    title="Italic"
-                  >
-                    <Italic className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant={
-                      selectedBlock.styles.textDecoration === 'underline' ? 'default' : 'ghost'
-                    }
-                    size="sm"
-                    onClick={() =>
-                      updateBlock(selectedBlock.id, {
-                        styles: {
-                          ...selectedBlock.styles,
-                          textDecoration:
-                            selectedBlock.styles.textDecoration === 'underline'
-                              ? 'none'
-                              : 'underline',
-                        },
-                      })
-                    }
-                    className="h-8 w-8 p-0 rounded-none border border-dashed border-white/20 hover:bg-white/10"
-                    title="Underline"
-                  >
-                    <Underline className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant={
-                      selectedBlock.styles.textDecoration === 'line-through' ? 'default' : 'ghost'
-                    }
-                    size="sm"
-                    onClick={() =>
-                      updateBlock(selectedBlock.id, {
-                        styles: {
-                          ...selectedBlock.styles,
-                          textDecoration:
-                            selectedBlock.styles.textDecoration === 'line-through'
-                              ? 'none'
-                              : 'line-through',
-                        },
-                      })
-                    }
-                    className="h-8 w-8 p-0 rounded-none border border-dashed border-white/20 hover:bg-white/10"
-                    title="Strikethrough"
-                  >
-                    <Strikethrough className="w-4 h-4" />
-                  </Button>
                 </div>
-              </div>
-            )}
+              )}
 
-            {selectedBlock.type === 'button' && (
-              <div>
-                <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
-                  Link URL
-                </Label>
-                <Input
-                  value={selectedBlock.attributes?.href || ''}
-                  onChange={(e) =>
-                    updateBlock(selectedBlock.id, {
-                      attributes: { ...selectedBlock.attributes, href: e.target.value },
-                    })
-                  }
-                  placeholder="{{url}}"
-                  className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
-                />
-              </div>
-            )}
-
-            {selectedBlock.type === 'image' && (
-              <div>
-                <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
-                  Image URL
-                </Label>
-                <Input
-                  value={selectedBlock.attributes?.src || ''}
-                  onChange={(e) =>
-                    updateBlock(selectedBlock.id, {
-                      attributes: { ...selectedBlock.attributes, src: e.target.value },
-                    })
-                  }
-                  placeholder="https://example.com/image.jpg"
-                  className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
-                />
-                <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block mt-3">
-                  Alt Text
-                </Label>
-                <Input
-                  value={selectedBlock.attributes?.alt || ''}
-                  onChange={(e) =>
-                    updateBlock(selectedBlock.id, {
-                      attributes: { ...selectedBlock.attributes, alt: e.target.value },
-                    })
-                  }
-                  placeholder="Image description"
-                  className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
-                />
-                <div className="mt-3">
+              {selectedBlock.type !== 'divider' && selectedBlock.type !== 'image' && (
+                <div>
                   <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
-                    Alignment
+                    Text Align
                   </Label>
                   <div className="flex gap-2">
                     {[
@@ -1113,512 +1272,520 @@ export default function VisualEmailBuilder({ html, onChange }: VisualEmailBuilde
                           })
                         }
                         className="flex-1 rounded-none border border-dashed border-white/20 flex items-center justify-center"
-                        title={align.charAt(0).toUpperCase() + align.slice(1)}
+                        title={align}
                       >
                         <Icon className="w-4 h-4" />
                       </Button>
                     ))}
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {(selectedBlock.type === 'heading' ||
-              selectedBlock.type === 'paragraph' ||
-              selectedBlock.type === 'button') && (
-              <div>
-                <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
-                  Font Family
-                </Label>
-                <select
-                  value={selectedBlock.styles.fontFamily || 'inherit'}
-                  onChange={(e) =>
-                    updateBlock(selectedBlock.id, {
-                      styles: { ...selectedBlock.styles, fontFamily: e.target.value },
-                    })
-                  }
-                  className="w-full bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs p-2 focus:outline-none focus:border-white/40"
-                >
-                  <option value="inherit">System Default</option>
-                  <option value="Arial, sans-serif">Arial</option>
-                  <option value="'Helvetica Neue', Helvetica, sans-serif">Helvetica</option>
-                  <option value="'Times New Roman', serif">Times New Roman</option>
-                  <option value="Georgia, serif">Georgia</option>
-                  <option value="'Courier New', monospace">Courier New</option>
-                  <option value="Verdana, sans-serif">Verdana</option>
-                  <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
-                  <option value="'Comic Sans MS', cursive">Comic Sans MS</option>
-                </select>
-              </div>
-            )}
+              {(selectedBlock.type === 'heading' || selectedBlock.type === 'paragraph') && (
+                <div>
+                  <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
+                    Line Height
+                  </Label>
+                  <Input
+                    value={selectedBlock.styles.lineHeight ?? ''}
+                    onChange={(e) =>
+                      updateBlock(selectedBlock.id, {
+                        styles: {
+                          ...selectedBlock.styles,
+                          lineHeight: e.target.value || undefined,
+                        },
+                      })
+                    }
+                    placeholder="1.6"
+                    className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
+                  />
+                </div>
+              )}
 
-            {(selectedBlock.type === 'heading' ||
-              selectedBlock.type === 'paragraph' ||
-              selectedBlock.type === 'button') && (
-              <div>
-                <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
-                  Font Size
-                </Label>
-                <Input
-                  value={selectedBlock.styles.fontSize ?? ''}
-                  onChange={(e) =>
-                    updateBlock(selectedBlock.id, {
-                      styles: { ...selectedBlock.styles, fontSize: e.target.value || undefined },
-                    })
-                  }
-                  placeholder="16px"
-                  className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
-                />
-              </div>
-            )}
+              {(selectedBlock.type === 'heading' ||
+                selectedBlock.type === 'paragraph' ||
+                selectedBlock.type === 'button') && (
+                <div>
+                  <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
+                    Letter Spacing
+                  </Label>
+                  <Input
+                    value={selectedBlock.styles.letterSpacing ?? ''}
+                    onChange={(e) =>
+                      updateBlock(selectedBlock.id, {
+                        styles: {
+                          ...selectedBlock.styles,
+                          letterSpacing: e.target.value || undefined,
+                        },
+                      })
+                    }
+                    placeholder="0px"
+                    className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
+                  />
+                </div>
+              )}
 
-            {selectedBlock.type !== 'divider' && selectedBlock.type !== 'image' && (
-              <div>
-                <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
-                  Text Color
-                </Label>
-                <Input
-                  type="color"
-                  value={selectedBlock.styles.color || '#333333'}
-                  onChange={(e) =>
-                    updateBlock(selectedBlock.id, {
-                      styles: { ...selectedBlock.styles, color: e.target.value },
-                    })
-                  }
-                  className="h-8 w-full bg-black border border-dashed border-white/20 rounded-none"
-                />
-              </div>
-            )}
+              {selectedBlock.type !== 'divider' && (
+                <div>
+                  <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
+                    Margin
+                  </Label>
+                  <Input
+                    value={selectedBlock.styles.margin ?? ''}
+                    onChange={(e) =>
+                      updateBlock(selectedBlock.id, {
+                        styles: { ...selectedBlock.styles, margin: e.target.value || undefined },
+                      })
+                    }
+                    placeholder="16px 0"
+                    className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">e.g., 16px 0 or 10px 20px 10px 20px</p>
+                </div>
+              )}
 
-            {(selectedBlock.type === 'button' ||
-              selectedBlock.type === 'heading' ||
-              selectedBlock.type === 'paragraph') && (
-              <div>
-                <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
-                  Background Color
-                </Label>
-                <Input
-                  type="color"
-                  value={selectedBlock.styles.backgroundColor || '#ffffff'}
-                  onChange={(e) => {
-                    const newBackgroundColor = e.target.value;
-                    const currentPadding = selectedBlock.styles.padding;
-                    const hasBackgroundColor =
-                      newBackgroundColor && newBackgroundColor !== '#ffffff';
-                    // Auto-add padding if background color is set and no padding exists
-                    const shouldAddPadding =
-                      hasBackgroundColor && (!currentPadding || currentPadding === '0');
+              {(selectedBlock.type === 'button' || selectedBlock.type === 'heading') && (
+                <div>
+                  <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
+                    Padding
+                  </Label>
+                  <Input
+                    value={selectedBlock.styles.padding ?? ''}
+                    onChange={(e) =>
+                      updateBlock(selectedBlock.id, {
+                        styles: { ...selectedBlock.styles, padding: e.target.value || undefined },
+                      })
+                    }
+                    placeholder="12px 30px"
+                    className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    e.g., 12px 30px or 10px 20px 10px 20px
+                  </p>
+                </div>
+              )}
 
-                    updateBlock(selectedBlock.id, {
-                      styles: {
-                        ...selectedBlock.styles,
-                        backgroundColor: hasBackgroundColor ? newBackgroundColor : undefined,
-                        padding: shouldAddPadding
-                          ? '8px 12px'
-                          : hasBackgroundColor
-                            ? currentPadding || '8px 12px'
-                            : currentPadding === '8px 12px'
-                              ? '0'
-                              : currentPadding,
-                      },
-                    });
-                  }}
-                  className="h-8 w-full bg-black border border-dashed border-white/20 rounded-none"
-                />
-                {selectedBlock.styles.backgroundColor &&
-                  selectedBlock.styles.backgroundColor !== '#ffffff' && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        const currentPadding = selectedBlock.styles.padding;
+              {selectedBlock.type === 'button' && (
+                <div>
+                  <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
+                    Border Radius
+                  </Label>
+                  <Input
+                    value={selectedBlock.styles.borderRadius ?? ''}
+                    onChange={(e) =>
+                      updateBlock(selectedBlock.id, {
+                        styles: {
+                          ...selectedBlock.styles,
+                          borderRadius: e.target.value || undefined,
+                        },
+                      })
+                    }
+                    placeholder="4px"
+                    className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
+                  />
+                </div>
+              )}
+
+              {selectedBlock.type === 'button' && (
+                <div>
+                  <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
+                    Border
+                  </Label>
+                  <Input
+                    value={selectedBlock.styles.border ?? ''}
+                    onChange={(e) =>
+                      updateBlock(selectedBlock.id, {
+                        styles: { ...selectedBlock.styles, border: e.target.value || undefined },
+                      })
+                    }
+                    placeholder="1px solid #000"
+                    className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">e.g., 1px solid #000 or none</p>
+                </div>
+              )}
+
+              {selectedBlock.type === 'image' && (
+                <>
+                  <div>
+                    <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
+                      Width
+                    </Label>
+                    <Input
+                      value={selectedBlock.styles.width ?? ''}
+                      onChange={(e) =>
                         updateBlock(selectedBlock.id, {
-                          styles: {
-                            ...selectedBlock.styles,
-                            backgroundColor: undefined,
-                            padding: currentPadding === '8px 12px' ? '0' : currentPadding,
-                          },
-                        });
-                      }}
-                      className="text-xs text-gray-400 hover:text-white mt-1 rounded-none"
-                    >
-                      Clear Background
-                    </Button>
-                  )}
-              </div>
-            )}
+                          styles: { ...selectedBlock.styles, width: e.target.value || undefined },
+                        })
+                      }
+                      placeholder="100%"
+                      className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
+                      Height
+                    </Label>
+                    <Input
+                      value={selectedBlock.styles.height ?? ''}
+                      onChange={(e) =>
+                        updateBlock(selectedBlock.id, {
+                          styles: { ...selectedBlock.styles, height: e.target.value || undefined },
+                        })
+                      }
+                      placeholder="auto"
+                      className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
+                    />
+                  </div>
+                </>
+              )}
 
-            {selectedBlock.type !== 'divider' && selectedBlock.type !== 'image' && (
-              <div>
-                <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
-                  Text Align
-                </Label>
-                <div className="flex gap-2">
-                  {[
-                    { value: 'left' as const, icon: AlignLeft },
-                    { value: 'center' as const, icon: AlignCenter },
-                    { value: 'right' as const, icon: AlignRight },
-                  ].map(({ value: align, icon: Icon }) => (
+              {selectedBlock.type === 'divider' && (
+                <div>
+                  <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
+                    Border Style
+                  </Label>
+                  <Input
+                    value={selectedBlock.styles.border ?? ''}
+                    onChange={(e) =>
+                      updateBlock(selectedBlock.id, {
+                        styles: { ...selectedBlock.styles, border: e.target.value || undefined },
+                      })
+                    }
+                    placeholder="1px solid #eeeeee"
+                    className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">e.g., 2px dashed #ccc</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {selectedBlock && viewMode === 'edit' && (
+          <div
+            className="w-96 h-[calc(100vh-400px)] border-l border-dashed border-white/20 bg-black/40 flex flex-col flex-shrink-0 overflow-scroll"
+            style={{ minWidth: '384px', maxWidth: '384px' }}
+          >
+            <div className="p-4 border-b border-dashed border-white/10 bg-black/40 z-10 flex-shrink-0">
+              <Label className="text-xs uppercase font-mono text-gray-400">
+                {selectedBlock.type.charAt(0).toUpperCase() + selectedBlock.type.slice(1)}{' '}
+                Properties
+              </Label>
+            </div>
+
+            <div
+              className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-4"
+              style={{ overscrollBehavior: 'contain', minHeight: 0 }}
+            >
+              {selectedBlock.type !== 'divider' && selectedBlock.type !== 'image' && (
+                <div>
+                  <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
+                    Content
+                  </Label>
+                  <Input
+                    value={selectedBlock.content}
+                    onChange={(e) => updateBlock(selectedBlock.id, { content: e.target.value })}
+                    className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Double-click on canvas to edit inline
+                  </p>
+                </div>
+              )}
+              {(selectedBlock.type === 'heading' ||
+                selectedBlock.type === 'paragraph' ||
+                selectedBlock.type === 'button') && (
+                <div>
+                  <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
+                    Text Formatting
+                  </Label>
+                  <div className="flex gap-2">
                     <Button
-                      key={align}
-                      variant={selectedBlock.styles.textAlign === align ? 'default' : 'ghost'}
+                      variant={selectedBlock.styles.fontWeight === 'bold' ? 'default' : 'ghost'}
                       size="sm"
                       onClick={() =>
                         updateBlock(selectedBlock.id, {
-                          styles: { ...selectedBlock.styles, textAlign: align },
+                          styles: {
+                            ...selectedBlock.styles,
+                            fontWeight:
+                              selectedBlock.styles.fontWeight === 'bold' ? 'normal' : 'bold',
+                          },
                         })
                       }
-                      className="flex-1 rounded-none border border-dashed border-white/20 flex items-center justify-center"
-                      title={align}
+                      className="h-8 w-8 p-0 rounded-none border border-dashed border-white/20 hover:bg-white/10"
+                      title="Bold"
                     >
-                      <Icon className="w-4 h-4" />
+                      <Bold className="w-4 h-4" />
                     </Button>
-                  ))}
+                    <Button
+                      variant={selectedBlock.styles.fontStyle === 'italic' ? 'default' : 'ghost'}
+                      size="sm"
+                      onClick={() =>
+                        updateBlock(selectedBlock.id, {
+                          styles: {
+                            ...selectedBlock.styles,
+                            fontStyle:
+                              selectedBlock.styles.fontStyle === 'italic' ? 'normal' : 'italic',
+                          },
+                        })
+                      }
+                      className="h-8 w-8 p-0 rounded-none border border-dashed border-white/20 hover:bg-white/10"
+                      title="Italic"
+                    >
+                      <Italic className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant={
+                        selectedBlock.styles.textDecoration === 'underline' ? 'default' : 'ghost'
+                      }
+                      size="sm"
+                      onClick={() =>
+                        updateBlock(selectedBlock.id, {
+                          styles: {
+                            ...selectedBlock.styles,
+                            textDecoration:
+                              selectedBlock.styles.textDecoration === 'underline'
+                                ? 'none'
+                                : 'underline',
+                          },
+                        })
+                      }
+                      className="h-8 w-8 p-0 rounded-none border border-dashed border-white/20 hover:bg-white/10"
+                      title="Underline"
+                    >
+                      <Underline className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant={
+                        selectedBlock.styles.textDecoration === 'line-through' ? 'default' : 'ghost'
+                      }
+                      size="sm"
+                      onClick={() =>
+                        updateBlock(selectedBlock.id, {
+                          styles: {
+                            ...selectedBlock.styles,
+                            textDecoration:
+                              selectedBlock.styles.textDecoration === 'line-through'
+                                ? 'none'
+                                : 'line-through',
+                          },
+                        })
+                      }
+                      className="h-8 w-8 p-0 rounded-none border border-dashed border-white/20 hover:bg-white/10"
+                      title="Strikethrough"
+                    >
+                      <Strikethrough className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {(selectedBlock.type === 'heading' || selectedBlock.type === 'paragraph') && (
-              <div>
-                <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
-                  Line Height
-                </Label>
-                <Input
-                  value={selectedBlock.styles.lineHeight ?? ''}
-                  onChange={(e) =>
-                    updateBlock(selectedBlock.id, {
-                      styles: { ...selectedBlock.styles, lineHeight: e.target.value || undefined },
-                    })
-                  }
-                  placeholder="1.6"
-                  className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
-                />
-              </div>
-            )}
-
-            {(selectedBlock.type === 'heading' ||
-              selectedBlock.type === 'paragraph' ||
-              selectedBlock.type === 'button') && (
-              <div>
-                <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
-                  Letter Spacing
-                </Label>
-                <Input
-                  value={selectedBlock.styles.letterSpacing ?? ''}
-                  onChange={(e) =>
-                    updateBlock(selectedBlock.id, {
-                      styles: {
-                        ...selectedBlock.styles,
-                        letterSpacing: e.target.value || undefined,
-                      },
-                    })
-                  }
-                  placeholder="0px"
-                  className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
-                />
-              </div>
-            )}
-
-            {selectedBlock.type !== 'divider' && (
-              <div>
-                <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
-                  Margin
-                </Label>
-                <Input
-                  value={selectedBlock.styles.margin ?? ''}
-                  onChange={(e) =>
-                    updateBlock(selectedBlock.id, {
-                      styles: { ...selectedBlock.styles, margin: e.target.value || undefined },
-                    })
-                  }
-                  placeholder="16px 0"
-                  className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
-                />
-                <p className="text-xs text-gray-500 mt-1">e.g., 16px 0 or 10px 20px 10px 20px</p>
-              </div>
-            )}
-
-            {(selectedBlock.type === 'button' || selectedBlock.type === 'heading') && (
-              <div>
-                <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
-                  Padding
-                </Label>
-                <Input
-                  value={selectedBlock.styles.padding ?? ''}
-                  onChange={(e) =>
-                    updateBlock(selectedBlock.id, {
-                      styles: { ...selectedBlock.styles, padding: e.target.value || undefined },
-                    })
-                  }
-                  placeholder="12px 30px"
-                  className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
-                />
-                <p className="text-xs text-gray-500 mt-1">e.g., 12px 30px or 10px 20px 10px 20px</p>
-              </div>
-            )}
-
-            {selectedBlock.type === 'button' && (
-              <div>
-                <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
-                  Border Radius
-                </Label>
-                <Input
-                  value={selectedBlock.styles.borderRadius ?? ''}
-                  onChange={(e) =>
-                    updateBlock(selectedBlock.id, {
-                      styles: {
-                        ...selectedBlock.styles,
-                        borderRadius: e.target.value || undefined,
-                      },
-                    })
-                  }
-                  placeholder="4px"
-                  className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
-                />
-              </div>
-            )}
-
-            {selectedBlock.type === 'button' && (
-              <div>
-                <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
-                  Border
-                </Label>
-                <Input
-                  value={selectedBlock.styles.border ?? ''}
-                  onChange={(e) =>
-                    updateBlock(selectedBlock.id, {
-                      styles: { ...selectedBlock.styles, border: e.target.value || undefined },
-                    })
-                  }
-                  placeholder="1px solid #000"
-                  className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
-                />
-                <p className="text-xs text-gray-500 mt-1">e.g., 1px solid #000 or none</p>
-              </div>
-            )}
-
-            {selectedBlock.type === 'image' && (
-              <>
+              {selectedBlock.type === 'button' && (
                 <div>
                   <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
-                    Width
+                    Link URL
                   </Label>
                   <Input
-                    value={selectedBlock.styles.width ?? ''}
+                    value={selectedBlock.attributes?.href || ''}
                     onChange={(e) =>
                       updateBlock(selectedBlock.id, {
-                        styles: { ...selectedBlock.styles, width: e.target.value || undefined },
+                        attributes: { ...selectedBlock.attributes, href: e.target.value },
                       })
                     }
-                    placeholder="100%"
+                    placeholder="{{url}}"
                     className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
                   />
                 </div>
+              )}
+
+              {selectedBlock.type === 'image' && (
                 <div>
                   <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
-                    Height
+                    Image URL
                   </Label>
                   <Input
-                    value={selectedBlock.styles.height ?? ''}
+                    value={selectedBlock.attributes?.src || ''}
                     onChange={(e) =>
                       updateBlock(selectedBlock.id, {
-                        styles: { ...selectedBlock.styles, height: e.target.value || undefined },
+                        attributes: { ...selectedBlock.attributes, src: e.target.value },
                       })
                     }
-                    placeholder="auto"
+                    placeholder="https://example.com/image.jpg"
+                    className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
+                  />
+                  <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block mt-3">
+                    Alt Text
+                  </Label>
+                  <Input
+                    value={selectedBlock.attributes?.alt || ''}
+                    onChange={(e) =>
+                      updateBlock(selectedBlock.id, {
+                        attributes: { ...selectedBlock.attributes, alt: e.target.value },
+                      })
+                    }
+                    placeholder="Image description"
+                    className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
+                  />
+                  <div className="mt-3">
+                    <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
+                      Alignment
+                    </Label>
+                    <div className="flex gap-2">
+                      {[
+                        { value: 'left' as const, icon: AlignLeft },
+                        { value: 'center' as const, icon: AlignCenter },
+                        { value: 'right' as const, icon: AlignRight },
+                      ].map(({ value: align, icon: Icon }) => (
+                        <Button
+                          key={align}
+                          variant={selectedBlock.styles.textAlign === align ? 'default' : 'ghost'}
+                          size="sm"
+                          onClick={() =>
+                            updateBlock(selectedBlock.id, {
+                              styles: { ...selectedBlock.styles, textAlign: align },
+                            })
+                          }
+                          className="flex-1 rounded-none border border-dashed border-white/20 flex items-center justify-center"
+                          title={align.charAt(0).toUpperCase() + align.slice(1)}
+                        >
+                          <Icon className="w-4 h-4" />
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {(selectedBlock.type === 'heading' ||
+                selectedBlock.type === 'paragraph' ||
+                selectedBlock.type === 'button') && (
+                <div>
+                  <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
+                    Font Family
+                  </Label>
+                  <select
+                    value={selectedBlock.styles.fontFamily || 'inherit'}
+                    onChange={(e) =>
+                      updateBlock(selectedBlock.id, {
+                        styles: { ...selectedBlock.styles, fontFamily: e.target.value },
+                      })
+                    }
+                    className="w-full bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs p-2 focus:outline-none focus:border-white/40"
+                  >
+                    <option value="inherit">System Default</option>
+                    <option value="Arial, sans-serif">Arial</option>
+                    <option value="'Helvetica Neue', Helvetica, sans-serif">Helvetica</option>
+                    <option value="'Times New Roman', serif">Times New Roman</option>
+                    <option value="Georgia, serif">Georgia</option>
+                    <option value="'Courier New', monospace">Courier New</option>
+                    <option value="Verdana, sans-serif">Verdana</option>
+                    <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+                    <option value="'Comic Sans MS', cursive">Comic Sans MS</option>
+                  </select>
+                </div>
+              )}
+
+              {(selectedBlock.type === 'heading' ||
+                selectedBlock.type === 'paragraph' ||
+                selectedBlock.type === 'button') && (
+                <div>
+                  <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
+                    Font Size
+                  </Label>
+                  <Input
+                    value={selectedBlock.styles.fontSize ?? ''}
+                    onChange={(e) =>
+                      updateBlock(selectedBlock.id, {
+                        styles: { ...selectedBlock.styles, fontSize: e.target.value || undefined },
+                      })
+                    }
+                    placeholder="16px"
                     className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
                   />
                 </div>
-              </>
-            )}
+              )}
 
-            {selectedBlock.type === 'divider' && (
-              <div>
-                <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
-                  Border Style
-                </Label>
-                <Input
-                  value={selectedBlock.styles.border ?? ''}
-                  onChange={(e) =>
-                    updateBlock(selectedBlock.id, {
-                      styles: { ...selectedBlock.styles, border: e.target.value || undefined },
-                    })
-                  }
-                  placeholder="1px solid #eeeeee"
-                  className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
-                />
-                <p className="text-xs text-gray-500 mt-1">e.g., 2px dashed #ccc</p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {selectedBlock && viewMode === 'edit' && (
-        <div
-          className="w-96 h-[calc(100vh-400px)] border-l border-dashed border-white/20 bg-black/40 flex flex-col flex-shrink-0 overflow-scroll"
-          style={{ minWidth: '384px', maxWidth: '384px' }}
-        >
-          <div className="p-4 border-b border-dashed border-white/10 bg-black/40 z-10 flex-shrink-0">
-            <Label className="text-xs uppercase font-mono text-gray-400">
-              {selectedBlock.type.charAt(0).toUpperCase() + selectedBlock.type.slice(1)} Properties
-            </Label>
-          </div>
-
-          <div
-            className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-4"
-            style={{ overscrollBehavior: 'contain', minHeight: 0 }}
-          >
-            {selectedBlock.type !== 'divider' && selectedBlock.type !== 'image' && (
-              <div>
-                <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
-                  Content
-                </Label>
-                <Input
-                  value={selectedBlock.content}
-                  onChange={(e) => updateBlock(selectedBlock.id, { content: e.target.value })}
-                  className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
-                />
-                <p className="text-xs text-gray-500 mt-1">Double-click on canvas to edit inline</p>
-              </div>
-            )}
-            {(selectedBlock.type === 'heading' ||
-              selectedBlock.type === 'paragraph' ||
-              selectedBlock.type === 'button') && (
-              <div>
-                <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
-                  Text Formatting
-                </Label>
-                <div className="flex gap-2">
-                  <Button
-                    variant={selectedBlock.styles.fontWeight === 'bold' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() =>
-                      updateBlock(selectedBlock.id, {
-                        styles: {
-                          ...selectedBlock.styles,
-                          fontWeight:
-                            selectedBlock.styles.fontWeight === 'bold' ? 'normal' : 'bold',
-                        },
-                      })
-                    }
-                    className="h-8 w-8 p-0 rounded-none border border-dashed border-white/20 hover:bg-white/10"
-                    title="Bold"
-                  >
-                    <Bold className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant={selectedBlock.styles.fontStyle === 'italic' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() =>
-                      updateBlock(selectedBlock.id, {
-                        styles: {
-                          ...selectedBlock.styles,
-                          fontStyle:
-                            selectedBlock.styles.fontStyle === 'italic' ? 'normal' : 'italic',
-                        },
-                      })
-                    }
-                    className="h-8 w-8 p-0 rounded-none border border-dashed border-white/20 hover:bg-white/10"
-                    title="Italic"
-                  >
-                    <Italic className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant={
-                      selectedBlock.styles.textDecoration === 'underline' ? 'default' : 'ghost'
-                    }
-                    size="sm"
-                    onClick={() =>
-                      updateBlock(selectedBlock.id, {
-                        styles: {
-                          ...selectedBlock.styles,
-                          textDecoration:
-                            selectedBlock.styles.textDecoration === 'underline'
-                              ? 'none'
-                              : 'underline',
-                        },
-                      })
-                    }
-                    className="h-8 w-8 p-0 rounded-none border border-dashed border-white/20 hover:bg-white/10"
-                    title="Underline"
-                  >
-                    <Underline className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant={
-                      selectedBlock.styles.textDecoration === 'line-through' ? 'default' : 'ghost'
-                    }
-                    size="sm"
-                    onClick={() =>
-                      updateBlock(selectedBlock.id, {
-                        styles: {
-                          ...selectedBlock.styles,
-                          textDecoration:
-                            selectedBlock.styles.textDecoration === 'line-through'
-                              ? 'none'
-                              : 'line-through',
-                        },
-                      })
-                    }
-                    className="h-8 w-8 p-0 rounded-none border border-dashed border-white/20 hover:bg-white/10"
-                    title="Strikethrough"
-                  >
-                    <Strikethrough className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {selectedBlock.type === 'button' && (
-              <div>
-                <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
-                  Link URL
-                </Label>
-                <Input
-                  value={selectedBlock.attributes?.href || ''}
-                  onChange={(e) =>
-                    updateBlock(selectedBlock.id, {
-                      attributes: { ...selectedBlock.attributes, href: e.target.value },
-                    })
-                  }
-                  placeholder="{{url}}"
-                  className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
-                />
-              </div>
-            )}
-
-            {selectedBlock.type === 'image' && (
-              <div>
-                <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
-                  Image URL
-                </Label>
-                <Input
-                  value={selectedBlock.attributes?.src || ''}
-                  onChange={(e) =>
-                    updateBlock(selectedBlock.id, {
-                      attributes: { ...selectedBlock.attributes, src: e.target.value },
-                    })
-                  }
-                  placeholder="https://example.com/image.jpg"
-                  className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
-                />
-                <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block mt-3">
-                  Alt Text
-                </Label>
-                <Input
-                  value={selectedBlock.attributes?.alt || ''}
-                  onChange={(e) =>
-                    updateBlock(selectedBlock.id, {
-                      attributes: { ...selectedBlock.attributes, alt: e.target.value },
-                    })
-                  }
-                  placeholder="Image description"
-                  className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
-                />
-                <div className="mt-3">
+              {selectedBlock.type !== 'divider' && selectedBlock.type !== 'image' && (
+                <div>
                   <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
-                    Alignment
+                    Text Color
+                  </Label>
+                  <Input
+                    type="color"
+                    value={selectedBlock.styles.color || '#333333'}
+                    onChange={(e) =>
+                      updateBlock(selectedBlock.id, {
+                        styles: { ...selectedBlock.styles, color: e.target.value },
+                      })
+                    }
+                    className="h-8 w-full bg-black border border-dashed border-white/20 rounded-none"
+                  />
+                </div>
+              )}
+
+              {(selectedBlock.type === 'button' ||
+                selectedBlock.type === 'heading' ||
+                selectedBlock.type === 'paragraph') && (
+                <div>
+                  <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
+                    Background Color
+                  </Label>
+                  <Input
+                    type="color"
+                    value={selectedBlock.styles.backgroundColor || '#ffffff'}
+                    onChange={(e) => {
+                      const newBackgroundColor = e.target.value;
+                      const currentPadding = selectedBlock.styles.padding;
+                      const hasBackgroundColor =
+                        newBackgroundColor && newBackgroundColor !== '#ffffff';
+                      // Auto-add padding if background color is set and no padding exists
+                      const shouldAddPadding =
+                        hasBackgroundColor && (!currentPadding || currentPadding === '0');
+
+                      updateBlock(selectedBlock.id, {
+                        styles: {
+                          ...selectedBlock.styles,
+                          backgroundColor: hasBackgroundColor ? newBackgroundColor : undefined,
+                          padding: shouldAddPadding
+                            ? '8px 12px'
+                            : hasBackgroundColor
+                              ? currentPadding || '8px 12px'
+                              : currentPadding === '8px 12px'
+                                ? '0'
+                                : currentPadding,
+                        },
+                      });
+                    }}
+                    className="h-8 w-full bg-black border border-dashed border-white/20 rounded-none"
+                  />
+                  {selectedBlock.styles.backgroundColor &&
+                    selectedBlock.styles.backgroundColor !== '#ffffff' && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          const currentPadding = selectedBlock.styles.padding;
+                          updateBlock(selectedBlock.id, {
+                            styles: {
+                              ...selectedBlock.styles,
+                              backgroundColor: undefined,
+                              padding: currentPadding === '8px 12px' ? '0' : currentPadding,
+                            },
+                          });
+                        }}
+                        className="text-xs text-gray-400 hover:text-white mt-1 rounded-none"
+                      >
+                        Clear Background
+                      </Button>
+                    )}
+                </div>
+              )}
+
+              {selectedBlock.type !== 'divider' && selectedBlock.type !== 'image' && (
+                <div>
+                  <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
+                    Text Align
                   </Label>
                   <div className="flex gap-2">
                     {[
@@ -1636,346 +1803,195 @@ export default function VisualEmailBuilder({ html, onChange }: VisualEmailBuilde
                           })
                         }
                         className="flex-1 rounded-none border border-dashed border-white/20 flex items-center justify-center"
-                        title={align.charAt(0).toUpperCase() + align.slice(1)}
+                        title={align}
                       >
                         <Icon className="w-4 h-4" />
                       </Button>
                     ))}
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {(selectedBlock.type === 'heading' ||
-              selectedBlock.type === 'paragraph' ||
-              selectedBlock.type === 'button') && (
-              <div>
-                <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
-                  Font Family
-                </Label>
-                <select
-                  value={selectedBlock.styles.fontFamily || 'inherit'}
-                  onChange={(e) =>
-                    updateBlock(selectedBlock.id, {
-                      styles: { ...selectedBlock.styles, fontFamily: e.target.value },
-                    })
-                  }
-                  className="w-full bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs p-2 focus:outline-none focus:border-white/40"
-                >
-                  <option value="inherit">System Default</option>
-                  <option value="Arial, sans-serif">Arial</option>
-                  <option value="'Helvetica Neue', Helvetica, sans-serif">Helvetica</option>
-                  <option value="'Times New Roman', serif">Times New Roman</option>
-                  <option value="Georgia, serif">Georgia</option>
-                  <option value="'Courier New', monospace">Courier New</option>
-                  <option value="Verdana, sans-serif">Verdana</option>
-                  <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
-                  <option value="'Comic Sans MS', cursive">Comic Sans MS</option>
-                </select>
-              </div>
-            )}
+              {(selectedBlock.type === 'heading' || selectedBlock.type === 'paragraph') && (
+                <div>
+                  <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
+                    Line Height
+                  </Label>
+                  <Input
+                    value={selectedBlock.styles.lineHeight ?? ''}
+                    onChange={(e) =>
+                      updateBlock(selectedBlock.id, {
+                        styles: {
+                          ...selectedBlock.styles,
+                          lineHeight: e.target.value || undefined,
+                        },
+                      })
+                    }
+                    placeholder="1.6"
+                    className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
+                  />
+                </div>
+              )}
 
-            {(selectedBlock.type === 'heading' ||
-              selectedBlock.type === 'paragraph' ||
-              selectedBlock.type === 'button') && (
-              <div>
-                <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
-                  Font Size
-                </Label>
-                <Input
-                  value={selectedBlock.styles.fontSize ?? ''}
-                  onChange={(e) =>
-                    updateBlock(selectedBlock.id, {
-                      styles: { ...selectedBlock.styles, fontSize: e.target.value || undefined },
-                    })
-                  }
-                  placeholder="16px"
-                  className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
-                />
-              </div>
-            )}
+              {(selectedBlock.type === 'heading' ||
+                selectedBlock.type === 'paragraph' ||
+                selectedBlock.type === 'button') && (
+                <div>
+                  <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
+                    Letter Spacing
+                  </Label>
+                  <Input
+                    value={selectedBlock.styles.letterSpacing ?? ''}
+                    onChange={(e) =>
+                      updateBlock(selectedBlock.id, {
+                        styles: {
+                          ...selectedBlock.styles,
+                          letterSpacing: e.target.value || undefined,
+                        },
+                      })
+                    }
+                    placeholder="0px"
+                    className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
+                  />
+                </div>
+              )}
 
-            {selectedBlock.type !== 'divider' && selectedBlock.type !== 'image' && (
-              <div>
-                <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
-                  Text Color
-                </Label>
-                <Input
-                  type="color"
-                  value={selectedBlock.styles.color || '#333333'}
-                  onChange={(e) =>
-                    updateBlock(selectedBlock.id, {
-                      styles: { ...selectedBlock.styles, color: e.target.value },
-                    })
-                  }
-                  className="h-8 w-full bg-black border border-dashed border-white/20 rounded-none"
-                />
-              </div>
-            )}
+              {selectedBlock.type !== 'divider' && (
+                <div>
+                  <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
+                    Margin
+                  </Label>
+                  <Input
+                    value={selectedBlock.styles.margin ?? ''}
+                    onChange={(e) =>
+                      updateBlock(selectedBlock.id, {
+                        styles: { ...selectedBlock.styles, margin: e.target.value || undefined },
+                      })
+                    }
+                    placeholder="16px 0"
+                    className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">e.g., 16px 0 or 10px 20px 10px 20px</p>
+                </div>
+              )}
 
-            {(selectedBlock.type === 'button' ||
-              selectedBlock.type === 'heading' ||
-              selectedBlock.type === 'paragraph') && (
-              <div>
-                <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
-                  Background Color
-                </Label>
-                <Input
-                  type="color"
-                  value={selectedBlock.styles.backgroundColor || '#ffffff'}
-                  onChange={(e) => {
-                    const newBackgroundColor = e.target.value;
-                    const currentPadding = selectedBlock.styles.padding;
-                    const hasBackgroundColor =
-                      newBackgroundColor && newBackgroundColor !== '#ffffff';
-                    // Auto-add padding if background color is set and no padding exists
-                    const shouldAddPadding =
-                      hasBackgroundColor && (!currentPadding || currentPadding === '0');
+              {(selectedBlock.type === 'button' || selectedBlock.type === 'heading') && (
+                <div>
+                  <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
+                    Padding
+                  </Label>
+                  <Input
+                    value={selectedBlock.styles.padding ?? ''}
+                    onChange={(e) =>
+                      updateBlock(selectedBlock.id, {
+                        styles: { ...selectedBlock.styles, padding: e.target.value || undefined },
+                      })
+                    }
+                    placeholder="12px 30px"
+                    className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    e.g., 12px 30px or 10px 20px 10px 20px
+                  </p>
+                </div>
+              )}
 
-                    updateBlock(selectedBlock.id, {
-                      styles: {
-                        ...selectedBlock.styles,
-                        backgroundColor: hasBackgroundColor ? newBackgroundColor : undefined,
-                        padding: shouldAddPadding
-                          ? '8px 12px'
-                          : hasBackgroundColor
-                            ? currentPadding || '8px 12px'
-                            : currentPadding === '8px 12px'
-                              ? '0'
-                              : currentPadding,
-                      },
-                    });
-                  }}
-                  className="h-8 w-full bg-black border border-dashed border-white/20 rounded-none"
-                />
-                {selectedBlock.styles.backgroundColor &&
-                  selectedBlock.styles.backgroundColor !== '#ffffff' && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        const currentPadding = selectedBlock.styles.padding;
+              {selectedBlock.type === 'button' && (
+                <div>
+                  <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
+                    Border Radius
+                  </Label>
+                  <Input
+                    value={selectedBlock.styles.borderRadius ?? ''}
+                    onChange={(e) =>
+                      updateBlock(selectedBlock.id, {
+                        styles: {
+                          ...selectedBlock.styles,
+                          borderRadius: e.target.value || undefined,
+                        },
+                      })
+                    }
+                    placeholder="4px"
+                    className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
+                  />
+                </div>
+              )}
+
+              {selectedBlock.type === 'button' && (
+                <div>
+                  <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
+                    Border
+                  </Label>
+                  <Input
+                    value={selectedBlock.styles.border ?? ''}
+                    onChange={(e) =>
+                      updateBlock(selectedBlock.id, {
+                        styles: { ...selectedBlock.styles, border: e.target.value || undefined },
+                      })
+                    }
+                    placeholder="1px solid #000"
+                    className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">e.g., 1px solid #000 or none</p>
+                </div>
+              )}
+
+              {selectedBlock.type === 'image' && (
+                <>
+                  <div>
+                    <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
+                      Width
+                    </Label>
+                    <Input
+                      value={selectedBlock.styles.width ?? ''}
+                      onChange={(e) =>
                         updateBlock(selectedBlock.id, {
-                          styles: {
-                            ...selectedBlock.styles,
-                            backgroundColor: undefined,
-                            padding: currentPadding === '8px 12px' ? '0' : currentPadding,
-                          },
-                        });
-                      }}
-                      className="text-xs text-gray-400 hover:text-white mt-1 rounded-none"
-                    >
-                      Clear Background
-                    </Button>
-                  )}
-              </div>
-            )}
-
-            {selectedBlock.type !== 'divider' && selectedBlock.type !== 'image' && (
-              <div>
-                <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
-                  Text Align
-                </Label>
-                <div className="flex gap-2">
-                  {[
-                    { value: 'left' as const, icon: AlignLeft },
-                    { value: 'center' as const, icon: AlignCenter },
-                    { value: 'right' as const, icon: AlignRight },
-                  ].map(({ value: align, icon: Icon }) => (
-                    <Button
-                      key={align}
-                      variant={selectedBlock.styles.textAlign === align ? 'default' : 'ghost'}
-                      size="sm"
-                      onClick={() =>
-                        updateBlock(selectedBlock.id, {
-                          styles: { ...selectedBlock.styles, textAlign: align },
+                          styles: { ...selectedBlock.styles, width: e.target.value || undefined },
                         })
                       }
-                      className="flex-1 rounded-none border border-dashed border-white/20 flex items-center justify-center"
-                      title={align}
-                    >
-                      <Icon className="w-4 h-4" />
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            )}
+                      placeholder="100%"
+                      className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
+                      Height
+                    </Label>
+                    <Input
+                      value={selectedBlock.styles.height ?? ''}
+                      onChange={(e) =>
+                        updateBlock(selectedBlock.id, {
+                          styles: { ...selectedBlock.styles, height: e.target.value || undefined },
+                        })
+                      }
+                      placeholder="auto"
+                      className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
+                    />
+                  </div>
+                </>
+              )}
 
-            {(selectedBlock.type === 'heading' || selectedBlock.type === 'paragraph') && (
-              <div>
-                <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
-                  Line Height
-                </Label>
-                <Input
-                  value={selectedBlock.styles.lineHeight ?? ''}
-                  onChange={(e) =>
-                    updateBlock(selectedBlock.id, {
-                      styles: { ...selectedBlock.styles, lineHeight: e.target.value || undefined },
-                    })
-                  }
-                  placeholder="1.6"
-                  className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
-                />
-              </div>
-            )}
-
-            {(selectedBlock.type === 'heading' ||
-              selectedBlock.type === 'paragraph' ||
-              selectedBlock.type === 'button') && (
-              <div>
-                <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
-                  Letter Spacing
-                </Label>
-                <Input
-                  value={selectedBlock.styles.letterSpacing ?? ''}
-                  onChange={(e) =>
-                    updateBlock(selectedBlock.id, {
-                      styles: {
-                        ...selectedBlock.styles,
-                        letterSpacing: e.target.value || undefined,
-                      },
-                    })
-                  }
-                  placeholder="0px"
-                  className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
-                />
-              </div>
-            )}
-
-            {selectedBlock.type !== 'divider' && (
-              <div>
-                <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
-                  Margin
-                </Label>
-                <Input
-                  value={selectedBlock.styles.margin ?? ''}
-                  onChange={(e) =>
-                    updateBlock(selectedBlock.id, {
-                      styles: { ...selectedBlock.styles, margin: e.target.value || undefined },
-                    })
-                  }
-                  placeholder="16px 0"
-                  className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
-                />
-                <p className="text-xs text-gray-500 mt-1">e.g., 16px 0 or 10px 20px 10px 20px</p>
-              </div>
-            )}
-
-            {(selectedBlock.type === 'button' || selectedBlock.type === 'heading') && (
-              <div>
-                <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
-                  Padding
-                </Label>
-                <Input
-                  value={selectedBlock.styles.padding ?? ''}
-                  onChange={(e) =>
-                    updateBlock(selectedBlock.id, {
-                      styles: { ...selectedBlock.styles, padding: e.target.value || undefined },
-                    })
-                  }
-                  placeholder="12px 30px"
-                  className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
-                />
-                <p className="text-xs text-gray-500 mt-1">e.g., 12px 30px or 10px 20px 10px 20px</p>
-              </div>
-            )}
-
-            {selectedBlock.type === 'button' && (
-              <div>
-                <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
-                  Border Radius
-                </Label>
-                <Input
-                  value={selectedBlock.styles.borderRadius ?? ''}
-                  onChange={(e) =>
-                    updateBlock(selectedBlock.id, {
-                      styles: {
-                        ...selectedBlock.styles,
-                        borderRadius: e.target.value || undefined,
-                      },
-                    })
-                  }
-                  placeholder="4px"
-                  className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
-                />
-              </div>
-            )}
-
-            {selectedBlock.type === 'button' && (
-              <div>
-                <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
-                  Border
-                </Label>
-                <Input
-                  value={selectedBlock.styles.border ?? ''}
-                  onChange={(e) =>
-                    updateBlock(selectedBlock.id, {
-                      styles: { ...selectedBlock.styles, border: e.target.value || undefined },
-                    })
-                  }
-                  placeholder="1px solid #000"
-                  className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
-                />
-                <p className="text-xs text-gray-500 mt-1">e.g., 1px solid #000 or none</p>
-              </div>
-            )}
-
-            {selectedBlock.type === 'image' && (
-              <>
+              {selectedBlock.type === 'divider' && (
                 <div>
                   <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
-                    Width
+                    Border Style
                   </Label>
                   <Input
-                    value={selectedBlock.styles.width ?? ''}
+                    value={selectedBlock.styles.border ?? ''}
                     onChange={(e) =>
                       updateBlock(selectedBlock.id, {
-                        styles: { ...selectedBlock.styles, width: e.target.value || undefined },
+                        styles: { ...selectedBlock.styles, border: e.target.value || undefined },
                       })
                     }
-                    placeholder="100%"
+                    placeholder="1px solid #eeeeee"
                     className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
                   />
+                  <p className="text-xs text-gray-500 mt-1">e.g., 2px dashed #ccc</p>
                 </div>
-                <div>
-                  <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
-                    Height
-                  </Label>
-                  <Input
-                    value={selectedBlock.styles.height ?? ''}
-                    onChange={(e) =>
-                      updateBlock(selectedBlock.id, {
-                        styles: { ...selectedBlock.styles, height: e.target.value || undefined },
-                      })
-                    }
-                    placeholder="auto"
-                    className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
-                  />
-                </div>
-              </>
-            )}
-
-            {selectedBlock.type === 'divider' && (
-              <div>
-                <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
-                  Border Style
-                </Label>
-                <Input
-                  value={selectedBlock.styles.border ?? ''}
-                  onChange={(e) =>
-                    updateBlock(selectedBlock.id, {
-                      styles: { ...selectedBlock.styles, border: e.target.value || undefined },
-                    })
-                  }
-                  placeholder="1px solid #eeeeee"
-                  className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
-                />
-                <p className="text-xs text-gray-500 mt-1">e.g., 2px dashed #ccc</p>
-              </div>
-            )}
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )}
       </div>
     </div>
   );

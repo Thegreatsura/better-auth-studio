@@ -23,10 +23,11 @@ import {
   getAuthAdapter,
 } from './auth-adapter.js';
 import type { AuthConfig } from './config.js';
+import { possiblePaths } from './config.js';
 import { getAuthData } from './data.js';
 import { initializeGeoService, resolveIPLocation, setGeoDbPath } from './geo-service.js';
 import { detectDatabaseWithDialect } from './utils/database-detection.js';
-import { possiblePaths } from './config.js';
+
 const config = {
   N: 16384,
   r: 16,
@@ -4961,13 +4962,19 @@ export function createRoutes(
                       attrs.push(`required: ${field.required ? 'true' : 'false'}`);
                       attrs.push(`unique: ${field.unique ? 'true' : 'false'}`);
                       attrs.push('input: false');
-                      
+
                       // Handle defaultValue
-                      if (field.defaultValue !== undefined && field.defaultValue !== null && field.defaultValue !== '') {
+                      if (
+                        field.defaultValue !== undefined &&
+                        field.defaultValue !== null &&
+                        field.defaultValue !== ''
+                      ) {
                         if (field.type === 'string') {
                           attrs.push(`defaultValue: "${field.defaultValue}"`);
                         } else if (field.type === 'boolean') {
-                          attrs.push(`defaultValue: ${field.defaultValue === 'true' || field.defaultValue === true}`);
+                          attrs.push(
+                            `defaultValue: ${field.defaultValue === 'true' || field.defaultValue === true}`
+                          );
                         } else if (field.type === 'number') {
                           attrs.push(`defaultValue: ${field.defaultValue}`);
                         } else if (field.type === 'date') {
@@ -5003,21 +5010,21 @@ ${fields}
 
       const preserveIndentation = (code: string, baseIndent: string): string => {
         if (!code.trim()) return '';
-        
+
         const lines = code.split('\n');
-        const nonEmptyLines = lines.filter(line => line.trim());
-        
+        const nonEmptyLines = lines.filter((line) => line.trim());
+
         if (nonEmptyLines.length === 0) return '';
-        
+
         const minIndent = Math.min(
-          ...nonEmptyLines.map(line => {
+          ...nonEmptyLines.map((line) => {
             const match = line.match(/^(\s*)/);
             return match ? match[1].length : 0;
           })
         );
-        
+
         return lines
-          .map(line => {
+          .map((line) => {
             if (!line.trim()) return '';
             const currentIndent = line.match(/^(\s*)/)?.[1] || '';
             const relativeIndent = Math.max(0, currentIndent.length - minIndent);
@@ -5166,7 +5173,6 @@ ${formattedHandlerLogic}
           .trim();
       };
 
-
       const pluginParts: string[] = [];
 
       if (schemaCode) {
@@ -5248,7 +5254,8 @@ ${serverPluginBody}
           ? `\n    atomListeners: [\n${sessionAffectingPaths.join(',\n')}\n    ],`
           : '';
 
-      const clientPluginCode = cleanCode(`import type { BetterAuthClientPlugin } from "@better-auth/core";
+      const clientPluginCode =
+        cleanCode(`import type { BetterAuthClientPlugin } from "@better-auth/core";
 import type { ${camelCaseName} } from "..";
 
 export const ${camelCaseName}Client = () => {
