@@ -275,6 +275,7 @@ export default function EmailEditor() {
   >('all');
   const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
   const [showFieldSimulator, setShowFieldSimulator] = useState(false);
+  const [isApplying, setIsApplying] = useState(false);
 
   useEffect(() => {
     if (showCodeModal) {
@@ -322,6 +323,33 @@ export default function EmailEditor() {
 
   const handleSubjectChange = (newSubject: string) => {
     setEmailSubject(newSubject);
+  };
+
+  const handleApplyToAuth = async () => {
+    if (selectedTemplate !== 'org-invitation') {
+      toast.error('Apply is only available for Organization Invitation');
+      return;
+    }
+    const subjectToApply =
+      emailSubject || emailTemplates[selectedTemplate]?.subject || 'You have an invitation';
+    const htmlToApply = emailHtml || emailTemplates[selectedTemplate]?.html || '';
+    setIsApplying(true);
+    try {
+      const resp = await fetch('/api/tools/apply-org-invitation-template', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subject: subjectToApply, html: htmlToApply }),
+      });
+      const data = await resp.json();
+      if (!resp.ok || !data.success) {
+        throw new Error(data.message || 'Failed to apply to auth.ts');
+      }
+      toast.success('Applied to auth.ts');
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to apply to auth.ts');
+    } finally {
+      setIsApplying(false);
+    }
   };
 
   const generateCodeSnippet = (templateId: string) => {
@@ -403,7 +431,7 @@ export const auth = betterAuth({
   // ... other config
   plugins: [
     organization({
-      sendInvitationEmail: async ( data, request ) => {
+      sendInvitationEmail: async (data, request) => {
         const { invitation, organization, inviter } = data;
         const url =
           (invitation as any)?.url ||
@@ -603,6 +631,16 @@ export const auth = betterAuth({
                     <Copy className="w-4 h-4 mr-2" />
                     Copy HTML
                   </Button>
+                  {selectedTemplate === 'org-invitation' && (
+                    <Button
+                      variant="outline"
+                      onClick={handleApplyToAuth}
+                      disabled={isApplying}
+                      className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none"
+                    >
+                      {isApplying ? 'Applying...' : 'Apply to auth.ts'}
+                    </Button>
+                  )}
                 </div>
               </div>
               <div className="flex-1 flex flex-col overflow-hidden">
