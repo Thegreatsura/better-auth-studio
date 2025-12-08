@@ -17,7 +17,7 @@ import {
   Type,
   Underline,
 } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -316,6 +316,8 @@ export default function VisualEmailBuilder({ html, onChange }: VisualEmailBuilde
   const lastSelectedBlockRef = useRef<EmailBlock | null>(null);
   const stableSelectedBlockIdRef = useRef<string | null>(null);
   const isEditingRef = useRef(false);
+  const blocksRef = useRef<EmailBlock[]>([]);
+  const isAddingBlockRef = useRef(false);
 
   useEffect(() => {
     isEditingRef.current = editingBlockId !== null;
@@ -326,7 +328,8 @@ export default function VisualEmailBuilder({ html, onChange }: VisualEmailBuilde
       html &&
       html !== lastHtmlRef.current &&
       !isInternalUpdateRef.current &&
-      !isEditingRef.current
+      !isEditingRef.current &&
+      !isAddingBlockRef.current
     ) {
       const parsedBlocks = parseHtmlToBlocks(html);
       const currentSelectedId = selectedBlockId || stableSelectedBlockIdRef.current;
@@ -368,7 +371,7 @@ export default function VisualEmailBuilder({ html, onChange }: VisualEmailBuilde
       onChange(newHtml);
       setTimeout(() => {
         isInternalUpdateRef.current = false;
-      }, 100);
+      }, 300);
     }
   }, [blocks, onChange]);
 
@@ -414,6 +417,10 @@ export default function VisualEmailBuilder({ html, onChange }: VisualEmailBuilde
       }
     }
   }, [viewMode, html, blocks]);
+
+  useEffect(() => {
+    blocksRef.current = blocks;
+  }, [blocks]);
 
   const selectedBlock = blocks.find((b) => b.id === selectedBlockId);
 
@@ -463,8 +470,16 @@ export default function VisualEmailBuilder({ html, onChange }: VisualEmailBuilde
             ? { src: '', alt: '' }
             : undefined,
     };
-    setBlocks((prev) => [...prev, newBlock]);
+    const updatedBlocks = [...blocksRef.current, newBlock];
+    blocksRef.current = updatedBlocks;
+    stableSelectedBlockIdRef.current = newBlock.id;
+    lastSelectedBlockRef.current = newBlock;
+    isAddingBlockRef.current = true;
     setSelectedBlockId(newBlock.id);
+    setBlocks(updatedBlocks);
+    setTimeout(() => {
+      isAddingBlockRef.current = false;
+    }, 500);
   };
 
   const deleteBlock = (blockId: string) => {
@@ -648,8 +663,16 @@ export default function VisualEmailBuilder({ html, onChange }: VisualEmailBuilde
     }
   };
 
-  const stableBlockForSidebar =
-    selectedBlock || (selectedBlockId ? lastSelectedBlockRef.current : null);
+  const stableBlockForSidebar = useMemo(() => {
+    if (selectedBlock) {
+      return selectedBlock;
+    }
+    if (selectedBlockId) {
+      const blockFromRef = blocksRef.current.find((b) => b.id === selectedBlockId);
+      return blockFromRef || lastSelectedBlockRef.current;
+    }
+    return null;
+  }, [selectedBlock, selectedBlockId]);
 
   return (
     <div className="flex-1 flex overflow-hidden h-full min-h-0">
