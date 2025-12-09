@@ -6232,7 +6232,7 @@ export const authClient = createAuthClient({
     try {
       const apiKey = process.env.RESEND_API_KEY;
       const hasApiKey = !!apiKey && apiKey.trim().length > 0;
-      
+
       if (!hasApiKey) {
         return res.json({
           success: true,
@@ -6240,15 +6240,15 @@ export const authClient = createAuthClient({
         });
       }
 
-      let verifiedSenders: string[] = [];
+      const verifiedSenders: string[] = [];
       try {
         const { createRequire } = await import('node:module');
         const { resolve } = await import('node:path');
         const { existsSync } = await import('node:fs');
-        
+
         const userRequire = createRequire(resolve(process.cwd(), 'package.json'));
         let Resend: any;
-        
+
         try {
           const resendPath = userRequire.resolve('resend');
           const resendModule = await import(resendPath);
@@ -6263,7 +6263,7 @@ export const authClient = createAuthClient({
 
         if (Resend) {
           const resend = new Resend(apiKey);
-          
+
           try {
             if (resend.domains && typeof resend.domains.list === 'function') {
               const domainsResult = await resend.domains.list();
@@ -6281,8 +6281,7 @@ export const authClient = createAuthClient({
             // User can manually enter verified email
           }
         }
-      } catch (_error) {
-      }
+      } catch (_error) {}
 
       res.json({
         success: true,
@@ -6312,7 +6311,8 @@ export const authClient = createAuthClient({
       if (!from) {
         return res.status(400).json({
           success: false,
-          message: 'from email address is required. Please use a verified domain/email from your Resend account.',
+          message:
+            'from email address is required. Please use a verified domain/email from your Resend account.',
         });
       }
 
@@ -6320,7 +6320,8 @@ export const authClient = createAuthClient({
       if (!apiKey || apiKey.trim().length === 0) {
         return res.status(400).json({
           success: false,
-          message: 'RESEND_API_KEY not found in environment variables. Please add it to your .env file.',
+          message:
+            'RESEND_API_KEY not found in environment variables. Please add it to your .env file.',
         });
       }
 
@@ -6330,22 +6331,31 @@ export const authClient = createAuthClient({
       if (fieldValues) {
         Object.entries(fieldValues).forEach(([key, value]) => {
           const placeholder = `{{${key}}}`;
-          processedHtml = processedHtml.replace(new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), String(value));
-          processedSubject = processedSubject.replace(new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), String(value));
+          processedHtml = processedHtml.replace(
+            new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
+            String(value)
+          );
+          processedSubject = processedSubject.replace(
+            new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
+            String(value)
+          );
         });
       }
 
       processedHtml = processedHtml.replace(/\{\{year\}\}/g, new Date().getFullYear().toString());
-      processedSubject = processedSubject.replace(/\{\{year\}\}/g, new Date().getFullYear().toString());
+      processedSubject = processedSubject.replace(
+        /\{\{year\}\}/g,
+        new Date().getFullYear().toString()
+      );
 
       let Resend: any;
       try {
         const { createRequire } = await import('node:module');
         const { resolve } = await import('node:path');
         const { existsSync } = await import('node:fs');
-        
+
         const userRequire = createRequire(resolve(process.cwd(), 'package.json'));
-        
+
         try {
           const resendPath = userRequire.resolve('resend');
           const resendModule = await import(resendPath);
@@ -6361,7 +6371,8 @@ export const authClient = createAuthClient({
       } catch (error) {
         return res.status(400).json({
           success: false,
-          message: 'Resend package not found. Please install it in your project: npm install resend',
+          message:
+            'Resend package not found. Please install it in your project: npm install resend',
         });
       }
 

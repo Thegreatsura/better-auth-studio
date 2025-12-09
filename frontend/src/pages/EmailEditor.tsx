@@ -254,7 +254,9 @@ export default function EmailEditor() {
   const [testEmailAddress, setTestEmailAddress] = useState('');
   const [testFieldValues, setTestFieldValues] = useState<Record<string, string>>({});
   const [isSendingTestEmail, setIsSendingTestEmail] = useState(false);
-  const [resendApiKeyStatus, setResendApiKeyStatus] = useState<'checking' | 'found' | 'missing' | null>(null);
+  const [resendApiKeyStatus, setResendApiKeyStatus] = useState<
+    'checking' | 'found' | 'missing' | null
+  >(null);
   const [verifiedSenders, setVerifiedSenders] = useState<string[]>([]);
   const [fromEmail, setFromEmail] = useState('');
   const [testSubject, setTestSubject] = useState('');
@@ -663,10 +665,11 @@ export const auth = betterAuth({
                   <button
                     key={category}
                     onClick={() => setActiveCategory(category)}
-                    className={`px-2 py-1 text-[10px] font-mono uppercase border border-dashed rounded-none transition-colors ${activeCategory === category
+                    className={`px-2 py-1 text-[10px] font-mono uppercase border border-dashed rounded-none transition-colors ${
+                      activeCategory === category
                         ? 'border-white/30 bg-white/5 text-white'
                         : 'border-white/10 bg-black/40 text-gray-300 hover:border-white/20'
-                      }`}
+                    }`}
                   >
                     {category}
                   </button>
@@ -682,10 +685,11 @@ export const auth = betterAuth({
               <button
                 key={template.id}
                 onClick={() => handleSelectTemplate(template.id)}
-                className={`w-full text-left p-3 border border-dashed rounded-none transition-colors ${selectedTemplate === template.id
+                className={`w-full text-left p-3 border border-dashed rounded-none transition-colors ${
+                  selectedTemplate === template.id
                     ? 'border-white/30 bg-white/5 text-white'
                     : 'border-white/15 bg-black/40 text-gray-300 hover:border-white/20 hover:bg-white/5'
-                  }`}
+                }`}
               >
                 <div className="text-sm uppercase font-mono">{template.name}</div>
                 <div className="text-xs text-gray-500 mt-1">{template.fields.length} fields</div>
@@ -1034,7 +1038,8 @@ export const auth = betterAuth({
                 {resendApiKeyStatus === 'checking' && (
                   <div className="bg-black/90 flex border p-4 rounded-none border-dashed border-white/20">
                     <p className="text-white text-sm font-sans flex items-center gap-2 leading-relaxed">
-                      <Loader className="w-4 h-4 animate-spin mr-1" /> Checking for RESEND_API_KEY...
+                      <Loader className="w-4 h-4 animate-spin mr-1" /> Checking for
+                      RESEND_API_KEY...
                     </p>
                   </div>
                 )}
@@ -1042,10 +1047,20 @@ export const auth = betterAuth({
                 {resendApiKeyStatus === 'missing' && (
                   <div className="bg-red-900/20 border border-red-500/30 border-dashed p-4 rounded-none">
                     <p className="text-red-200 text-sm font-sans leading-relaxed mb-2">
-                      <strong className="font-normal uppercase font-mono">RESEND_API_KEY not found</strong>
+                      <strong className="font-normal uppercase font-mono">
+                        RESEND_API_KEY not found
+                      </strong>
                     </p>
                     <p className="text-red-200 text-sm font-sans leading-relaxed">
-                      Please add <code className="bg-black/50 px-1 py-0.5 rounded font-mono text-xs">RESEND_API_KEY</code> to your <code className="bg-black/50 px-1 py-0.5 rounded font-mono text-xs">.env</code> file.
+                      Please add{' '}
+                      <code className="bg-black/50 px-1 py-0.5 rounded font-mono text-xs">
+                        RESEND_API_KEY
+                      </code>{' '}
+                      to your{' '}
+                      <code className="bg-black/50 px-1 py-0.5 rounded font-mono text-xs">
+                        .env
+                      </code>{' '}
+                      file.
                     </p>
                   </div>
                 )}
@@ -1116,33 +1131,34 @@ export const auth = betterAuth({
                       </p>
                     </div>
 
-                    {emailTemplates[selectedTemplate]?.fields && emailTemplates[selectedTemplate].fields.length > 0 && (
-                      <div>
-                        <Label className="text-xs uppercase font-mono text-gray-400 mb-3 block">
-                          Dynamic Values
-                        </Label>
-                        <div className="space-y-3">
-                          {emailTemplates[selectedTemplate].fields.map((field) => (
-                            <div key={field}>
-                              <Label className="text-xs uppercase font-mono text-gray-500 mb-1 block">
-                                {field}
-                              </Label>
-                              <Input
-                                value={testFieldValues[field] || ''}
-                                onChange={(e) =>
-                                  setTestFieldValues({
-                                    ...testFieldValues,
-                                    [field]: e.target.value,
-                                  })
-                                }
-                                placeholder={`Enter ${field}`}
-                                className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
-                              />
-                            </div>
-                          ))}
+                    {emailTemplates[selectedTemplate]?.fields &&
+                      emailTemplates[selectedTemplate].fields.length > 0 && (
+                        <div>
+                          <Label className="text-xs uppercase font-mono text-gray-400 mb-3 block">
+                            Dynamic Values
+                          </Label>
+                          <div className="space-y-3">
+                            {emailTemplates[selectedTemplate].fields.map((field) => (
+                              <div key={field}>
+                                <Label className="text-xs uppercase font-mono text-gray-500 mb-1 block">
+                                  {field}
+                                </Label>
+                                <Input
+                                  value={testFieldValues[field] || ''}
+                                  onChange={(e) =>
+                                    setTestFieldValues({
+                                      ...testFieldValues,
+                                      [field]: e.target.value,
+                                    })
+                                  }
+                                  placeholder={`Enter ${field}`}
+                                  className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
+                                />
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
                   </>
                 )}
               </div>
@@ -1158,7 +1174,13 @@ export const auth = betterAuth({
               </Button>
               <Button
                 onClick={handleSendTestEmail}
-                disabled={isSendingTestEmail || resendApiKeyStatus !== 'found' || !testEmailAddress || !fromEmail || !testSubject}
+                disabled={
+                  isSendingTestEmail ||
+                  resendApiKeyStatus !== 'found' ||
+                  !testEmailAddress ||
+                  !fromEmail ||
+                  !testSubject
+                }
                 className="bg-white text-black hover:bg-white/90 rounded-none font-mono uppercase text-xs px-6 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSendingTestEmail ? 'Sending...' : 'Send Test Email'}
