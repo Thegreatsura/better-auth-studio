@@ -5491,7 +5491,7 @@ export const authClient = createAuthClient({
                     hasApiKey: false,
                 });
             }
-            let verifiedSenders = [];
+            const verifiedSenders = [];
             try {
                 const { createRequire } = await import('node:module');
                 const { resolve } = await import('node:path');
@@ -5531,8 +5531,7 @@ export const authClient = createAuthClient({
                     }
                 }
             }
-            catch (_error) {
-            }
+            catch (_error) { }
             res.json({
                 success: true,
                 hasApiKey: true,
