@@ -1160,11 +1160,12 @@ export default function Dashboard() {
               <div className="flex justify-between items-end mb-4">
                 {(() => {
                   const chartData = getChartData(selectedUserPeriod, 'users');
-                  const rawData = totalUsersData.length > 0 
-                    ? totalUsersData.slice(0, chartData.length)
-                    : Array(chartData.length).fill(0);
+                  const rawData =
+                    totalUsersData.length > 0
+                      ? totalUsersData.slice(0, chartData.length)
+                      : Array(chartData.length).fill(0);
                   const periodTotal = rawData.reduce((sum, val) => sum + val, 0);
-                  
+
                   return (
                     <>
                       <p className="text-4xl text-white font-light">
@@ -1191,15 +1192,16 @@ export default function Dashboard() {
               <div className="space-y-2 relative">
                 {(() => {
                   const chartData = getChartData(selectedUserPeriod, 'users');
-                  const rawData = totalUsersData.length > 0 
-                    ? totalUsersData.slice(0, chartData.length)
-                    : Array(chartData.length).fill(0);
+                  const rawData =
+                    totalUsersData.length > 0
+                      ? totalUsersData.slice(0, chartData.length)
+                      : Array(chartData.length).fill(0);
                   const maxValue = Math.max(...rawData, 1);
                   const yAxisLabels = Array.from({ length: 6 }, (_, i) => {
                     const value = (maxValue / 5) * (5 - i);
                     return value;
                   });
-                  
+
                   return (
                     <div className="flex gap-2">
                       {/* Y-axis labels */}
@@ -1210,7 +1212,7 @@ export default function Dashboard() {
                           </span>
                         ))}
                       </div>
-                      
+
                       {/* Chart area */}
                       <div className="flex-1 h-48 relative">
                         {/* Horizontal grid lines */}
@@ -1243,49 +1245,49 @@ export default function Dashboard() {
                         </svg>
                         <div className="h-48 flex items-end justify-between space-x-1 relative z-10">
                           {chartData.map((height, i) => {
-                      const isHovered = hoveredUsersAreaIndex === i;
+                            const isHovered = hoveredUsersAreaIndex === i;
 
-                      return (
-                        <div
-                          key={i}
-                          className="flex-1 transition-all duration-200 ease-out relative cursor-pointer group"
-                          style={{
-                            height: `${height}%`,
-                            background: 'url(#usersBarGradient)',
-                          }}
-                          onMouseEnter={(e) => {
-                            const rect = e.currentTarget.getBoundingClientRect();
-                            const x = rect.left + rect.width / 2;
-                            const y = rect.top;
-                            const tooltipWidth = 150;
-                            const tooltipHeight = 60;
-                            const constrainedX = Math.max(
-                              tooltipWidth / 2,
-                              Math.min(window.innerWidth - tooltipWidth / 2, x)
+                            return (
+                              <div
+                                key={i}
+                                className="flex-1 transition-all duration-200 ease-out relative cursor-pointer group"
+                                style={{
+                                  height: `${height}%`,
+                                  background: 'url(#usersBarGradient)',
+                                }}
+                                onMouseEnter={(e) => {
+                                  const rect = e.currentTarget.getBoundingClientRect();
+                                  const x = rect.left + rect.width / 2;
+                                  const y = rect.top;
+                                  const tooltipWidth = 150;
+                                  const tooltipHeight = 60;
+                                  const constrainedX = Math.max(
+                                    tooltipWidth / 2,
+                                    Math.min(window.innerWidth - tooltipWidth / 2, x)
+                                  );
+                                  const constrainedY = Math.max(
+                                    tooltipHeight + 10,
+                                    Math.min(window.innerHeight - 10, y)
+                                  );
+                                  setHoveredUsersAreaIndex(i);
+                                  setHoveredUsersAreaPosition({ x: constrainedX, y: constrainedY });
+                                }}
+                                onMouseLeave={() => {
+                                  setHoveredUsersAreaIndex(null);
+                                  setHoveredUsersAreaPosition(null);
+                                }}
+                              >
+                                <div
+                                  className="w-full h-full"
+                                  style={{
+                                    background:
+                                      'linear-gradient(to bottom, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.285))',
+                                    opacity: isHovered ? 1 : 0.8,
+                                  }}
+                                />
+                              </div>
                             );
-                            const constrainedY = Math.max(
-                              tooltipHeight + 10,
-                              Math.min(window.innerHeight - 10, y)
-                            );
-                            setHoveredUsersAreaIndex(i);
-                            setHoveredUsersAreaPosition({ x: constrainedX, y: constrainedY });
-                          }}
-                          onMouseLeave={() => {
-                            setHoveredUsersAreaIndex(null);
-                            setHoveredUsersAreaPosition(null);
-                          }}
-                        >
-                          <div
-                            className="w-full h-full"
-                            style={{
-                              background:
-                                'linear-gradient(to bottom, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.285))',
-                              opacity: isHovered ? 1 : 0.8,
-                            }}
-                          />
-                        </div>
-                      );
-                        })}
+                          })}
                         </div>
 
                         {/* Tooltip */}
@@ -1301,7 +1303,11 @@ export default function Dashboard() {
                           >
                             <div className="bg-black border border-white/20 rounded-sm px-3 py-2 shadow-lg whitespace-nowrap">
                               <div className="text-xs text-gray-400 mb-1 font-mono uppercase">
-                                {getDetailedLabels(selectedUserPeriod, 'users')[hoveredUsersAreaIndex]}
+                                {
+                                  getDetailedLabels(selectedUserPeriod, 'users')[
+                                    hoveredUsersAreaIndex
+                                  ]
+                                }
                               </div>
                               <div className="text-sm text-white font-sans font-medium">
                                 {totalUsersData[hoveredUsersAreaIndex] !== undefined

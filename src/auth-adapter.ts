@@ -1,10 +1,10 @@
 import { randomBytes } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import type { InternalAdapter } from 'better-auth';
 // @ts-expect-error
 import { hex } from '@better-auth/utils/hex';
 import { scryptAsync } from '@noble/hashes/scrypt.js';
+import type { InternalAdapter } from 'better-auth';
 import { createJiti } from 'jiti';
 import { possibleConfigFiles } from './utils.js';
 

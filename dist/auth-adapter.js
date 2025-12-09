@@ -210,8 +210,7 @@ async function hashPassword(password) {
 }
 export async function createMockUser(adapter, index, role) {
     const randomString = Math.random().toString(36).substring(2, 8);
-    // Hash password so credential account can be created properly
-    const hashedPassword = await hashPassword('password123');
+    const hashedPassword = await hashPassword(randomString.toString());
     const userData = {
         email: `user${randomString}@example.com`,
         name: `User ${index}`,
@@ -219,7 +218,7 @@ export async function createMockUser(adapter, index, role) {
         image: `https://api.dicebear.com/7.x/avataaars/svg?seed=user${index}`,
         createdAt: new Date(),
         updatedAt: new Date(),
-        password: hashedPassword, // Add hashed password so credential account is created
+        password: hashedPassword,
     };
     if (role) {
         userData.role = role;
