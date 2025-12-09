@@ -253,10 +253,10 @@ cd better-auth-studio
 pnpm install
 
 # Build the project
-pnpm run build
+pnpm build
 
 # Start development server
-pnpm run dev
+pnpm dev
 ```
 
 ### Contributing
