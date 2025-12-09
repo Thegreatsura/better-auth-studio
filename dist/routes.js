@@ -5484,9 +5484,59 @@ export const authClient = createAuthClient({
     router.get('/api/tools/check-resend-api-key', async (_req, res) => {
         try {
             const apiKey = process.env.RESEND_API_KEY;
+            const hasApiKey = !!apiKey && apiKey.trim().length > 0;
+            if (!hasApiKey) {
+                return res.json({
+                    success: true,
+                    hasApiKey: false,
+                });
+            }
+            let verifiedSenders = [];
+            try {
+                const { createRequire } = await import('node:module');
+                const { resolve } = await import('node:path');
+                const { existsSync } = await import('node:fs');
+                const userRequire = createRequire(resolve(process.cwd(), 'package.json'));
+                let Resend;
+                try {
+                    const resendPath = userRequire.resolve('resend');
+                    const resendModule = await import(resendPath);
+                    Resend = resendModule.Resend || resendModule.default?.Resend || resendModule.default;
+                }
+                catch {
+                    const userNodeModules = resolve(process.cwd(), 'node_modules', 'resend');
+                    if (existsSync(userNodeModules)) {
+                        const resendModule = await import(resolve(userNodeModules, 'index.js'));
+                        Resend = resendModule.Resend || resendModule.default?.Resend || resendModule.default;
+                    }
+                }
+                if (Resend) {
+                    const resend = new Resend(apiKey);
+                    try {
+                        if (resend.domains && typeof resend.domains.list === 'function') {
+                            const domainsResult = await resend.domains.list();
+                            if (domainsResult && domainsResult.data && Array.isArray(domainsResult.data)) {
+                                domainsResult.data.forEach((domain) => {
+                                    if (domain && domain.name && domain.status === 'verified') {
+                                        verifiedSenders.push(`noreply@${domain.name}`);
+                                        verifiedSenders.push(`hello@${domain.name}`);
+                                    }
+                                });
+                            }
+                        }
+                    }
+                    catch (_domainError) {
+                        // Domains API might not be available or user doesn't have domains yet
+                        // User can manually enter verified email
+                    }
+                }
+            }
+            catch (_error) {
+            }
             res.json({
                 success: true,
-                hasApiKey: !!apiKey && apiKey.trim().length > 0,
+                hasApiKey: true,
+                verifiedSenders: verifiedSenders.length > 0 ? verifiedSenders : undefined,
             });
         }
         catch (error) {
@@ -5499,11 +5549,17 @@ export const authClient = createAuthClient({
     });
     router.post('/api/tools/send-test-email', async (req, res) => {
         try {
-            const { templateId, to, subject, html, fieldValues } = req.body || {};
+            const { templateId, to, subject, html, fieldValues, from } = req.body || {};
             if (!to || !subject || !html) {
                 return res.status(400).json({
                     success: false,
                     message: 'to, subject, and html are required',
+                });
+            }
+            if (!from) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'from email address is required. Please use a verified domain/email from your Resend account.',
                 });
             }
             const apiKey = process.env.RESEND_API_KEY;
@@ -5524,11 +5580,41 @@ export const authClient = createAuthClient({
             }
             processedHtml = processedHtml.replace(/\{\{year\}\}/g, new Date().getFullYear().toString());
             processedSubject = processedSubject.replace(/\{\{year\}\}/g, new Date().getFullYear().toString());
-            // @ts-ignore - resend should be end user dep
-            const { Resend } = await import('resend');
+            let Resend;
+            try {
+                const { createRequire } = await import('node:module');
+                const { resolve } = await import('node:path');
+                const { existsSync } = await import('node:fs');
+                const userRequire = createRequire(resolve(process.cwd(), 'package.json'));
+                try {
+                    const resendPath = userRequire.resolve('resend');
+                    const resendModule = await import(resendPath);
+                    Resend = resendModule.Resend || resendModule.default?.Resend || resendModule.default;
+                }
+                catch (resolveError) {
+                    const userNodeModules = resolve(process.cwd(), 'node_modules', 'resend');
+                    if (!existsSync(userNodeModules)) {
+                        throw new Error('Resend package not found in user project');
+                    }
+                    const resendModule = await import(resolve(userNodeModules, 'index.js'));
+                    Resend = resendModule.Resend || resendModule.default?.Resend || resendModule.default;
+                }
+            }
+            catch (error) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Resend package not found. Please install it in your project: npm install resend',
+                });
+            }
+            if (!Resend) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Failed to load Resend. Please ensure resend is installed: npm install resend',
+                });
+            }
             const resend = new Resend(apiKey);
             const emailResult = await resend.emails.send({
-                from: 'Better Auth Studio <onboarding@resend.dev>',
+                from: from,
                 to: to,
                 subject: processedSubject,
                 html: processedHtml,

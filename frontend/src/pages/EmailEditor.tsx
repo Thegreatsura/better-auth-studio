@@ -1,4 +1,4 @@
-import { Code, Copy, Mail, Send, X } from 'lucide-react';
+import { Code, Copy, Loader, Mail, Send, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { Check } from '@/components/PixelIcons';
@@ -255,6 +255,8 @@ export default function EmailEditor() {
   const [testFieldValues, setTestFieldValues] = useState<Record<string, string>>({});
   const [isSendingTestEmail, setIsSendingTestEmail] = useState(false);
   const [resendApiKeyStatus, setResendApiKeyStatus] = useState<'checking' | 'found' | 'missing' | null>(null);
+  const [verifiedSenders, setVerifiedSenders] = useState<string[]>([]);
+  const [fromEmail, setFromEmail] = useState('');
 
   useEffect(() => {
     if (showCodeModal || showResendModal || showTestEmailModal) {
@@ -288,11 +290,19 @@ export default function EmailEditor() {
       const data = await response.json();
       if (data.hasApiKey) {
         setResendApiKeyStatus('found');
+        if (data.verifiedSenders && data.verifiedSenders.length > 0) {
+          setVerifiedSenders(data.verifiedSenders);
+          setFromEmail(data.verifiedSenders[0]);
+        }
       } else {
         setResendApiKeyStatus('missing');
+        setVerifiedSenders([]);
+        setFromEmail('');
       }
     } catch (error) {
       setResendApiKeyStatus('missing');
+      setVerifiedSenders([]);
+      setFromEmail('');
     }
   };
 
@@ -317,12 +327,18 @@ export default function EmailEditor() {
       processedHtml = processedHtml.replace(/\{\{year\}\}/g, new Date().getFullYear().toString());
       processedSubject = processedSubject.replace(/\{\{year\}\}/g, new Date().getFullYear().toString());
 
+      if (!fromEmail) {
+        toast.error('Please select or enter a verified sender email address');
+        return;
+      }
+
       const response = await fetch('/api/tools/send-test-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           templateId: selectedTemplate,
           to: testEmailAddress,
+          from: fromEmail,
           subject: processedSubject,
           html: processedHtml,
         }),
@@ -1026,17 +1042,17 @@ export const auth = betterAuth({
             <div className="flex-1 overflow-auto p-8 bg-black">
               <div className="space-y-6">
                 {resendApiKeyStatus === 'checking' && (
-                  <div className="bg-blue-900/20 border border-blue-500/30 p-4 rounded">
-                    <p className="text-blue-200 text-sm font-sans leading-relaxed">
-                      Checking for RESEND_API_KEY...
+                  <div className="bg-black/90 flex border p-4 rounded-none border-dashed border-white/20">
+                    <p className="text-white text-sm font-sans flex items-center gap-2 leading-relaxed">
+                      <Loader className="w-4 h-4 animate-spin mr-1" /> Checking for RESEND_API_KEY...
                     </p>
                   </div>
                 )}
 
                 {resendApiKeyStatus === 'missing' && (
-                  <div className="bg-red-900/20 border border-red-500/30 p-4 rounded">
+                  <div className="bg-red-900/20 border border-red-500/30 border-dashed p-4 rounded-none">
                     <p className="text-red-200 text-sm font-sans leading-relaxed mb-2">
-                      <strong className="font-semibold">RESEND_API_KEY not found</strong>
+                      <strong className="font-normal uppercase font-mono">RESEND_API_KEY not found</strong>
                     </p>
                     <p className="text-red-200 text-sm font-sans leading-relaxed">
                       Please add <code className="bg-black/50 px-1 py-0.5 rounded font-mono text-xs">RESEND_API_KEY</code> to your <code className="bg-black/50 px-1 py-0.5 rounded font-mono text-xs">.env</code> file.
@@ -1048,17 +1064,49 @@ export const auth = betterAuth({
                   <>
                     <div>
                       <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
-                        Test Email Address
+                        From Email (Verified Sender) *
+                      </Label>
+                      {verifiedSenders.length > 0 ? (
+                        <select
+                          value={fromEmail}
+                          onChange={(e) => setFromEmail(e.target.value)}
+                          className="w-full bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs p-2 focus:outline-none focus:border-white/40"
+                        >
+                          {verifiedSenders.map((sender) => (
+                            <option key={sender} value={sender}>
+                              {sender}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <Input
+                          type="email"
+                          value={fromEmail}
+                          onChange={(e) => setFromEmail(e.target.value)}
+                          placeholder="noreply@yourdomain.com"
+                          className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
+                        />
+                      )}
+                      <p className="text-xs text-gray-500 mt-1 font-sans">
+                        {verifiedSenders.length > 0
+                          ? 'Select a verified sender email from your Resend account'
+                          : 'Enter a verified sender email address from your Resend account'}
+                      </p>
+                    </div>
+
+                    <div>
+                      <Label className="text-xs uppercase font-mono text-gray-400 mb-2 block">
+                        To Email Address *
                       </Label>
                       <Input
                         type="email"
                         value={testEmailAddress}
                         onChange={(e) => setTestEmailAddress(e.target.value)}
-                        placeholder="your-email@example.com"
+                        placeholder="recipient@example.com"
                         className="bg-black border border-dashed border-white/20 text-white rounded-none font-mono text-xs"
                       />
                       <p className="text-xs text-gray-500 mt-1 font-sans">
-                        Use an email address registered on your Resend account
+                        Any email address to receive the test email
                       </p>
                     </div>
 
@@ -1104,7 +1152,7 @@ export const auth = betterAuth({
               </Button>
               <Button
                 onClick={handleSendTestEmail}
-                disabled={isSendingTestEmail || resendApiKeyStatus !== 'found' || !testEmailAddress}
+                disabled={isSendingTestEmail || resendApiKeyStatus !== 'found' || !testEmailAddress || !fromEmail}
                 className="bg-white text-black hover:bg-white/90 rounded-none font-mono uppercase text-xs px-6 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSendingTestEmail ? 'Sending...' : 'Send Test Email'}
