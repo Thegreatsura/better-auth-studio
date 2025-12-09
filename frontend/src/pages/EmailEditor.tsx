@@ -851,7 +851,7 @@ export const auth = betterAuth({
                   <p className="text-gray-300 mb-4 font-sans leading-relaxed">
                     You need to install the Resend package to send emails. Run the following command in your terminal:
                   </p>
-                  <div className="bg-black/80 border border-dashed border-white/20 p-2 rounded-none font-mono text-sm relative group">
+                  <div className="bg-black/80 border border-dashed border-white/20 p-2 pl-3 rounded-none font-mono text-sm relative group">
                     <div className="flex items-center justify-between gap-4">
                       <code className="text-gray-200">
                         <span className="text-white">$</span>{' '}
@@ -865,7 +865,7 @@ export const auth = betterAuth({
                           setCommandCopied(true);
                           setTimeout(() => setCommandCopied(false), 2000);
                         }}
-                        className="flex items-center gap-2 px-3 py-1.5 rounded-none transition-colors text-gray-300 hover:text-white"
+                        className="flex items-center gap-2 px-2 py-1.5 rounded-none transition-colors text-gray-300 hover:text-white"
                         title="Copy command"
                       >
                         {commandCopied ? (
