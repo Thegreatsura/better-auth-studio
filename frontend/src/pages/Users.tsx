@@ -138,15 +138,15 @@ export default function Users() {
     return () => document.removeEventListener('click', handleClickOutside);
   }, [actionMenuOpen, checkAdminPlugin, fetchUsers]);
   useEffect(() => {
-   if (showViewModal) {
-    document.body.style.overflow = 'hidden';
-   } else {
-    document.body.style.overflow = '';
-   }
-   return () => {
-    document.body.style.overflow = '';
-   }
-  }, [showViewModal , selectedUser]);
+    if (showViewModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showViewModal, selectedUser]);
   const handleSeedUsers = async (count: number, role?: string) => {
     setSeedingLogs([]);
     setIsSeeding(true);
@@ -877,8 +877,9 @@ export default function Users() {
                 currentUsers.map((user) => (
                   <tr
                     key={user.id}
-                    className={`border-b border-dashed hover:bg-white/5 cursor-pointer ${user.banned ? 'border-red-500/30 bg-red-500/5' : 'border-white/5'
-                      }`}
+                    className={`border-b border-dashed hover:bg-white/5 cursor-pointer ${
+                      user.banned ? 'border-red-500/30 bg-red-500/5' : 'border-white/5'
+                    }`}
                     onClick={() => navigate(`/users/${user.id}`)}
                   >
                     <td className="py-4 px-4">
@@ -890,8 +891,9 @@ export default function Users() {
                               `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`
                             }
                             alt={user.name}
-                            className={`w-10 h-10 rounded-none border border-dashed ${user.banned ? 'border-red-400/50 opacity-60' : 'border-white/20'
-                              }`}
+                            className={`w-10 h-10 rounded-none border border-dashed ${
+                              user.banned ? 'border-red-400/50 opacity-60' : 'border-white/20'
+                            }`}
                           />
                           {user.banned && (
                             <div className="absolute -top-1 -right-1 bg-red-500 rounded-full p-0.5">
