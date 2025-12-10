@@ -761,7 +761,7 @@ export default function UserDetails() {
               <div>
                 <h1 className="text-3xl font-light text-white inline-flex items-center">
                   {user.name}
-                  <CopyableId id={user.id} variant="subscript" />
+                  <CopyableId id={user.id} nonSliced={true} variant="subscript" />
                   {user.role && (
                     <sup className="ml-2 px-2 pt-2 pb-2 -mt-1 py-0.5 text-[10px] font-mono uppercase border border-dashed border-white/15 bg-white/5 text-white/80 rounded-none">
                       {user.role}
