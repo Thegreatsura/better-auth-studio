@@ -705,8 +705,74 @@ export default function Dashboard() {
     setTimeout(() => setSelectedPatch(null), 300);
   };
 
-  const getChartLabels = (period: string, dataSource: 'users' | 'newUsers' = 'users') => {
-    const labels = dataSource === 'users' ? totalUsersLabels : newUsersLabels;
+  const getAllSpanMonths = () => {
+    if (!allUsers || allUsers.length === 0) return 0;
+    const earliest = allUsers.reduce<Date | null>((acc, user) => {
+      const createdAt = user?.createdAt ? new Date(user.createdAt) : null;
+      if (!createdAt || Number.isNaN(createdAt.getTime())) return acc;
+      if (!acc) return createdAt;
+      return createdAt < acc ? createdAt : acc;
+    }, null);
+    if (!earliest) return 0;
+    const now = new Date();
+    const months =
+      (now.getFullYear() - earliest.getFullYear()) * 12 +
+      (now.getMonth() - earliest.getMonth()) +
+      1; // inclusive of current month
+    return Math.max(months, 0);
+  };
+
+  const buildAllLabelsForUsers = () => {
+    const monthsDiff = getAllSpanMonths();
+    // Default to 12 labels if we cannot infer span
+    if (monthsDiff <= 0) {
+      return { labels: Array.from({ length: 12 }, (_, i) => `Week ${i + 1}`), expectedLength: 12 };
+    }
+
+    if (monthsDiff < 3) {
+      // Show 12 weekly buckets
+      return { labels: Array.from({ length: 12 }, (_, i) => `Week ${i + 1}`), expectedLength: 12 };
+    }
+
+    if (monthsDiff <= 12) {
+      // Show 12 month labels starting from the first user's month
+      const earliest = allUsers.reduce<Date | null>((acc, user) => {
+        const createdAt = user?.createdAt ? new Date(user.createdAt) : null;
+        if (!createdAt || Number.isNaN(createdAt.getTime())) return acc;
+        if (!acc) return createdAt;
+        return createdAt < acc ? createdAt : acc;
+      }, null);
+      const start = earliest || new Date();
+      const labels = Array.from({ length: 12 }, (_, i) => {
+        const d = new Date(start.getFullYear(), start.getMonth() + i, 1);
+        return d.toLocaleDateString('en-US', { month: 'short' });
+      });
+      return { labels, expectedLength: labels.length };
+    }
+
+    // > 12 months: show yearly labels, number of labels = ceil(months/12)
+    const yearsCount = Math.max(1, Math.ceil(monthsDiff / 12));
+    const earliest = allUsers.reduce<Date | null>((acc, user) => {
+      const createdAt = user?.createdAt ? new Date(user.createdAt) : null;
+      if (!createdAt || Number.isNaN(createdAt.getTime())) return acc;
+      if (!acc) return createdAt;
+      return createdAt < acc ? createdAt : acc;
+    }, null);
+    const startYear = (earliest || new Date()).getFullYear();
+    const labels = Array.from({ length: yearsCount }, (_, i) => `${startYear + i}`);
+    return { labels, expectedLength: labels.length };
+  };
+
+  const getChartLabels = (
+    period: string,
+    dataSource: 'users' | 'newUsers' | 'activity' = 'users'
+  ) => {
+    const labels =
+      dataSource === 'users'
+        ? totalUsersLabels
+        : dataSource === 'newUsers'
+          ? newUsersLabels
+          : activityLabels;
     const lengths: Record<string, number> = {
       '1D': 24,
       '1W': 7,
@@ -716,6 +782,14 @@ export default function Dashboard() {
       '1Y': 12,
       ALL: 7,
     };
+    if (period === 'ALL') {
+      if (dataSource === 'users' || dataSource === 'activity') {
+        const { labels: allLabels } = buildAllLabelsForUsers();
+        return allLabels;
+      }
+      return [];
+    }
+
     const expectedLength = lengths[period] || 7;
 
     if (labels && labels.length > 0 && labels.length === expectedLength) {
@@ -739,14 +813,13 @@ export default function Dashboard() {
         return labels.map((label) => {
           const parts = label.split(' ');
           if (parts.length >= 2) {
-            return parts[1]; // Just the day number
+            return parts[1];
           }
           return label;
         });
       }
       if (period === '1Y' || period === '3M' || period === '6M') {
         return labels.map((label) => {
-          // Labels should already be month names like "Nov", "Dec", etc.
           return label.length > 3 ? label.substring(0, 3) : label;
         });
       }
@@ -806,7 +879,20 @@ export default function Dashboard() {
       '1Y': 12,
       ALL: 7,
     };
-    const expectedLength = lengths[period] || 7;
+    let expectedLength = lengths[period] || 7;
+
+    if (period === 'ALL' && dataSource === 'users') {
+      const { labels: allLabels, expectedLength: allExpected } = buildAllLabelsForUsers();
+      expectedLength = allExpected || expectedLength;
+      if (labels && labels.length === allLabels.length) {
+        return allLabels;
+      }
+      return allLabels;
+    }
+
+    if (period === 'ALL' && dataSource !== 'users') {
+      return [];
+    }
 
     if (labels && labels.length > 0 && labels.length === expectedLength) {
       if (period === '1D') {
@@ -903,7 +989,10 @@ export default function Dashboard() {
   };
 
   // Generate chart data points based on selected period
-  const getChartData = (period: string, dataSource: 'users' | 'newUsers' = 'users') => {
+  const getChartData = (
+    period: string,
+    dataSource: 'users' | 'newUsers' | 'activity' = 'users'
+  ) => {
     const data = dataSource === 'users' ? totalUsersData : newUsersData;
     const lengths: Record<string, number> = {
       '1D': 24,
@@ -914,7 +1003,17 @@ export default function Dashboard() {
       '1Y': 12,
       ALL: 7,
     };
-    const expectedLength = lengths[period] || 7;
+    let expectedLength = lengths[period] || 7;
+
+    if (period === 'ALL' && dataSource === 'users') {
+      const { expectedLength: allExpected } = buildAllLabelsForUsers();
+      expectedLength = allExpected || expectedLength;
+    }
+
+    if (period === 'ALL' && dataSource === 'activity') {
+      const { expectedLength: allExpected } = buildAllLabelsForUsers();
+      expectedLength = allExpected || expectedLength;
+    }
 
     if (!data || data.length === 0) {
       return Array(expectedLength).fill(0);
@@ -932,7 +1031,11 @@ export default function Dashboard() {
 
   const renderOverview = () => {
     const resolvedActivityLabels =
-      activityLabels.length > 0 ? activityLabels : getChartLabels(activityPeriod, 'users');
+      activityPeriod === 'ALL'
+        ? getChartLabels('ALL', 'activity')
+        : activityLabels.length > 0
+          ? activityLabels
+          : getChartLabels(activityPeriod, 'activity');
     const activityBuckets = resolvedActivityLabels.map((_, index) =>
       ACTIVITY_STREAMS.reduce((sum, stream) => sum + (activitySeries[stream.id]?.[index] ?? 0), 0)
     );
@@ -1130,7 +1233,7 @@ export default function Dashboard() {
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm text-white uppercase font-light">TOTAL USER</h3>
                 <div className="flex items-center space-x-1 overflow-x-auto">
-                  {['1D', '1W', '6M', '1Y'].map((period) => (
+                  {['1D', '1W', '6M', '1Y', 'ALL'].map((period) => (
                     <button
                       key={period}
                       onClick={() => setSelectedUserPeriod(period)}
@@ -1341,7 +1444,7 @@ export default function Dashboard() {
                   <p className="text-xs text-gray-400">Tracked events in selected period</p>
                 </div>
                 <div className="flex items-center space-x-1 overflow-x-auto">
-                  {['1D', '1W', '3M', '6M', '1Y'].map((period) => (
+                  {['1D', '1W', '3M', '6M', '1Y', 'ALL'].map((period) => (
                     <button
                       key={period}
                       onClick={() => setActivityPeriod(period)}
