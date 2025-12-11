@@ -1707,7 +1707,7 @@ export default function OrganizationDetails() {
       {/* Delete Team Modal */}
       {showDeleteTeamModal && selectedTeam && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-black/90 border border-dashed border-white/20 p-6 w-full max-w-md rounded-none">
+          <div className="bg-black/90 border border-dashed border-white/20 p-6 w-full max-w-lg rounded-none">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg text-white font-light">Delete Team</h3>
               <Button
@@ -1725,7 +1725,9 @@ export default function OrganizationDetails() {
                   <Users className="w-8 h-8 text-white" />
                 </div>
                 <div>
-                  <div className="text-white font-light">{selectedTeam.name}</div>
+                  <div className="text-white inline-flex font-light">{selectedTeam.name}
+                    <CopyableId id={selectedTeam.id} variant="subscript" nonSliced={true} />
+                  </div>
                   <CopyableId id={selectedTeam.id} label="Team ID" variant="detail" />
                 </div>
               </div>
