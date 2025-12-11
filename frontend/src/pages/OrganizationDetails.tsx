@@ -1341,7 +1341,7 @@ export default function OrganizationDetails() {
                       </Button>
                       <Button
                         onClick={openInviteModal}
-                        className="bg-white text-white bg-transparent border border-white/20 rounded-none"
+                        className="bg-white text-black hover:bg-white/90 border border-white/20 rounded-none"
                       >
                         <Mail className="w-4 h-4 mr-2" />
                         Invite User
@@ -1936,7 +1936,7 @@ export default function OrganizationDetails() {
           }}
         >
           <div
-            className="bg-black/90 border border-dashed border-white/20 p-6 w-full max-w-md rounded-none"
+            className="bg-black/90 border border-dashed border-white/20 p-6 w-full max-w-lg rounded-none"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
@@ -1959,7 +1959,10 @@ export default function OrganizationDetails() {
                   <Building2 className="w-8 h-8 text-white" />
                 </div>
                 <div>
-                  <div className="text-white font-light">{organization.name}</div>
+                  <div className="text-white inline-flex font-light">
+                    {organization.name}
+                    <CopyableId id={organization.id} variant="subscript" nonSliced={true} />
+                  </div>
                   <div className="text-sm text-gray-400">{organization.slug}</div>
                 </div>
               </div>
