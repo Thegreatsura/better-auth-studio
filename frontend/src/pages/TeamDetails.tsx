@@ -373,200 +373,209 @@ export default function TeamDetails() {
         <div className="p-6">
           {/* Tab Content */}
           {activeTab === 'details' && (
-        <div className="space-y-6 overflow-x-hidden">
-          {/* Team Information */}
-          <div className="bg-black/30 border border-dashed border-white/20 rounded-none p-6">
-            <h3 className="text-sm uppercase font-mono text-gray-400 mb-4 tracking-wider">
-              TEAM INFORMATION
-            </h3>
-            <hr className="border-white/15 -mx-10 border-dashed my-4" />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="text-sm text-gray-400 font-mono uppercase">Name</label>
-                <p className="text-white font-sans mt-1">{team.name}</p>
-              </div>
-              <div>
-                <label className="text-sm text-gray-400 font-mono uppercase">Organization</label>
-                <p className="text-white font-sans mt-1">{team.organization?.name || 'Unknown'}</p>
-              </div>
-              <div>
-                <label className="text-sm text-gray-400 font-mono uppercase">Created</label>
-                <p className="text-white font-sans mt-1">{formatDateTime(team.createdAt)}</p>
-              </div>
-              <div>
-                <label className="text-sm text-gray-400 font-mono uppercase">Last Updated</label>
-                <p className="text-white font-sans mt-1">{formatDateTime(team.updatedAt)}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Team Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-black/30 border border-dashed border-white/20 rounded-none p-6">
-              <div className="flex items-center space-x-3">
-                <Users className="w-8 h-8 text-white" />
-                <div>
-                  <p className="text-2xl text-white font-sans font-light">
-                    <AnimatedNumber
-                      value={members.length}
-                      format={{ notation: 'standard', maximumFractionDigits: 0 }}
-                    />
-                  </p>
-                  <p className="text-sm text-gray-400 font-mono uppercase">Members</p>
+            <div className="space-y-6 overflow-x-hidden">
+              {/* Team Information */}
+              <div className="bg-black/30 border border-dashed border-white/20 rounded-none p-6">
+                <h3 className="text-sm uppercase font-mono text-gray-400 mb-4 tracking-wider">
+                  TEAM INFORMATION
+                </h3>
+                <hr className="border-white/15 -mx-10 border-dashed my-4" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="text-sm text-gray-400 font-mono uppercase">Name</label>
+                    <p className="text-white font-sans mt-1">{team.name}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-400 font-mono uppercase">
+                      Organization
+                    </label>
+                    <p className="text-white font-sans mt-1">
+                      {team.organization?.name || 'Unknown'}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-400 font-mono uppercase">Created</label>
+                    <p className="text-white font-sans mt-1">{formatDateTime(team.createdAt)}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-400 font-mono uppercase">
+                      Last Updated
+                    </label>
+                    <p className="text-white font-sans mt-1">{formatDateTime(team.updatedAt)}</p>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="bg-black/30 border border-dashed border-white/20 rounded-none p-6">
-              <div className="flex items-center space-x-3">
-                <Calendar className="w-8 h-8 text-white" />
-                <div>
-                  <p className="text-2xl text-white font-sans font-light">
-                    <AnimatedNumber
-                      value={Math.ceil(
-                        (Date.now() - new Date(team.createdAt).getTime()) / (1000 * 60 * 60 * 24)
-                      )}
-                      format={{ notation: 'standard', maximumFractionDigits: 0 }}
-                    />
-                  </p>
-                  <p className="text-sm text-gray-400 font-mono uppercase">Days Active</p>
-                </div>
-              </div>
-            </div>
-            <div className="bg-black/30 border border-dashed border-white/20 rounded-none p-6">
-              <div className="flex items-center space-x-3">
-                <Building2 className="w-8 h-8 text-white" />
-                <div>
-                  <p className="text-2xl text-white font-sans font-light">
-                    <AnimatedNumber
-                      value={1}
-                      format={{ notation: 'standard', maximumFractionDigits: 0 }}
-                    />
-                  </p>
-                  <p className="text-sm text-gray-400 font-mono uppercase">Organization</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
-      {activeTab === 'members' && (
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg relative text-white font-light inline-flex items-start">
-                Team Members
-                <AnimatedNumber
-                  value={members.length}
-                  className="text-white/80 font-mono text-xs"
-                  prefix={<span className="mr-0.5 text-gray-500">[</span>}
-                  suffix={<span className="ml-0.5 text-gray-500">]</span>}
-                  format={{ notation: 'standard', maximumFractionDigits: 0 }}
-                />
-              </h3>
-              <p className="text-gray-400 font-light font-mono text-xs uppercase mt-1">
-                Manage members of this team
-              </p>
-            </div>
-          </div>
-
-          {/* Members List */}
-          {members.length > 0 ? (
-            <div className="bg-black/30 border border-dashed border-white/20 rounded-none">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-dashed border-white/10">
-                      <th className="text-left py-4 px-4 text-white font-light">User</th>
-                      <th className="text-left py-4 px-4 text-white font-light">Email</th>
-                      <th className="text-left py-4 px-4 text-white font-light">Role</th>
-                      <th className="text-left py-4 px-4 text-white font-light">Joined</th>
-                      <th className="text-right py-4 px-4 text-white font-light">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {members.map((member) => (
-                      <tr
-                        key={member.id}
-                        className="border-b border-dashed border-white/5 hover:bg-white/5 group"
-                      >
-                        <td className="py-4 px-4">
-                          <div className="flex items-center space-x-3">
-                            <img
-                              src={
-                                member.user.image ||
-                                `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.user.id}`
-                              }
-                              alt={member.user.name}
-                              className="w-10 h-10 rounded-none border border-dashed border-white/20"
-                            />
-                            <div>
-                              <div className="text-white font-light inline-flex items-center gap-2">
-                                <span>{member.user.name}</span>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    navigate(`/users/${member.user.id}`);
-                                  }}
-                                  className="opacity-0 group-hover:opacity-100 text-white/60 hover:text-white transition-all"
-                                  title="View user details"
-                                >
-                                  <ArrowUpRight className="w-4 h-4" />
-                                </button>
-                              </div>
-                              <CopyableId id={member.user.id} />
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-4 px-4 text-white">{member.user.email}</td>
-                        <td className="py-4 px-4">
-                          <Badge
-                            variant="secondary"
-                            className="text-xs bg-blue-900/10 border border-dashed border-blue-500/30 text-blue-400/70 rounded-none capitalize"
-                          >
-                            {member.role}
-                          </Badge>
-                        </td>
-                        <td className="py-4 px-4 text-sm text-gray-400">
-                          {new Date(member.joinedAt).toLocaleDateString()}
-                        </td>
-                        <td className="py-4 px-4 text-right">
-                          <div className="flex items-center justify-end space-x-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="border border-dashed border-red-400/50 text-red-400 hover:bg-red-400/10 rounded-none"
-                              onClick={() => handleRemoveTeamMember(member.id, member.user.name)}
-                            >
-                              <Trash2 className="w-4 h-4 mr-1" />
-                              Remove
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          ) : (
-            <div className="bg-black/30 border border-dashed border-white/20 rounded-none p-12">
-              <div className="text-center">
-                <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-xl text-white font-light mb-2">No Members Yet</h3>
-                <p className="text-gray-400 mb-6">Add members to this team to get started.</p>
-                <Button
-                  onClick={openAddMemberModal}
-                  className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none"
-                >
-                  <UserPlus className="w-4 h-4 mr-2" />
-                  Add First Members
-                </Button>
+              {/* Team Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-black/30 border border-dashed border-white/20 rounded-none p-6">
+                  <div className="flex items-center space-x-3">
+                    <Users className="w-8 h-8 text-white" />
+                    <div>
+                      <p className="text-2xl text-white font-sans font-light">
+                        <AnimatedNumber
+                          value={members.length}
+                          format={{ notation: 'standard', maximumFractionDigits: 0 }}
+                        />
+                      </p>
+                      <p className="text-sm text-gray-400 font-mono uppercase">Members</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-black/30 border border-dashed border-white/20 rounded-none p-6">
+                  <div className="flex items-center space-x-3">
+                    <Calendar className="w-8 h-8 text-white" />
+                    <div>
+                      <p className="text-2xl text-white font-sans font-light">
+                        <AnimatedNumber
+                          value={Math.ceil(
+                            (Date.now() - new Date(team.createdAt).getTime()) /
+                              (1000 * 60 * 60 * 24)
+                          )}
+                          format={{ notation: 'standard', maximumFractionDigits: 0 }}
+                        />
+                      </p>
+                      <p className="text-sm text-gray-400 font-mono uppercase">Days Active</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-black/30 border border-dashed border-white/20 rounded-none p-6">
+                  <div className="flex items-center space-x-3">
+                    <Building2 className="w-8 h-8 text-white" />
+                    <div>
+                      <p className="text-2xl text-white font-sans font-light">
+                        <AnimatedNumber
+                          value={1}
+                          format={{ notation: 'standard', maximumFractionDigits: 0 }}
+                        />
+                      </p>
+                      <p className="text-sm text-gray-400 font-mono uppercase">Organization</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}
-        </div>
-      )}
+
+          {activeTab === 'members' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg relative text-white font-light inline-flex items-start">
+                    Team Members
+                    <AnimatedNumber
+                      value={members.length}
+                      className="text-white/80 font-mono text-xs"
+                      prefix={<span className="mr-0.5 text-gray-500">[</span>}
+                      suffix={<span className="ml-0.5 text-gray-500">]</span>}
+                      format={{ notation: 'standard', maximumFractionDigits: 0 }}
+                    />
+                  </h3>
+                  <p className="text-gray-400 font-light font-mono text-xs uppercase mt-1">
+                    Manage members of this team
+                  </p>
+                </div>
+              </div>
+
+              {/* Members List */}
+              {members.length > 0 ? (
+                <div className="bg-black/30 border border-dashed border-white/20 rounded-none">
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-dashed border-white/10">
+                          <th className="text-left py-4 px-4 text-white font-light">User</th>
+                          <th className="text-left py-4 px-4 text-white font-light">Email</th>
+                          <th className="text-left py-4 px-4 text-white font-light">Role</th>
+                          <th className="text-left py-4 px-4 text-white font-light">Joined</th>
+                          <th className="text-right py-4 px-4 text-white font-light">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {members.map((member) => (
+                          <tr
+                            key={member.id}
+                            className="border-b border-dashed border-white/5 hover:bg-white/5 group"
+                          >
+                            <td className="py-4 px-4">
+                              <div className="flex items-center space-x-3">
+                                <img
+                                  src={
+                                    member.user.image ||
+                                    `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.user.id}`
+                                  }
+                                  alt={member.user.name}
+                                  className="w-10 h-10 rounded-none border border-dashed border-white/20"
+                                />
+                                <div>
+                                  <div className="text-white font-light inline-flex items-center gap-2">
+                                    <span>{member.user.name}</span>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        navigate(`/users/${member.user.id}`);
+                                      }}
+                                      className="opacity-0 group-hover:opacity-100 text-white/60 hover:text-white transition-all"
+                                      title="View user details"
+                                    >
+                                      <ArrowUpRight className="w-4 h-4" />
+                                    </button>
+                                  </div>
+                                  <CopyableId id={member.user.id} />
+                                </div>
+                              </div>
+                            </td>
+                            <td className="py-4 px-4 text-white">{member.user.email}</td>
+                            <td className="py-4 px-4">
+                              <Badge
+                                variant="secondary"
+                                className="text-xs bg-blue-900/10 border border-dashed border-blue-500/30 text-blue-400/70 rounded-none capitalize"
+                              >
+                                {member.role}
+                              </Badge>
+                            </td>
+                            <td className="py-4 px-4 text-sm text-gray-400">
+                              {new Date(member.joinedAt).toLocaleDateString()}
+                            </td>
+                            <td className="py-4 px-4 text-right">
+                              <div className="flex items-center justify-end space-x-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="border border-dashed border-red-400/50 text-red-400 hover:bg-red-400/10 rounded-none"
+                                  onClick={() =>
+                                    handleRemoveTeamMember(member.id, member.user.name)
+                                  }
+                                >
+                                  <Trash2 className="w-4 h-4 mr-1" />
+                                  Remove
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-black/30 border border-dashed border-white/20 rounded-none p-12">
+                  <div className="text-center">
+                    <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-xl text-white font-light mb-2">No Members Yet</h3>
+                    <p className="text-gray-400 mb-6">Add members to this team to get started.</p>
+                    <Button
+                      onClick={openAddMemberModal}
+                      className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none"
+                    >
+                      <UserPlus className="w-4 h-4 mr-2" />
+                      Add First Members
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
