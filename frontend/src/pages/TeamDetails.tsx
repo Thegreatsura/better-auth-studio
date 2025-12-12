@@ -1,3 +1,4 @@
+import { format } from 'date-fns';
 import { ArrowUpRight, Edit } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -55,6 +56,13 @@ interface User {
   image?: string;
   emailVerified: boolean;
 }
+
+const formatDateTime = (value?: string) => {
+  if (!value) return '—';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return '—';
+  return format(d, 'dd MMM yyyy; HH:mm');
+};
 
 export default function TeamDetails() {
   const { orgId, teamId } = useParams<{ orgId: string; teamId: string }>();
@@ -323,47 +331,49 @@ export default function TeamDetails() {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-white/10">
-        <nav className="flex space-x-8">
-          <button
-            onClick={() => setActiveTab('details')}
-            className={`flex items-center space-x-2 px-3 py-4 text-sm font-medium border-b-2 transition-all duration-200 ${
-              activeTab === 'details'
-                ? 'border-white text-white'
-                : 'border-transparent text-gray-400 hover:text-white hover:border-gray-300'
-            }`}
-          >
-            <Users className="w-4 h-4" />
-            <span className="font-mono uppercase text-xs font-normal">Details</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('members')}
-            className={`flex items-center space-x-2 px-3 py-4 text-sm font-medium border-b-2 transition-all duration-200 ${
-              activeTab === 'members'
-                ? 'border-white text-white'
-                : 'border-transparent text-gray-400 hover:text-white hover:border-gray-300'
-            }`}
-          >
-            <Users className="w-4 h-4" />
-            <span className="inline-flex items-start font-mono uppercase text-xs font-normal">
-              Members
-              <sup className="text-xs text-gray-500 ml-1 inline-flex items-baseline">
-                <AnimatedNumber
-                  value={members.length}
-                  className="text-white/80 font-mono text-xs"
-                  prefix={<span className="mr-0.5 text-gray-500">[</span>}
-                  suffix={<span className="ml-0.5 text-gray-500">]</span>}
-                  format={{ notation: 'standard', maximumFractionDigits: 0 }}
-                />
-              </sup>
-            </span>
-          </button>
-        </nav>
-      </div>
+      <div className="border border-dashed border-white/20 rounded-none">
+        <div className="border-b border-dashed border-white/20">
+          <nav className="flex space-x-8 px-6">
+            <button
+              onClick={() => setActiveTab('details')}
+              className={`flex items-center space-x-2 py-4 px-2 border-b-2 font-medium text-sm ${
+                activeTab === 'details'
+                  ? 'border-white text-white'
+                  : 'border-transparent text-gray-400 hover:text-white hover:border-white/50'
+              }`}
+            >
+              <Users className="w-4 h-4 text-white/90" />
+              <span className="font-mono uppercase text-xs font-normal">Details</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('members')}
+              className={`flex items-center space-x-2 py-4 px-2 border-b-2 font-medium text-sm ${
+                activeTab === 'members'
+                  ? 'border-white text-white'
+                  : 'border-transparent text-gray-400 hover:text-white hover:border-white/50'
+              }`}
+            >
+              <Users className="w-4 h-4 text-white/90" />
+              <span className="inline-flex items-start font-mono uppercase text-xs font-normal">
+                Members
+                <sup className="text-xs text-gray-500 ml-1 inline-flex items-baseline">
+                  <AnimatedNumber
+                    value={members.length}
+                    className="text-white/80 font-mono text-xs"
+                    prefix={<span className="mr-0.5 text-gray-500">[</span>}
+                    suffix={<span className="ml-0.5 text-gray-500">]</span>}
+                    format={{ notation: 'standard', maximumFractionDigits: 0 }}
+                  />
+                </sup>
+              </span>
+            </button>
+          </nav>
+        </div>
 
-      {/* Tab Content */}
-      {activeTab === 'details' && (
-        <div className="space-y-6">
+        <div className="p-6">
+          {/* Tab Content */}
+          {activeTab === 'details' && (
+        <div className="space-y-6 overflow-x-hidden">
           {/* Team Information */}
           <div className="bg-black/30 border border-dashed border-white/20 rounded-none p-6">
             <h3 className="text-sm uppercase font-mono text-gray-400 mb-4 tracking-wider">
@@ -381,23 +391,11 @@ export default function TeamDetails() {
               </div>
               <div>
                 <label className="text-sm text-gray-400 font-mono uppercase">Created</label>
-                <p className="text-white font-sans mt-1">
-                  {new Date(team.createdAt).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })}
-                </p>
+                <p className="text-white font-sans mt-1">{formatDateTime(team.createdAt)}</p>
               </div>
               <div>
                 <label className="text-sm text-gray-400 font-mono uppercase">Last Updated</label>
-                <p className="text-white font-sans mt-1">
-                  {new Date(team.updatedAt).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })}
-                </p>
+                <p className="text-white font-sans mt-1">{formatDateTime(team.updatedAt)}</p>
               </div>
             </div>
           </div>
@@ -408,7 +406,12 @@ export default function TeamDetails() {
               <div className="flex items-center space-x-3">
                 <Users className="w-8 h-8 text-white" />
                 <div>
-                  <p className="text-2xl text-white font-sans font-light">{members.length}</p>
+                  <p className="text-2xl text-white font-sans font-light">
+                    <AnimatedNumber
+                      value={members.length}
+                      format={{ notation: 'standard', maximumFractionDigits: 0 }}
+                    />
+                  </p>
                   <p className="text-sm text-gray-400 font-mono uppercase">Members</p>
                 </div>
               </div>
@@ -418,9 +421,12 @@ export default function TeamDetails() {
                 <Calendar className="w-8 h-8 text-white" />
                 <div>
                   <p className="text-2xl text-white font-sans font-light">
-                    {Math.ceil(
-                      (Date.now() - new Date(team.createdAt).getTime()) / (1000 * 60 * 60 * 24)
-                    )}
+                    <AnimatedNumber
+                      value={Math.ceil(
+                        (Date.now() - new Date(team.createdAt).getTime()) / (1000 * 60 * 60 * 24)
+                      )}
+                      format={{ notation: 'standard', maximumFractionDigits: 0 }}
+                    />
                   </p>
                   <p className="text-sm text-gray-400 font-mono uppercase">Days Active</p>
                 </div>
@@ -430,7 +436,12 @@ export default function TeamDetails() {
               <div className="flex items-center space-x-3">
                 <Building2 className="w-8 h-8 text-white" />
                 <div>
-                  <p className="text-2xl text-white font-sans font-light">1</p>
+                  <p className="text-2xl text-white font-sans font-light">
+                    <AnimatedNumber
+                      value={1}
+                      format={{ notation: 'standard', maximumFractionDigits: 0 }}
+                    />
+                  </p>
                   <p className="text-sm text-gray-400 font-mono uppercase">Organization</p>
                 </div>
               </div>
@@ -556,6 +567,8 @@ export default function TeamDetails() {
           )}
         </div>
       )}
+        </div>
+      </div>
 
       {/* Add Members Modal */}
       {showAddMemberModal && (
@@ -687,7 +700,7 @@ export default function TeamDetails() {
                 <div>
                   <div className="text-white inline-flex font-light">
                     {team.name}
-                    <CopyableId id={team.id} variant="subscript" nonSliced={true} />
+                    <CopyableId id={team.id} variant="subscript" />
                   </div>
                   <div className="text-sm text-gray-400">{team.organization?.name}</div>
                 </div>

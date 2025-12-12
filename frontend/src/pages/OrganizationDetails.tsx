@@ -927,7 +927,7 @@ export default function OrganizationDetails() {
         <div className="p-6">
           {/* Tab Content */}
           {activeTab === 'details' && (
-            <div className="space-y-6">
+            <div className="space-y-6 overflow-x-hidden">
               <div className="bg-black/30 border border-dashed border-white/20 rounded-none p-6">
                 <h3 className="text-sm uppercase font-mono text-gray-400 mb-4 tracking-wider">
                   ORGANIZATION INFORMATION
