@@ -486,7 +486,7 @@ export const auth = betterAuth({
                 <p className="text-sm font-light tracking-tight text-white/70 mb-2">
                   Clone the repository:
                 </p>
-                <CodeBlock code="git clone https://github.com/better-auth/better-auth-studio.git" />
+                <CodeBlock code="git clone https://github.com/Kinfe123/better-auth-studio.git" />
                 <CodeBlock code="cd better-auth-studio" className="mt-2" />
               </div>
               
