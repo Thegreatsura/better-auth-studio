@@ -211,8 +211,6 @@ async function startStudioWithWatch(options) {
         });
         watcher.on('error', (_error) => { });
     }
-    else {
-    }
     // Handle graceful shutdown
     process.on('SIGINT', async () => {
         if (watcher) {
@@ -261,10 +259,6 @@ program
             : undefined;
         const authConfig = await findAuthConfig(configPathForRoutes);
         if (!authConfig) {
-            if (options.config) {
-            }
-            else {
-            }
             process.exit(1);
         }
         let databaseInfo = 'Not configured';
@@ -275,7 +269,7 @@ program
             }
         }
         catch (_error) { }
-        // Fallback to existing logic if auto-detection fails
+        // Fallback to existing logic
         if (databaseInfo === 'Not configured' && authConfig.database) {
             const configPath = await findAuthConfigPath();
             if (configPath) {

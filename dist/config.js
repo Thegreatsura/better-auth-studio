@@ -1,8 +1,8 @@
 import fs, { existsSync } from 'node:fs';
 import path from 'node:path';
-// @ts-expect-error
+// @ts-expect-error - No types available
 import babelPresetReact from '@babel/preset-react';
-// @ts-expect-error
+// @ts-expect-error - No types available
 import babelPresetTypeScript from '@babel/preset-typescript';
 import { BetterAuthError, logger } from 'better-auth';
 import { loadConfig } from 'c12';
@@ -129,7 +129,6 @@ const jitiOptions = (cwd, noCache = false) => {
         alias,
     };
 };
-const warnedMissingProviders = new Set();
 const isDefaultExport = (object) => {
     return (typeof object === 'object' &&
         object !== null &&

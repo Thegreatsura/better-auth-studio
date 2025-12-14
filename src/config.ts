@@ -1,8 +1,8 @@
 import fs, { existsSync } from 'node:fs';
 import path from 'node:path';
-// @ts-expect-error
+// @ts-expect-error - No types available
 import babelPresetReact from '@babel/preset-react';
-// @ts-expect-error
+// @ts-expect-error - No types available
 import babelPresetTypeScript from '@babel/preset-typescript';
 import type { BetterAuthOptions } from 'better-auth';
 import { BetterAuthError, logger } from 'better-auth';
@@ -190,8 +190,6 @@ const jitiOptions = (cwd: string, noCache = false): JO => {
     alias,
   };
 };
-
-const warnedMissingProviders = new Set<string>();
 
 const isDefaultExport = (object: Record<string, unknown>): object is BetterAuthOptions => {
   return (

@@ -280,7 +280,6 @@ async function startStudioWithWatch(options: StudioWatchOptions) {
     });
 
     watcher.on('error', (_error: any) => {});
-  } else {
   }
 
   // Handle graceful shutdown
@@ -336,9 +335,6 @@ program
 
       const authConfig = await findAuthConfig(configPathForRoutes);
       if (!authConfig) {
-        if (options.config) {
-        } else {
-        }
         process.exit(1);
       }
 
@@ -351,7 +347,7 @@ program
         }
       } catch (_error) {}
 
-      // Fallback to existing logic if auto-detection fails
+      // Fallback to existing logic
       if (databaseInfo === 'Not configured' && authConfig.database) {
         const configPath = await findAuthConfigPath();
         if (configPath) {
