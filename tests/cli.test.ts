@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { existsSync, writeFileSync, mkdirSync, rmSync } from 'fs';
 import { join, isAbsolute } from 'path';
-
+import { getAuthAdapter } from '../src/auth-adapter';
 describe('CLI', () => {
   const testDir = join(process.cwd(), '.test-temp-cli');
 
@@ -78,7 +78,18 @@ describe('CLI', () => {
     
     expect(foundPath).toBeNull();
   });
-
+  it("should handle custom config file path", async () => { 
+    mkdirSync(join(testDir, 'src/server'), { recursive: true });
+    const configPath = join(testDir, 'src/server/auth.ts');
+    writeFileSync(configPath, `
+      import { betterAuth } from "better-auth";
+      export const auth = betterAuth({ secret: "test" });
+    `);
+    const result = await getAuthAdapter(configPath);
+    expect(result).toBeDefined()
+    expect(result).toHaveProperty('getSessions');
+    expect(configPath).toContain('src/server/auth.ts');
+  });
   it('should normalize config path correctly', () => {
     const normalizePath = (configPath: string | null): string | null => {
       if (!configPath) return null;
