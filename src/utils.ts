@@ -12,8 +12,6 @@ export const possibleConfigFiles = [
   'lib/auth.ts',
   'utils/auth.ts',
   'utils/auth.js',
-  'utils/auth.tsx',
-  'utils/auth.jsx',
   'utils/auth.server.ts',
   'utils/auth.server.js',
   'utils/lib/auth.ts',
