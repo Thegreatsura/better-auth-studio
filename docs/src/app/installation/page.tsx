@@ -2,48 +2,94 @@ import PixelLayout from "@/components/PixelLayout";
 import PixelCard from "@/components/PixelCard";
 import CodeHighlighter from "@/components/SyntaxHighlighter";
 import CodeBlock from "@/components/CodeBlock";
-
 export default function Installation() {
   return (
-    <PixelLayout 
+    <PixelLayout
       currentPage="installation"
       title="INSTALLATION"
       description="Get Better Auth Studio up and running in your project."
     >
       <div className="space-y-8">
         <section>
-          <PixelCard variant="highlight">
-            <div className="flex items-start">
-              <span className="text-white/50 mr-3 text-lg">🌐</span>
-              <div>
-                <h3 className="text-lg font-light tracking-tight mb-2 text-white">Hosted Version</h3>
-                <p className="text-sm font-light tracking-tight text-white/70">
-                  For the hosted version, please join the waitlist: <a href="https://better-auth.build" target="_blank" rel="noopener" className="underline underline-offset-2 font-bold">better-auth.build</a>
-                </p>
-              </div>
+          <PixelCard variant="highlight" className="relative">
+            <div className="absolute -top-10 left-0">
+              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                  <svg
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="w-3 h-3 inline-flex mr-1 text-white/50"
+                  >
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 2c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm0 4c2.21 0 4 1.79 4 4s-1.79 4-4 4-4-1.79-4-4 1.79-4 4-4zm0 6c1.38 0 2.5-1.12 2.5-2.5S13.38 11.5 12 11.5 9.5 12.62 9.5 14 10.62 16.5 12 16.5z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  Hosted Version
+                </span>
+              </h3>
+            </div>
+            <div className="pt-4">
+              <p className="text-sm font-light tracking-tight text-white/70">
+                For the hosted version, please join the waitlist: <a href="https://better-auth.build" target="_blank" rel="noopener" className="underline underline-offset-2 font-bold">better-auth.build</a>
+              </p>
             </div>
           </PixelCard>
         </section>
         <section>
-          <PixelCard variant="highlight">
-            <div className="flex items-start">
-              <span className="text-white/50 mr-3 text-lg">⚠️</span>
-              <div>
-                <h3 className="text-lg font-light tracking-tight mb-2 text-white">Beta Version Notice</h3>
-                <p className="text-sm font-light tracking-tight text-white/70">
-                  Better Auth Studio is currently in <strong className="font-bold">beta</strong> and in early development. You may encounter bugs or incomplete features. Please report any  <a href="https://github.com/Kinfe123/better-auth-studio/issues" target="_blank" rel="noopener" className="underline underline-offset-2 font-bold">issues</a> you find on our GitHub repository to help us improve the project. Your feedback is greatly appreciated!
-                </p>
-              </div>
+          <PixelCard variant="highlight" className="relative">
+            <div className="absolute -top-10 left-0">
+              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                  <svg
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="w-3 h-3 inline-flex mr-1 text-white/50"
+                  >
+                    <path
+                      d="M12 2h2v2h-2V2zm-2 4h6v2h-2v6h-2V8H8V6zm-4 8h12v2H4v-2zm0 4h12v2H4v-2z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  Beta Version Notice
+                </span>
+              </h3>
+            </div>
+            <div className="pt-4">
+              <p className="text-sm font-light tracking-tight text-white/70">
+                Better Auth Studio is currently in <strong className="font-bold">beta</strong> and in early development. You may encounter bugs or incomplete features. Please report any  <a href="https://github.com/Kinfe123/better-auth-studio/issues" target="_blank" rel="noopener" className="underline underline-offset-2 font-bold">issues</a> you find on our GitHub repository to help us improve the project. Your feedback is greatly appreciated!
+              </p>
             </div>
           </PixelCard>
         </section>
         <section>
-          <PixelCard variant="highlight">
+          <PixelCard variant="highlight" className="relative">
             <div className="flex items-start">
-              <span className="text-white/50 mr-3 text-lg">🚀</span>
               <div>
-                <h3 className="text-lg font-light tracking-tight mb-2 text-white">Try the Beta Version</h3>
-                <p className="text-sm font-light tracking-tight text-white/70 mb-3">
+                <div className="absolute -top-10 left-0">
+                  <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                    <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                    <span className="relative z-10 inline-flex gap-[2px] items-center">
+                      <svg
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        className="w-3 rotate-180 h-3 inline-flex mr-1 text-white/50 hover:text-white transition-colors"
+                      >
+                        <path
+                          d="M16 5v2h-2V5h2zm-4 4V7h2v2h-2zm-2 2V9h2v2h-2zm0 2H8v-2h2v2zm2 2v-2h-2v2h2zm0 0h2v2h-2v-2zm4 4v-2h-2v2h2z"
+                          fill="currentColor"
+                        />
+                      </svg>
+                      Try the Beta Version
+                    </span>
+                  </h3>
+                </div>
+                <p className="text-sm pt-4 font-light tracking-tight text-white/70 mb-3">
                   Experience the latest features, patches, and improvements by installing the beta version. The beta includes recent bug fixes, performance enhancements, and new functionality that may not be available in the stable release yet.
                 </p>
                 <div className="space-y-2">
@@ -51,7 +97,7 @@ export default function Installation() {
                     <p className="text-xs font-light tracking-tight text-white/60 mb-1">
                       As dev dependency (recommended):
                     </p>
-                    <CodeBlock 
+                    <CodeBlock
                       code="pnpm add -D better-auth-studio@beta"
                       className="flex-1 min-w-0"
                     />
@@ -60,14 +106,14 @@ export default function Installation() {
                     <p className="text-xs font-light tracking-tight text-white/60 mb-1">
                       Or globally:
                     </p>
-                    <CodeBlock 
+                    <CodeBlock
                       code="pnpm add -g better-auth-studio@beta"
                       className="flex-1 min-w-0"
                     />
                   </div>
                 </div>
                 <p className="text-xs font-light tracking-tight text-white/60 mt-2">
-                  <strong>Note:</strong> The beta version may include experimental features. 
+                  <strong>Note:</strong> The beta version may include experimental features.
                 </p>
               </div>
             </div>
@@ -76,11 +122,29 @@ export default function Installation() {
 
         <section>
           <h2 className="text-2xl font-light tracking-tight mb-6 text-white">QUICK START</h2>
-          
-          <PixelCard className="mb-6">
-            <h3 className="text-lg font-light tracking-tight mb-4 text-white">Installation</h3>
-            
-            <div className="mb-4">
+
+          <PixelCard className="mb-6 relative">
+            <div className="absolute -top-10 left-0">
+              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                  <svg
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="w-3 h-3 inline-flex mr-1 text-white/50"
+                  >
+                    <path
+                      d="M11 4h2v12h2v2h-2v2h-2v-2H9v-2h2V4zM7 14v2h2v-2H7zm0 0v-2H5v2h2zm10 0v2h-2v-2h2zm0 0v-2h2v2h-2z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  Installation
+                </span>
+              </h3>
+            </div>
+
+            <div className="mb-4 pt-4">
               <p className="text-sm font-light tracking-tight text-white/70 mb-2">
                 <strong>Recommended: Install as dev dependency</strong> (for project-specific versions):
               </p>
@@ -110,16 +174,34 @@ export default function Installation() {
             <CodeBlock code="pnpx better-auth-studio@beta" />
           </PixelCard>
 
-          <PixelCard>
-            <h3 className="text-lg font-light tracking-tight mb-4 text-white">Basic Usage</h3>
-            <div className="space-y-4">
+          <PixelCard className="relative">
+            <div className="absolute -top-10 left-0">
+              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                  <svg
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="w-3 h-3 inline-flex mr-1 text-white/50"
+                  >
+                    <path
+                      d="M4 2H2v8h2V2zm16 0h2v8h-2V2zm-6 6h-4V2H4v2h4v4H4v2h4v4H4v2h4v4H4v2h6v-6h4v6h2v-6h4v-2h-4v-4h4V8h-4V2h-2v6zm-4 6v-4h4v4h-4zM20 2h-4v2h4V2zM2 14h2v8H2v-8zm14 6h4v2h-4v-2zm6-6h-2v8h2v-8z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  Basic Usage
+                </span>
+              </h3>
+            </div>
+            <div className="space-y-4 pt-4">
               <div>
                 <p className="text-sm font-light tracking-tight text-white/70 mb-2">
                   <strong>1. Navigate to your Better Auth project directory</strong>
                 </p>
                 <CodeBlock code="cd your-better-auth-project" />
               </div>
-              
+
               <div>
                 <p className="text-sm font-light tracking-tight text-white/70 mb-2">
                   <strong>2. Start the studio</strong>
@@ -133,7 +215,7 @@ export default function Installation() {
                 </p>
                 <CodeBlock code="pnpx better-auth-studio start" />
               </div>
-              
+
               <div>
                 <p className="text-sm font-light tracking-tight text-white/70 mb-2">
                   <strong>3. Open your browser</strong>
@@ -155,8 +237,27 @@ export default function Installation() {
 
         <section>
           <h2 className="text-2xl font-light tracking-tight mb-6 text-white">PREREQUISITES</h2>
-          <PixelCard>
-            <p className="text-sm font-light tracking-tight text-white/70 mb-4">
+          <PixelCard className="relative">
+            <div className="absolute -top-10 left-0">
+              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                  <svg
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="w-3 h-3 inline-flex mr-1 text-white/50"
+                  >
+                    <path
+                      d="M18 6h2v2h-2V6zm-2 4V8h2v2h-2zm-2 2v-2h2v2h-2zm-2 2h2v-2h-2v2zm-2 2h2v-2h-2v2zm-2 0v2h2v-2H8zm-2-2h2v2H6v-2zm0 0H4v-2h2v2z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  Prerequisites
+                </span>
+              </h3>
+            </div>
+            <p className="text-sm font-light tracking-tight text-white/70 mb-4 pt-4">
               Before using Better Auth Studio, ensure you have:
             </p>
             <ul className="list-none space-y-3 text-sm font-light tracking-tight text-white/70">
@@ -178,10 +279,28 @@ export default function Installation() {
 
         <section>
           <h2 className="text-2xl font-light tracking-tight mb-6 text-white">CONFIGURATION</h2>
-          
-          <PixelCard className="mb-6">
-            <h3 className="text-lg font-light tracking-tight mb-4 text-white">Supported Database Adapters</h3>
-            <p className="text-sm font-light tracking-tight text-white/70 mb-4">
+
+          <PixelCard className="mb-6 relative">
+            <div className="absolute -top-10 left-0">
+              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                  <svg
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="w-3 h-3 inline-flex mr-1 text-white/50"
+                  >
+                    <path
+                      d="M2 4h20v4H2V4zm18 2v2H4V6h16zm0 6H2v4h18v-4zm-2 2v2H4v-2h14zM2 16h20v4H2v-4zm18 2v2H4v-2h16z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  Supported Database Adapters
+                </span>
+              </h3>
+            </div>
+            <p className="text-sm font-light tracking-tight text-white/70 mb-4 pt-4">
               Better Auth Studio automatically detects and works with:
             </p>
             <div className="grid md:grid-cols-2 gap-3">
@@ -208,14 +327,32 @@ export default function Installation() {
             </div>
           </PixelCard>
 
-          <PixelCard>
-            <h3 className="text-lg font-light tracking-tight mb-6 text-white">Example Configuration Files</h3>
-            
-            <div className="mb-6">
+          <PixelCard className="relative">
+            <div className="absolute -top-10 left-0">
+              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                  <svg
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="w-3 h-3 inline-flex mr-1 text-white/50"
+                  >
+                    <path
+                      d="M3 3h14v2h2v2h2v14H3V3zm2 2v14h14V7h-2V5H5zm2 2h8v2H7V7zm0 4h10v2H7v-2zm0 4h10v2H7v-2z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  Example Configuration Files
+                </span>
+              </h3>
+            </div>
+
+            <div className="mb-6 pt-4">
               <h4 className="font-light tracking-tight mb-3 text-white">Prisma Setup</h4>
-            <PixelCard variant="code">
-              <CodeHighlighter 
-                code={`// auth.ts
+              <PixelCard variant="code">
+                <CodeHighlighter
+                  code={`// auth.ts
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { PrismaClient } from "@prisma/client";
@@ -228,16 +365,16 @@ export const auth = betterAuth({
   }),
   // ... other config
 });`}
-                language="typescript"
-              />
-            </PixelCard>
+                  language="typescript"
+                />
+              </PixelCard>
             </div>
 
             <div className="mb-6">
               <h4 className="font-light tracking-tight mb-3 text-white">Drizzle Setup</h4>
-            <PixelCard variant="code">
-              <CodeHighlighter 
-                code={`// auth.ts
+              <PixelCard variant="code">
+                <CodeHighlighter
+                  code={`// auth.ts
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "./database";
@@ -248,16 +385,16 @@ export const auth = betterAuth({
   }),
   // ... other config
 });`}
-                language="typescript"
-              />
-            </PixelCard>
+                  language="typescript"
+                />
+              </PixelCard>
             </div>
 
             <div>
               <h4 className="font-light tracking-tight mb-3 text-white">SQLite Setup</h4>
-            <PixelCard variant="code">
-              <CodeHighlighter 
-                code={`// auth.ts
+              <PixelCard variant="code">
+                <CodeHighlighter
+                  code={`// auth.ts
 import { betterAuth } from "better-auth";
 import Database from "better-sqlite3";
 
@@ -265,19 +402,37 @@ export const auth = betterAuth({
   database: new Database("./better-auth.db"),
   // ... other config
 });`}
-                language="typescript"
-              />
-            </PixelCard>
+                  language="typescript"
+                />
+              </PixelCard>
             </div>
           </PixelCard>
         </section>
 
         <section>
           <h2 className="text-2xl font-light tracking-tight mb-6 text-white">FEATURES</h2>
-          
-          <PixelCard className="mb-4">
-            <h3 className="text-lg font-light tracking-tight mb-3 text-white">📊 Dashboard</h3>
-            <ul className="list-none space-y-2 text-sm font-light tracking-tight text-white/70">
+
+          <PixelCard className="mb-8 relative">
+            <div className="absolute -top-10 left-0">
+              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                  <svg
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="w-3 h-3 inline-flex mr-1 text-white/50"
+                  >
+                    <path
+                      d="M3 3h18v18H3V3zm16 2H5v14h14V5zM7 12h2v5H7v-5zm10-5h-2v10h2V7zm-6 3h2v2h-2v-2zm2 4h-2v3h2v-3z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  Dashboard
+                </span>
+              </h3>
+            </div>
+            <ul className="list-none space-y-2 text-sm font-light tracking-tight text-white/70 pt-4">
               <li className="flex items-start">
                 <span className="text-white/50 mr-3">•</span>
                 <strong>Overview statistics</strong> - User counts, organization counts, session data
@@ -285,9 +440,27 @@ export const auth = betterAuth({
             </ul>
           </PixelCard>
 
-          <PixelCard className="mb-4">
-            <h3 className="text-lg font-light tracking-tight mb-3 text-white">👥 User Management</h3>
-            <ul className="list-none space-y-2 text-sm font-light tracking-tight text-white/70">
+          <PixelCard className="mb-8 relative">
+            <div className="absolute -top-10 left-0">
+              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                  <svg
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="w-3 h-3 inline-flex mr-1 text-white/50"
+                  >
+                    <path
+                      d="M9 2h6v2H9V2zM7 6V4h2v2H7zm0 8H5V6h2v8zm2 2H7v-2h2v2zm6 0v2H9v-2h6zm2-2h-2v2h2v2h2v-6h-2v2zm0-8h2v8h-2V6zm0 0V4h-2v2h2zm-6 10v2h-2v-2h2zm0 0h2v-2h-2v2zm-2-4H7v2h2v-2zm8 0h-2v2h2v-2z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  User Management
+                </span>
+              </h3>
+            </div>
+            <ul className="list-none space-y-2 text-sm font-light tracking-tight text-white/70 pt-4">
               <li className="flex items-start">
                 <span className="text-white/50 mr-3">•</span>
                 <strong>View all users</strong> - Paginated list with search and filtering
@@ -315,9 +488,27 @@ export const auth = betterAuth({
             </ul>
           </PixelCard>
 
-          <PixelCard className="mb-4">
-            <h3 className="text-lg font-light tracking-tight mb-3 text-white">🏢 Organization Management</h3>
-            <ul className="list-none space-y-2 text-sm font-light tracking-tight text-white/70">
+          <PixelCard className="mb-8 relative">
+            <div className="absolute -top-10 left-0">
+              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                  <svg
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="w-3 h-3 inline-flex mr-1 text-white/50"
+                  >
+                    <path
+                      d="M2 2h14v4h6v16H2V2zm18 6h-4v2h2v2h-2v2h2v2h-2v2h2v2h2V8zm-6-4H4v16h2v-2h6v2h2V4zM6 6h2v2H6V6zm6 0h-2v2h2V6zm-6 4h2v2H6v-2zm6 0h-2v2h2v-2zm-6 4h2v2H6v-2zm6 0h-2v2h2v-2z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  Organization Management
+                </span>
+              </h3>
+            </div>
+            <ul className="list-none space-y-2 text-sm font-light tracking-tight text-white/70 pt-4">
               <li className="flex items-start">
                 <span className="text-white/50 mr-3">•</span>
                 <strong>View organizations</strong> - List all organizations with pagination
@@ -349,9 +540,27 @@ export const auth = betterAuth({
             </ul>
           </PixelCard>
 
-          <PixelCard>
-            <h3 className="text-lg font-light tracking-tight mb-3 text-white">⚙️ Settings & Configuration</h3>
-            <ul className="list-none space-y-2 text-sm font-light tracking-tight text-white/70">
+          <PixelCard className="relative">
+            <div className="absolute -top-10 left-0">
+              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                  <svg
+                    fill="noneTypeScript"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="w-3 h-3 inline-flex mr-1 text-white/50"
+                  >
+                    <path
+                      d="M10 2h4v2h2v2h2v2h2v4h-2v2h-2v2h-2v2h-4v-2H8v-2H6v-2H4v-4h2V8h2V6h2V4h2V2zm0 4H8v2H6v4h2v2h2v2h4v-2h2v-2h2V8h-2V6h-2V4h-4v2zm2 2h-2v2H8v2h2v2h2v2h2v-2h2v-2h-2v-2h-2V8z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  Settings & Configuration
+                </span>
+              </h3>
+            </div>
+            <ul className="list-none space-y-2 text-sm font-light tracking-tight text-white/70 pt-4">
               <li className="flex items-start">
                 <span className="text-white/50 mr-3">•</span>
                 <strong>Plugin status</strong> - Check which Better Auth plugins are enabled
@@ -374,9 +583,27 @@ export const auth = betterAuth({
 
         <section>
           <h2 className="text-2xl font-light tracking-tight mb-6 text-white">COMMAND LINE OPTIONS</h2>
-          <PixelCard className="mb-6">
-            <h3 className="text-lg font-light tracking-tight mb-4 text-white">Start Studio</h3>
-            <p className="text-sm font-light tracking-tight text-white/70 mb-2">
+          <PixelCard className="mb-6 relative">
+            <div className="absolute -top-10 left-0">
+              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                  <svg
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="w-3 h-3 inline-flex mr-1 text-white/50"
+                  >
+                    <path
+                      d="M20 3H2v14h8v2H8v2h8v-2h-2v-2h8V3h-2zm-6 12H4V5h16v10h-6z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  Start Studio
+                </span>
+              </h3>
+            </div>
+            <p className="text-sm font-light tracking-tight text-white/70 mb-2 pt-4">
               If installed as dev dependency:
             </p>
             <CodeBlock code="pnpm better-auth-studio start [options]" className="mb-4" />
@@ -384,7 +611,7 @@ export const auth = betterAuth({
               Or with pnpx:
             </p>
             <CodeBlock code="pnpx better-auth-studio start [options]" className="mb-4" />
-            
+
             <h4 className="font-light tracking-tight mb-3 text-white">Options:</h4>
             <ul className="list-none space-y-2 text-sm font-light tracking-tight text-white/70 mb-4">
               <li className="flex items-start">
@@ -416,14 +643,14 @@ export const auth = betterAuth({
                   Or: <code className="bg-white/10 px-1 text-white/90">pnpx better-auth-studio start --port 3001</code>
                 </p>
               </div>
-              
+
               <div>
                 <p className="text-sm font-light tracking-tight text-white/70 mb-2">
                   Start without opening browser:
                 </p>
                 <CodeBlock code="pnpm better-auth-studio start --no-open" />
               </div>
-              
+
               <div>
                 <p className="text-sm font-light tracking-tight text-white/70 mb-2">
                   Use custom config file:
@@ -433,10 +660,28 @@ export const auth = betterAuth({
             </div>
           </PixelCard>
 
-          <PixelCard className="mb-6">
-            <h3 className="text-lg font-light tracking-tight mb-4 text-white">Using the <code className="bg-white/10 px-1 text-white/90">--config</code> Option</h3>
-            
-            <p className="text-sm font-light tracking-tight text-white/70 mb-4">
+          <PixelCard className="mb-6 relative">
+            <div className="absolute -top-10 left-0">
+              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                  <svg
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="w-3 h-3 inline-flex mr-1 text-white/50"
+                  >
+                    <path
+                      d="M10 2h4v2h2v2h2v2h2v4h-2v2h-2v2h-2v2h-4v-2H8v-2H6v-2H4v-4h2V8h2V6h2V4h2V2zm0 4H8v2H6v4h2v2h2v2h4v-2h2v-2h2V8h-2V6h-2V4h-4v2zm2 2h-2v2H8v2h2v2h2v2h2v-2h2v-2h-2v-2h-2V8z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  Using the --config Option
+                </span>
+              </h3>
+            </div>
+
+            <p className="text-sm font-light tracking-tight text-white/70 mb-4 pt-4">
               Specify a custom path to your auth config file when it's in a non-standard location or auto-detection fails.
             </p>
 
@@ -450,23 +695,41 @@ export const auth = betterAuth({
               </div>
             </div>
 
-            <div className="mt-4 p-3 bg-white/5 border border-white/10 rounded">
+            <div className="mt-4 p-3 bg-white/5 border border-white/10 rounded-none">
               <p className="text-xs font-light tracking-tight text-white/70">
                 <strong>Note:</strong> TypeScript path aliases (like <code className="bg-white/10 px-1 text-white/90">$lib</code>, <code className="bg-white/10 px-1 text-white/90">$app/*</code>) are automatically resolved based on your <code className="bg-white/10 px-1 text-white/90">tsconfig.json</code>.
               </p>
             </div>
           </PixelCard>
 
-          <PixelCard>
-            <h3 className="text-lg font-light tracking-tight mb-4 text-white">Other Commands</h3>
-            <div className="space-y-3">
+          <PixelCard className="relative">
+            <div className="absolute -top-10 left-0">
+              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                  <svg
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="w-3 h-3 inline-flex mr-1 text-white/50"
+                  >
+                    <path
+                      d="M4 2H2v8h2V2zm16 0h2v8h-2V2zm-6 6h-4V2H4v2h4v4H4v2h4v4H4v2h4v4H4v2h6v-6h4v6h2v-6h4v-2h-4v-4h4V8h-4V2h-2v6zm-4 6v-4h4v4h-4zM20 2h-4v2h4V2zM2 14h2v8H2v-8zm14 6h4v2h-4v-2zm6-6h-2v8h2v-8z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  Other Commands
+                </span>
+              </h3>
+            </div>
+            <div className="space-y-3 pt-4">
               <div>
                 <p className="text-sm font-light tracking-tight text-white/70 mb-2">
                   Check version:
                 </p>
                 <CodeBlock code="pnpx better-auth-studio --version" />
               </div>
-              
+
               <div>
                 <p className="text-sm font-light tracking-tight text-white/70 mb-2">
                   Show help:
@@ -479,9 +742,27 @@ export const auth = betterAuth({
 
         <section>
           <h2 className="text-2xl font-light tracking-tight mb-6 text-white">DEVELOPMENT</h2>
-          <PixelCard className="mb-6">
-            <h3 className="text-lg font-light tracking-tight mb-4 text-white">Running from Source</h3>
-            <div className="space-y-4">
+          <PixelCard className="mb-6 relative">
+            <div className="absolute -top-10 left-0">
+              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                  <svg
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="w-3 h-3 inline-flex mr-1 text-white/50"
+                  >
+                    <path
+                      d="M4 11v2h12v2h2v-2h2v-2h-2V9h-2v2H4zm10-4h2v2h-2V7zm0 0h-2V5h2v2zm0 10h2v-2h-2v2zm0 0h-2v2h2v-2z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  Running from Source
+                </span>
+              </h3>
+            </div>
+            <div className="space-y-4 pt-4">
               <div>
                 <p className="text-sm font-light tracking-tight text-white/70 mb-2">
                   Clone the repository:
@@ -489,21 +770,21 @@ export const auth = betterAuth({
                 <CodeBlock code="git clone https://github.com/better-auth/better-auth-studio.git" />
                 <CodeBlock code="cd better-auth-studio" className="mt-2" />
               </div>
-              
+
               <div>
                 <p className="text-sm font-light tracking-tight text-white/70 mb-2">
                   Install dependencies:
                 </p>
                 <CodeBlock code="pnpm install" />
               </div>
-              
+
               <div>
                 <p className="text-sm font-light tracking-tight text-white/70 mb-2">
                   Build the project:
                 </p>
                 <CodeBlock code="pnpm build" />
               </div>
-              
+
               <div>
                 <p className="text-sm font-light tracking-tight text-white/70 mb-2">
                   Start development server:
@@ -512,9 +793,27 @@ export const auth = betterAuth({
               </div>
             </div>
           </PixelCard>
-          <PixelCard>
-            <h3 className="text-lg font-light tracking-tight mb-4 text-white">Contributing</h3>
-            <ol className="list-none space-y-2 text-sm font-light tracking-tight text-white/70">
+          <PixelCard className="relative">
+            <div className="absolute -top-10 left-0">
+              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                  <svg
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="w-3 h-3 inline-flex mr-1 text-white/50"
+                  >
+                    <path
+                      d="M9 2h6v2H9V2zM7 6V4h2v2H7zm0 8H5V6h2v8zm2 2H7v-2h2v2zm6 0v2H9v-2h6zm2-2h-2v2h2v2h2v-6h-2v2zm0-8h2v8h-2V6zm0 0V4h-2v2h2zm-6 10v2h-2v-2h2zm0 0h2v-2h-2v2zm-2-4H7v2h2v-2zm8 0h-2v2h2v-2z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  Contributing
+                </span>
+              </h3>
+            </div>
+            <ol className="list-none space-y-2 text-sm font-light tracking-tight text-white/70 pt-4">
               <li className="flex items-start">
                 <span className="text-white/50 mr-3">1.</span>
                 Fork the repository
@@ -540,8 +839,27 @@ export const auth = betterAuth({
         </section>
         <section>
           <h2 className="text-2xl font-light tracking-tight mb-6 text-white">SUPPORT</h2>
-          <PixelCard>
-            <p className="text-sm font-light tracking-tight text-white/70 mb-4">
+          <PixelCard className="relative">
+            <div className="absolute -top-10 left-0">
+              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                  <svg
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="w-3 h-3 inline-flex mr-1 text-white/50"
+                  >
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  Support & Help
+                </span>
+              </h3>
+            </div>
+            <p className="text-sm font-light tracking-tight text-white/70 mb-4 pt-4">
               If you encounter any issues or have questions:
             </p>
             <ul className="list-none space-y-2 text-sm font-light tracking-tight text-white/70">

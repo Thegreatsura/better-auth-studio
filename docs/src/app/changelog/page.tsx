@@ -11,12 +11,27 @@ export default function Changelog() {
       <div className="space-y-8">
         <section>
           <h2 className="text-2xl font-light tracking-tight mb-6 text-white">LATEST RELEASE</h2>
-          <PixelCard variant="highlight">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-light tracking-tight text-white">v1.0.30</h3>
-              <span className="text-sm font-light tracking-tight text-white/50">2025-11-08</span>
+          <PixelCard variant="highlight" className="relative">
+            <div className="absolute -top-10 left-0">
+              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                  <svg
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="w-3 h-3 inline-flex mr-1 text-white/50"
+                  >
+                    <path
+                      d="M15 2h2v2h4v18H3V4h4V2h2v2h6V2zM9 6H5v2h14V6H9zm-4 4v10h14V10H5zm2 2h8v2H7v-2zm4 6v-2H7v2h4z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  v1.0.30 <span className="text-white/50 ml-2">• 2025-11-08</span>
+                </span>
+              </h3>
             </div>
-            <p className="text-sm font-light tracking-tight text-white/70 mb-4">
+            <p className="text-sm font-light tracking-tight text-white/70 mb-4 pt-4">
               Massive studio refresh featuring a rebuilt analytics dashboard, refined black & white interface, and an all-new Tools command center with guided OAuth diagnostics, migration helpers, and database connectivity checks.
             </p>
             <div className="space-y-3">
@@ -45,12 +60,27 @@ export default function Changelog() {
 
         <section>
           <h2 className="text-2xl font-light tracking-tight mb-6 text-white">RECENT UPDATES</h2>
-          <PixelCard className="mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-light tracking-tight text-white">Email Editor & Database Visualization Enhancements</h3>
-              <span className="text-sm font-light tracking-tight text-white/50">2025-02-12</span>
+          <PixelCard className="mb-6 relative">
+            <div className="absolute -top-10 left-0">
+              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                  <svg
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="w-3 h-3 inline-flex mr-1 text-white/50"
+                  >
+                    <path
+                      d="M15 2h2v2h4v18H3V4h4V2h2v2h6V2zM9 6H5v2h14V6H9zm-4 4v10h14V10H5zm2 2h8v2H7v-2zm4 6v-2H7v2h4z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  Email Editor & Database Enhancements <span className="text-white/50 ml-2">• 2025-02-12</span>
+                </span>
+              </h3>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-4 pt-4">
               <div>
                 <h4 className="font-light tracking-tight mb-2 text-white">📧 Advanced Email Editor</h4>
                 <ul className="list-none space-y-2 text-sm font-light tracking-tight text-white/70 ml-4">
@@ -100,12 +130,27 @@ export default function Changelog() {
               </div>
             </div>
           </PixelCard>
-          <PixelCard className="mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-light tracking-tight text-white">Email Editor Enhancements & Password Strength Tool</h3>
-              <span className="text-sm font-light tracking-tight text-white/50">2025-01-31</span>
+          <PixelCard className="mb-6 relative">
+            <div className="absolute -top-10 left-0">
+              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                  <svg
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="w-3 h-3 inline-flex mr-1 text-white/50"
+                  >
+                    <path
+                      d="M15 2h2v2h4v18H3V4h4V2h2v2h6V2zM9 6H5v2h14V6H9zm-4 4v10h14V10H5zm2 2h8v2H7v-2zm4 6v-2H7v2h4z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  Email Enhancements & Password Tool <span className="text-white/50 ml-2">• 2025-01-31</span>
+                </span>
+              </h3>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-4 pt-4">
               <div>
                 <h4 className="font-light tracking-tight mb-2 text-white">📧 Email Editor Improvements</h4>
                 <ul className="list-none space-y-2 text-sm font-light tracking-tight text-white/70 ml-4">
@@ -158,12 +203,27 @@ export default function Changelog() {
             </div>
           </PixelCard>
 
-          <PixelCard className="mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-light tracking-tight text-white">Dashboard Overhaul & Tool Suite</h3>
-              <span className="text-sm font-light tracking-tight text-white/50">2025-11-08</span>
+          <PixelCard className="mb-6 relative">
+            <div className="absolute -top-10 left-0">
+              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                  <svg
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="w-3 h-3 inline-flex mr-1 text-white/50"
+                  >
+                    <path
+                      d="M15 2h2v2h4v18H3V4h4V2h2v2h6V2zM9 6H5v2h14V6H9zm-4 4v10h14V10H5zm2 2h8v2H7v-2zm4 6v-2H7v2h4z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  Dashboard Overhaul & Tool Suite <span className="text-white/50 ml-2">• 2025-11-08</span>
+                </span>
+              </h3>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-4 pt-4">
               <div>
                 <h4 className="font-light tracking-tight mb-2 text-white">📊 Dashboard Enhancements</h4>
                 <ul className="list-none space-y-2 text-sm font-light tracking-tight text-white/70 ml-4">
@@ -197,13 +257,28 @@ export default function Changelog() {
               </div>
             </div>
           </PixelCard>
-          
-          <PixelCard className="mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-light tracking-tight text-white">Shadcn UI Integration & Admin Functionality</h3>
-              <span className="text-sm font-light tracking-tight text-white/50">2025-01-09</span>
+
+          <PixelCard className="mb-6 relative">
+            <div className="absolute -top-10 left-0">
+              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                  <svg
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="w-3 h-3 inline-flex mr-1 text-white/50"
+                  >
+                    <path
+                      d="M15 2h2v2h4v18H3V4h4V2h2v2h6V2zM9 6H5v2h14V6H9zm-4 4v10h14V10H5zm2 2h8v2H7v-2zm4 6v-2H7v2h4z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  Shadcn UI & Admin Functionality <span className="text-white/50 ml-2">• 2025-01-09</span>
+                </span>
+              </h3>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-4 pt-4">
               <div>
                 <h4 className="font-light tracking-tight mb-2 text-white">🎨 Shadcn UI Components</h4>
                 <ul className="list-none space-y-2 text-sm font-light tracking-tight text-white/70 ml-4">
@@ -251,12 +326,27 @@ export default function Changelog() {
             </div>
           </PixelCard>
 
-          <PixelCard className="mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-light tracking-tight text-white">Advanced Session Management</h3>
-              <span className="text-sm font-light tracking-tight text-white/50">2025-01-28</span>
+          <PixelCard className="mb-6 relative">
+            <div className="absolute -top-10 left-0">
+              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                  <svg
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="w-3 h-3 inline-flex mr-1 text-white/50"
+                  >
+                    <path
+                      d="M15 2h2v2h4v18H3V4h4V2h2v2h6V2zM9 6H5v2h14V6H9zm-4 4v10h14V10H5zm2 2h8v2H7v-2zm4 6v-2H7v2h4z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  Advanced Session Management <span className="text-white/50 ml-2">• 2025-01-28</span>
+                </span>
+              </h3>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-4 pt-4">
               <div>
                 <h4 className="font-light tracking-tight mb-2 text-white">🔐 Session Seeding</h4>
                 <ul className="list-none space-y-2 text-sm font-light tracking-tight text-white/70 ml-4">
@@ -283,12 +373,27 @@ export default function Changelog() {
             </div>
           </PixelCard>
 
-          <PixelCard className="mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-light tracking-tight text-white">Database Schema Visualizer</h3>
-              <span className="text-sm font-light tracking-tight text-white/50">2025-01-30</span>
+          <PixelCard className="mb-6 relative">
+            <div className="absolute -top-10 left-0">
+              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                  <svg
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="w-3 h-3 inline-flex mr-1 text-white/50"
+                  >
+                    <path
+                      d="M15 2h2v2h4v18H3V4h4V2h2v2h6V2zM9 6H5v2h14V6H9zm-4 4v10h14V10H5zm2 2h8v2H7v-2zm4 6v-2H7v2h4z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  Database Schema Visualizer <span className="text-white/50 ml-2">• 2025-01-30</span>
+                </span>
+              </h3>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-4 pt-4">
               <div>
                 <h4 className="font-light tracking-tight mb-2 text-white">🗄️ Interactive Schema Visualization</h4>
                 <ul className="list-none space-y-2 text-sm font-light tracking-tight text-white/70 ml-4">
@@ -323,12 +428,27 @@ export default function Changelog() {
             </div>
           </PixelCard>
 
-          <PixelCard className="mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-light tracking-tight text-white">IP Geolocation & MaxMind Integration</h3>
-              <span className="text-sm font-light tracking-tight text-white/50">2025-01-28</span>
+          <PixelCard className="mb-6 relative">
+            <div className="absolute -top-10 left-0">
+              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                  <svg
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="w-3 h-3 inline-flex mr-1 text-white/50"
+                  >
+                    <path
+                      d="M15 2h2v2h4v18H3V4h4V2h2v2h6V2zM9 6H5v2h14V6H9zm-4 4v10h14V10H5zm2 2h8v2H7v-2zm4 6v-2H7v2h4z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  IP Geolocation & MaxMind <span className="text-white/50 ml-2">• 2025-01-28</span>
+                </span>
+              </h3>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-4 pt-4">
               <div>
                 <h4 className="font-light tracking-tight mb-2 text-white">🌍 Geolocation Resolution</h4>
                 <ul className="list-none space-y-2 text-sm font-light tracking-tight text-white/70 ml-4">
@@ -371,12 +491,27 @@ export default function Changelog() {
             </div>
           </PixelCard>
 
-          <PixelCard className="mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-light tracking-tight text-white">Biome Integration & CI/CD</h3>
-              <span className="text-sm font-light tracking-tight text-white/50">2025-01-28</span>
+          <PixelCard className="mb-6 relative">
+            <div className="absolute -top-10 left-0">
+              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                  <svg
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="w-3 h-3 inline-flex mr-1 text-white/50"
+                  >
+                    <path
+                      d="M15 2h2v2h4v18H3V4h4V2h2v2h6V2zM9 6H5v2h14V6H9zm-4 4v10h14V10H5zm2 2h8v2H7v-2zm4 6v-2H7v2h4z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  Biome Integration & CI/CD <span className="text-white/50 ml-2">• 2025-01-28</span>
+                </span>
+              </h3>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-4 pt-4">
               <div>
                 <h4 className="font-light tracking-tight mb-2 text-white">🔧 Modern Tooling</h4>
                 <ul className="list-none space-y-2 text-sm font-light tracking-tight text-white/70 ml-4">
@@ -422,12 +557,27 @@ export default function Changelog() {
               </div>
             </div>
           </PixelCard>
-          <PixelCard className="mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-light tracking-tight text-white">CSV Export Feature</h3>
-              <span className="text-sm font-light tracking-tight text-white/50">2025-01-27</span>
+          <PixelCard className="mb-6 relative">
+            <div className="absolute -top-10 left-0">
+              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                  <svg
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="w-3 h-3 inline-flex mr-1 text-white/50"
+                  >
+                    <path
+                      d="M15 2h2v2h4v18H3V4h4V2h2v2h6V2zM9 6H5v2h14V6H9zm-4 4v10h14V10H5zm2 2h8v2H7v-2zm4 6v-2H7v2h4z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  CSV Export Feature <span className="text-white/50 ml-2">• 2025-01-27</span>
+                </span>
+              </h3>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-4 pt-4">
               <div>
                 <h4 className="font-light tracking-tight mb-2 text-white">📊 Data Export</h4>
                 <ul className="list-none space-y-2 text-sm font-light tracking-tight text-white/70 ml-4">
@@ -470,12 +620,27 @@ export default function Changelog() {
             </div>
           </PixelCard>
 
-          <PixelCard className="mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-light tracking-tight text-white">API Improvements</h3>
-              <span className="text-sm font-light tracking-tight text-white/50">2025-01-26</span>
+          <PixelCard className="mb-6 relative">
+            <div className="absolute -top-10 left-0">
+              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                  <svg
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="w-3 h-3 inline-flex mr-1 text-white/50"
+                  >
+                    <path
+                      d="M15 2h2v2h4v18H3V4h4V2h2v2h6V2zM9 6H5v2h14V6H9zm-4 4v10h14V10H5zm2 2h8v2H7v-2zm4 6v-2H7v2h4z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  API Improvements <span className="text-white/50 ml-2">• 2025-01-26</span>
+                </span>
+              </h3>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-4 pt-4">
               <div>
                 <h4 className="font-light tracking-tight mb-2 text-white">🔧 Fixed Issues</h4>
                 <ul className="list-none space-y-2 text-sm font-light tracking-tight text-white/70 ml-4">
@@ -511,12 +676,27 @@ export default function Changelog() {
           </PixelCard>
 
           {/* UI/UX Enhancements */}
-          <PixelCard className="mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-light tracking-tight text-white">UI/UX Enhancements</h3>
-              <span className="text-sm font-light tracking-tight text-white/50">2025-01-25</span>
+          <PixelCard className="mb-6 relative">
+            <div className="absolute -top-10 left-0">
+              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                  <svg
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="w-3 h-3 inline-flex mr-1 text-white/50"
+                  >
+                    <path
+                      d="M15 2h2v2h4v18H3V4h4V2h2v2h6V2zM9 6H5v2h14V6H9zm-4 4v10h14V10H5zm2 2h8v2H7v-2zm4 6v-2H7v2h4z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  UI/UX Enhancements <span className="text-white/50 ml-2">• 2025-01-25</span>
+                </span>
+              </h3>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-4 pt-4">
               <div>
                 <h4 className="font-light tracking-tight mb-2 text-white">🎨 Design System</h4>
                 <ul className="list-none space-y-2 text-sm font-light tracking-tight text-white/70 ml-4">
@@ -548,12 +728,27 @@ export default function Changelog() {
           </PixelCard>
 
           {/* Documentation Updates */}
-          <PixelCard>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-light tracking-tight text-white">Documentation</h3>
-              <span className="text-sm font-light tracking-tight text-white/50">2025-01-24</span>
+          <PixelCard className="relative">
+            <div className="absolute -top-10 left-0">
+              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                  <svg
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="w-3 h-3 inline-flex mr-1 text-white/50"
+                  >
+                    <path
+                      d="M15 2h2v2h4v18H3V4h4V2h2v2h6V2zM9 6H5v2h14V6H9zm-4 4v10h14V10H5zm2 2h8v2H7v-2zm4 6v-2H7v2h4z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  Documentation <span className="text-white/50 ml-2">• 2025-01-24</span>
+                </span>
+              </h3>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-4 pt-4">
               <div>
                 <h4 className="font-light tracking-tight mb-2 text-white">📚 Content</h4>
                 <ul className="list-none space-y-2 text-sm font-light tracking-tight text-white/70 ml-4">
@@ -592,9 +787,27 @@ export default function Changelog() {
         {/* Upcoming Features */}
         <section>
           <h2 className="text-2xl font-light tracking-tight mb-6 text-white">UPCOMING FEATURES</h2>
-          <PixelCard variant="highlight">
-            <h3 className="text-lg font-light tracking-tight mb-4 text-white">🚀 Roadmap</h3>
-            <div className="space-y-4">
+          <PixelCard variant="highlight" className="relative">
+            <div className="absolute -top-10 left-0">
+              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                  <svg
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="w-3 h-3 inline-flex mr-1 text-white/50"
+                  >
+                    <path
+                      d="M16 5v2h-2V5h2zm-4 4V7h2v2h-2zm-2 2V9h2v2h-2zm0 2H8v-2h2v2zm2 2v-2h-2v2h2zm0 0h2v2h-2v-2zm4 4v-2h-2v2h2z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  🚀 Roadmap
+                </span>
+              </h3>
+            </div>
+            <div className="space-y-4 pt-4">
               <div>
                 <h4 className="font-light tracking-tight mb-2 text-white">v1.1.0 - Enhanced Analytics</h4>
                 <ul className="list-none space-y-2 text-sm font-light tracking-tight text-white/70 ml-4">
@@ -656,112 +869,205 @@ export default function Changelog() {
         <section>
           <h2 className="text-2xl font-light tracking-tight mb-6 text-white">VERSION HISTORY</h2>
           <div className="space-y-4">
-            <PixelCard>
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-lg font-light tracking-tight text-white">v1.0.31</h3>
-                <span className="text-sm font-light tracking-tight text-white/50">2025-01-31</span>
+            <PixelCard className="relative">
+              <div className="absolute -top-10 left-0">
+                <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                  <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                  <span className="relative z-10 inline-flex gap-[2px] items-center">
+                    <svg
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      className="w-3 h-3 inline-flex mr-1 text-white/50"
+                    >
+                      <path
+                        d="M15 2h2v2h4v18H3V4h4V2h2v2h6V2zM9 6H5v2h14V6H9zm-4 4v10h14V10H5zm2 2h8v2H7v-2zm4 6v-2H7v2h4z"
+                        fill="currentColor"
+                      />
+                    </svg>
+                    v1.0.31 <span className="text-white/50 ml-2">• 2025-01-31</span>
+                  </span>
+                </h3>
               </div>
-              <p className="text-sm font-light tracking-tight text-white/70">
+              <p className="text-sm font-light tracking-tight text-white/70 pt-4">
                 Enhanced email editor with code export, field simulator, and alignment icons. Added Password Strength Checker tool with comprehensive validation. Improved navigation with dynamic count badges.
               </p>
             </PixelCard>
 
-            <PixelCard>
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-lg font-light tracking-tight text-white">v1.0.30</h3>
-                <span className="text-sm font-light tracking-tight text-white/50">2025-11-08</span>
+            <PixelCard className="relative">
+              <div className="absolute -top-10 left-0">
+                <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                  <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                  <span className="relative z-10 inline-flex gap-[2px] items-center">
+                    <svg
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      className="w-3 h-3 inline-flex mr-1 text-white/50"
+                    >
+                      <path
+                        d="M15 2h2v2h4v18H3V4h4V2h2v2h6V2zM9 6H5v2h14V6H9zm-4 4v10h14V10H5zm2 2h8v2H7v-2zm4 6v-2H7v2h4z"
+                        fill="currentColor"
+                      />
+                    </svg>
+                    v1.0.30 <span className="text-white/50 ml-2">• 2025-11-08</span>
+                  </span>
+                </h3>
               </div>
-              <p className="text-sm font-light tracking-tight text-white/70">
+              <p className="text-sm font-light tracking-tight text-white/70 pt-4">
                 Released the refreshed analytics dashboard, Tools workspace with OAuth testing/migration/database utilities, Geist typography polish, and widespread UI clean-up.
               </p>
             </PixelCard>
 
-            <PixelCard>
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-lg font-light tracking-tight text-white">v1.0.26</h3>
-                <span className="text-sm font-light tracking-tight text-white/50">2025-01-09</span>
+            <PixelCard className="relative">
+              <div className="absolute -top-10 left-0">
+                <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                  <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                  <span className="relative z-10 inline-flex gap-[2px] items-center">
+                    <svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-3 h-3 inline-flex mr-1 text-white/50">
+                      <path d="M15 2h2v2h4v18H3V4h4V2h2v2h6V2zM9 6H5v2h14V6H9zm-4 4v10h14V10H5zm2 2h8v2H7v-2zm4 6v-2H7v2h4z" fill="currentColor" />
+                    </svg>
+                    v1.0.26 <span className="text-white/50 ml-2">• 2025-01-09</span>
+                  </span>
+                </h3>
               </div>
-              <p className="text-sm font-light tracking-tight text-white/70">
+              <p className="text-sm font-light tracking-tight text-white/70 pt-4">
                 Major release with Shadcn UI components, admin functionality for user banning/unbanning, advanced filtering system with date range picker, and pure black & white theme overhaul.
               </p>
             </PixelCard>
 
-            <PixelCard>
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-lg font-light tracking-tight text-white">v1.0.23</h3>
-                <span className="text-sm font-light tracking-tight text-white/50">2025-01-30</span>
+            <PixelCard className="relative">
+              <div className="absolute -top-10 left-0">
+                <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                  <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                  <span className="relative z-10 inline-flex gap-[2px] items-center">
+                    <svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-3 h-3 inline-flex mr-1 text-white/50">
+                      <path d="M15 2h2v2h4v18H3V4h4V2h2v2h6V2zM9 6H5v2h14V6H9zm-4 4v10h14V10H5zm2 2h8v2H7v-2zm4 6v-2H7v2h4z" fill="currentColor" />
+                    </svg>
+                    v1.0.23 <span className="text-white/50 ml-2">• 2025-01-30</span>
+                  </span>
+                </h3>
               </div>
-              <p className="text-sm font-light tracking-tight text-white/70">
+              <p className="text-sm font-light tracking-tight text-white/70 pt-4">
                 Release with Database Schema Visualizer - an interactive ReactFlow-powered tool for visualizing Better Auth database schemas with plugin-based configuration.
               </p>
             </PixelCard>
 
-            <PixelCard>
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-lg font-light tracking-tight text-white">v1.0.22</h3>
-                <span className="text-sm font-light tracking-tight text-white/50">2025-01-29</span>
+            <PixelCard className="relative">
+              <div className="absolute -top-10 left-0">
+                <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                  <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                  <span className="relative z-10 inline-flex gap-[2px] items-center">
+                    <svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-3 h-3 inline-flex mr-1 text-white/50">
+                      <path d="M15 2h2v2h4v18H3V4h4V2h2v2h6V2zM9 6H5v2h14V6H9zm-4 4v10h14V10H5zm2 2h8v2H7v-2zm4 6v-2H7v2h4z" fill="currentColor" />
+                    </svg>
+                    v1.0.22 <span className="text-white/50 ml-2">• 2025-01-29</span>
+                  </span>
+                </h3>
               </div>
-              <p className="text-sm font-light tracking-tight text-white/70">
+              <p className="text-sm font-light tracking-tight text-white/70 pt-4">
                 Release with enhanced session management and improved user interface components.
               </p>
             </PixelCard>
 
-            <PixelCard>
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-lg font-light tracking-tight text-white">v1.0.21</h3>
-                <span className="text-sm font-light tracking-tight text-white/50">2025-01-28</span>
+            <PixelCard className="relative">
+              <div className="absolute -top-10 left-0">
+                <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                  <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                  <span className="relative z-10 inline-flex gap-[2px] items-center">
+                    <svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-3 h-3 inline-flex mr-1 text-white/50">
+                      <path d="M15 2h2v2h4v18H3V4h4V2h2v2h6V2zM9 6H5v2h14V6H9zm-4 4v10h14V10H5zm2 2h8v2H7v-2zm4 6v-2H7v2h4z" fill="currentColor" />
+                    </svg>
+                    v1.0.21 <span className="text-white/50 ml-2">• 2025-01-28</span>
+                  </span>
+                </h3>
               </div>
-              <p className="text-sm font-light tracking-tight text-white/70">
+              <p className="text-sm font-light tracking-tight text-white/70 pt-4">
                 Major beta release with advanced session management, IP geolocation, Biome integration, and comprehensive CI/CD pipeline.
               </p>
             </PixelCard>
 
-            <PixelCard>
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-lg font-light tracking-tight text-white">v1.0.20-beta.5</h3>
-                <span className="text-sm font-light tracking-tight text-white/50">2025-01-27</span>
+            <PixelCard className="relative">
+              <div className="absolute -top-10 left-0">
+                <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                  <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                  <span className="relative z-10 inline-flex gap-[2px] items-center">
+                    <svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-3 h-3 inline-flex mr-1 text-white/50">
+                      <path d="M15 2h2v2h4v18H3V4h4V2h2v2h6V2zM9 6H5v2h14V6H9zm-4 4v10h14V10H5zm2 2h8v2H7v-2zm4 6v-2H7v2h4z" fill="currentColor" />
+                    </svg>
+                    v1.0.20-beta.5 <span className="text-white/50 ml-2">• 2025-01-27</span>
+                  </span>
+                </h3>
               </div>
-              <p className="text-sm font-light tracking-tight text-white/70">
+              <p className="text-sm font-light tracking-tight text-white/70 pt-4">
                 Beta release with CSV export functionality and enhanced user management interface.
               </p>
             </PixelCard>
 
-            <PixelCard>
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-lg font-light tracking-tight text-white">v1.0.16</h3>
-                <span className="text-sm font-light tracking-tight text-white/50">2025-01-27</span>
+            <PixelCard className="relative">
+              <div className="absolute -top-10 left-0">
+                <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                  <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                  <span className="relative z-10 inline-flex gap-[2px] items-center">
+                    <svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-3 h-3 inline-flex mr-1 text-white/50">
+                      <path d="M15 2h2v2h4v18H3V4h4V2h2v2h6V2zM9 6H5v2h14V6H9zm-4 4v10h14V10H5zm2 2h8v2H7v-2zm4 6v-2H7v2h4z" fill="currentColor" />
+                    </svg>
+                    v1.0.16 <span className="text-white/50 ml-2">• 2025-01-27</span>
+                  </span>
+                </h3>
               </div>
-              <p className="text-sm font-light tracking-tight text-white/70">
+              <p className="text-sm font-light tracking-tight text-white/70 pt-4">
                 Added CSV export functionality and enhanced user management interface with pixel-perfect design.
               </p>
             </PixelCard>
 
-            <PixelCard>
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-lg font-light tracking-tight text-white">v1.0.15</h3>
-                <span className="text-sm font-light tracking-tight text-white/50">2025-01-25</span>
+            <PixelCard className="relative">
+              <div className="absolute -top-10 left-0">
+                <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                  <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                  <span className="relative z-10 inline-flex gap-[2px] items-center">
+                    <svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-3 h-3 inline-flex mr-1 text-white/50">
+                      <path d="M15 2h2v2h4v18H3V4h4V2h2v2h6V2zM9 6H5v2h14V6H9zm-4 4v10h14V10H5zm2 2h8v2H7v-2zm4 6v-2H7v2h4z" fill="currentColor" />
+                    </svg>
+                    v1.0.15 <span className="text-white/50 ml-2">• 2025-01-25</span>
+                  </span>
+                </h3>
               </div>
-              <p className="text-sm font-light tracking-tight text-white/70">
+              <p className="text-sm font-light tracking-tight text-white/70 pt-4">
                 Enhanced user interface with improved navigation and performance optimizations.
               </p>
             </PixelCard>
 
-            <PixelCard>
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-lg font-light tracking-tight text-white">v1.0.14</h3>
-                <span className="text-sm font-light tracking-tight text-white/50">2025-01-20</span>
+            <PixelCard className="relative">
+              <div className="absolute -top-10 left-0">
+                <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                  <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                  <span className="relative z-10 inline-flex gap-[2px] items-center">
+                    <svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-3 h-3 inline-flex mr-1 text-white/50">
+                      <path d="M15 2h2v2h4v18H3V4h4V2h2v2h6V2zM9 6H5v2h14V6H9zm-4 4v10h14V10H5zm2 2h8v2H7v-2zm4 6v-2H7v2h4z" fill="currentColor" />
+                    </svg>
+                    v1.0.14 <span className="text-white/50 ml-2">• 2025-01-20</span>
+                  </span>
+                </h3>
               </div>
-              <p className="text-sm font-light tracking-tight text-white/70">
+              <p className="text-sm font-light tracking-tight text-white/70 pt-4">
                 Added comprehensive session management and organization features.
               </p>
             </PixelCard>
 
-            <PixelCard>
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-lg font-light tracking-tight text-white">v1.0.13</h3>
-                <span className="text-sm font-light tracking-tight text-white/50">2025-01-15</span>
+            <PixelCard className="relative">
+              <div className="absolute -top-10 left-0">
+                <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                  <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                  <span className="relative z-10 inline-flex gap-[2px] items-center">
+                    <svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-3 h-3 inline-flex mr-1 text-white/50">
+                      <path d="M15 2h2v2h4v18H3V4h4V2h2v2h6V2zM9 6H5v2h14V6H9zm-4 4v10h14V10H5zm2 2h8v2H7v-2zm4 6v-2H7v2h4z" fill="currentColor" />
+                    </svg>
+                    v1.0.13 <span className="text-white/50 ml-2">• 2025-01-15</span>
+                  </span>
+                </h3>
               </div>
-              <p className="text-sm font-light tracking-tight text-white/70">
+              <p className="text-sm font-light tracking-tight text-white/70 pt-4">
                 Initial stable release with core authentication management capabilities.
               </p>
             </PixelCard>
@@ -771,8 +1077,27 @@ export default function Changelog() {
         {/* Contributing */}
         <section>
           <h2 className="text-2xl font-light tracking-tight mb-6 text-white">CONTRIBUTING</h2>
-          <PixelCard>
-            <p className="text-sm font-light tracking-tight text-white/70 mb-4">
+          <PixelCard className="relative">
+            <div className="absolute -top-10 left-0">
+              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
+                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                  <svg
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="w-3 h-3 inline-flex mr-1 text-white/50"
+                  >
+                    <path
+                      d="M9 2h6v2H9V2zM7 6V4h2v2H7zm0 8H5V6h2v8zm2 2H7v-2h2v2zm6 0v2H9v-2h6zm2-2h-2v2h2v2h2v-6h-2v2zm0-8h2v8h-2V6zm0 0V4h-2v2h2zm-6 10v2h-2v-2h2zm0 0h2v-2h-2v2zm-2-4H7v2h2v-2zm8 0h-2v2h2v-2z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  Contributing
+                </span>
+              </h3>
+            </div>
+            <p className="text-sm font-light tracking-tight text-white/70 mb-4 pt-4">
               Better Auth Studio is open source and welcomes contributions from the community.
             </p>
             <div className="space-y-3">
