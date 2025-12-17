@@ -375,7 +375,7 @@ export const Hero: React.FC<HeroProps> = ({ title, description, links, version }
           <Scene />
           
           {showZoomHint && (
-            <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-3 pointer-events-none transition-opacity duration-500">
+            <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-30 hidden md:flex flex-col items-center gap-3 pointer-events-none transition-opacity duration-500">
               <span className="text-[11px] uppercase tracking-[0.3em] text-white/40 font-mono">
                Zoom 
               </span>
