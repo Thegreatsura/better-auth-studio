@@ -423,7 +423,7 @@ export const Hero: React.FC<HeroProps> = ({ title, description, links, version }
               Install Better Auth Studio</div>
             <div className="flex items-center gap-2">
               <span className="text-white/80">$</span>
-              <code className="text-white text-xs">pnpx better-auth-studio@latest</code>
+              <code className="text-white text-xs">pnpx better-auth-studio@latest start</code>
               <button
                 onClick={() => {
                   setCopied(true)
