@@ -168,7 +168,7 @@ export default function Teams() {
                     <span className="text-green-400">"better-auth"</span> <br />
                     <span className="text-blue-400">import</span> {`{ organization }`}{' '}
                     <span className="text-blue-400">from</span>{' '}
-                    <span className="text-green-400">"better-auth/plugins/organization"</span>{' '}
+                    <span className="text-green-400">"better-auth/plugins"</span>{' '}
                     <br />
                     <span className="text-blue-400">export const</span>{' '}
                     <span className="text-yellow-300">auth</span> ={' '}
