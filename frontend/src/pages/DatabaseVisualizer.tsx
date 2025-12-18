@@ -400,7 +400,9 @@ export default function DatabaseVisualizer() {
     return (
       <div className="p-6">
         <div className="bg-red-900/10 border border-red-300/20 border-dashed rounded-none p-6">
-          <h2 className="text-md font-light uppercase font-mono text-red-400 mb-2">Error Loading Schema</h2>
+          <h2 className="text-md font-light uppercase font-mono text-red-400 mb-2">
+            Error Loading Schema
+          </h2>
           <p className="text-gray-300 font-mono">{error}</p>
         </div>
       </div>
