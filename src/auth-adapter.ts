@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import { existsSync } from 'node:fs';
-import { dirname, join, resolve, parse } from 'node:path';
+import { dirname, join, parse, resolve } from 'node:path';
 // @ts-expect-error - No types available
 import babelPresetReact from '@babel/preset-react';
 // @ts-expect-error - No types available
@@ -93,7 +93,7 @@ export async function getAuthAdapter(configPath?: string): Promise<AuthAdapter |
             ],
           },
         },
-        extensions: ['.ts', '.js', '.tsx', '.jsx' , '.mjs', '.cjs'],
+        extensions: ['.ts', '.js', '.tsx', '.jsx', '.mjs', '.cjs'],
       });
       authModule = await jitiInstance.import(importPath);
     } catch (_error: any) {
