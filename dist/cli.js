@@ -6,11 +6,11 @@ import chalk from 'chalk';
 import chokidar from 'chokidar';
 import { Command } from 'commander';
 import { WebSocket } from 'ws';
+import { initCommand } from './cli/commands/init.js';
 import { findAuthConfig } from './config.js';
 import { startStudio } from './studio.js';
 import { detectDatabaseWithDialect } from './utils/database-detection.js';
 import { possibleConfigFiles } from './utils.js';
-import { initCommand } from './cli/commands/init.js';
 async function findAuthConfigPath() {
     let currentDir = process.cwd();
     const maxDepth = 10;

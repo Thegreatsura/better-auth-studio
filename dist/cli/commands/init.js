@@ -1,4 +1,4 @@
-import { writeFileSync, mkdirSync, existsSync, readFileSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 export async function initCommand() {
     console.log('🚀 Initializing Better Auth Studio...\n');
@@ -20,9 +20,7 @@ async function createStudioConfig(framework) {
         console.log('⚠️  studio.config.ts already exists, skipping...');
         return configPath;
     }
-    const authImportPath = framework === 'nextjs'
-        ? '@/lib/auth'
-        : './src/auth';
+    const authImportPath = framework === 'nextjs' ? '@/lib/auth' : './src/auth';
     const configContent = `import type { StudioConfig } from 'better-auth-studio';
 import { auth } from '${authImportPath}';
 
@@ -113,7 +111,9 @@ app.use('${basePath}', betterAuthStudio(studioConfig));
 `);
 }
 function detectFramework() {
-    if (existsSync('next.config.js') || existsSync('next.config.mjs') || existsSync('next.config.ts')) {
+    if (existsSync('next.config.js') ||
+        existsSync('next.config.mjs') ||
+        existsSync('next.config.ts')) {
         return 'nextjs';
     }
     if (existsSync('src/index.ts') || existsSync('src/app.ts') || existsSync('src/server.ts')) {

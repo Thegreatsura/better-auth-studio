@@ -1493,7 +1493,7 @@ export default function Users() {
                     <div className="text-[11px] font-mono font-light uppercase tracking-wide text-gray-400">
                       {item.label}
                     </div>
-                    <div className="text-sm text-white text-right break-words max-w-[60%]">
+                    <div className="text-[10px] font-mono uppercase text-white text-right break-words max-w-[60%]">
                       {item.value}
                     </div>
                   </div>

@@ -1,4 +1,4 @@
-import type { UniversalRequest, UniversalResponse, StudioConfig } from '../types/handler.js';
+import type { StudioConfig, UniversalRequest, UniversalResponse } from '../types/handler.js';
 /**
  * Main handler - processes all studio requests (framework-agnostic)
  *

@@ -327,7 +327,7 @@ preloadedAuthOptions // Optional auth options for self-hosted (avoids reloading 
                 getUsers: async () => {
                     try {
                         if (typeof preloadedAdapter.findMany === 'function') {
-                            return await preloadedAdapter.findMany({ model: 'user' }) || [];
+                            return (await preloadedAdapter.findMany({ model: 'user' })) || [];
                         }
                         return [];
                     }
@@ -338,7 +338,7 @@ preloadedAuthOptions // Optional auth options for self-hosted (avoids reloading 
                 getSessions: async () => {
                     try {
                         if (typeof preloadedAdapter.findMany === 'function') {
-                            return await preloadedAdapter.findMany({ model: 'session' }) || [];
+                            return (await preloadedAdapter.findMany({ model: 'session' })) || [];
                         }
                         return [];
                     }
@@ -5042,15 +5042,14 @@ export async function handleStudioApiRequest(ctx) {
                 preloadedAdapter = context.adapter;
             }
         }
-        catch {
-        }
+        catch { }
     }
     const authOptions = ctx.auth?.options || null;
     const router = createRoutes(ctx.auth, ctx.configPath || '', undefined, preloadedAdapter, authOptions);
     const [pathname, queryString] = ctx.path.split('?');
     const query = {};
     if (queryString) {
-        queryString.split('&').forEach(param => {
+        queryString.split('&').forEach((param) => {
             const [key, value] = param.split('=');
             if (key)
                 query[key] = decodeURIComponent(value || '');

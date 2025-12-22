@@ -1,5 +1,5 @@
-import { resolve, join, extname, dirname } from 'path';
-import { readFileSync, existsSync, statSync } from 'fs';
+import { existsSync, readFileSync, statSync } from 'fs';
+import { dirname, extname, join, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { serveIndexHtml as getIndexHtml } from '../utils/html-injector.js';
 const __filename = fileURLToPath(import.meta.url);
@@ -42,7 +42,7 @@ export async function handleStudioRequest(request, config) {
         console.error('Studio handler error:', error);
         return jsonResponse(500, {
             error: 'Internal server error',
-            message: error instanceof Error ? error.message : 'Unknown error'
+            message: error instanceof Error ? error.message : 'Unknown error',
         });
     }
 }
@@ -85,8 +85,8 @@ function handleStaticFile(path, config) {
                 error: 'Public directory not found',
                 paths: {
                     tried: [distPublic, sourcePublic],
-                    dirname: __dirname
-                }
+                    dirname: __dirname,
+                },
             });
         }
     }

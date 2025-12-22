@@ -19,15 +19,14 @@ export function createStudioHandler(config) {
     };
 }
 async function nextToUniversal(req) {
-    let body = undefined;
+    let body;
     if (req.method !== 'GET' && req.method !== 'HEAD') {
         const contentType = req.headers.get('content-type') || '';
         if (contentType.includes('application/json')) {
             try {
                 body = await req.json();
             }
-            catch {
-            }
+            catch { }
         }
     }
     const headers = {};
