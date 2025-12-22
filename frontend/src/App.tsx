@@ -16,10 +16,16 @@ import Tools from './pages/Tools';
 import UserDetails from './pages/UserDetails';
 import Users from './pages/Users';
 
+// Get the base path from the injected config
+// CLI studio: basePath = '' (empty string, routes at root)
+// Self-hosted: basePath = '/api/studio' (routes with prefix)
+const config = (window as any).__STUDIO_CONFIG__;
+const basePath = config?.basePath !== undefined ? config.basePath : '';
+
 function App() {
   return (
     <CountsProvider>
-      <Router>
+      <Router basename={basePath}>
         <Layout>
           <Routes>
             <Route path="/" element={<Dashboard />} />

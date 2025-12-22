@@ -145,6 +145,7 @@ const jitiOptions = (cwd, noCache = false) => {
         },
         extensions: ['.ts', '.js', '.tsx', '.jsx'],
         alias,
+        interopDefault: true,
     };
 };
 const isDefaultExport = (object) => {
@@ -166,6 +167,7 @@ export async function getConfig({ cwd, configPath, shouldThrowOnError = false, n
             const projectRoot = findTsconfigPath(configDir) || cwd;
             const { config } = await loadConfig({
                 configFile: resolvedPath,
+                cwd: projectRoot, // Set the working directory for module resolution
                 dotenv: true,
                 jitiOptions: jitiOptions(projectRoot, noCache),
             });
@@ -184,6 +186,7 @@ export async function getConfig({ cwd, configPath, shouldThrowOnError = false, n
                     const fullPath = path.join(cwd, possiblePath);
                     const { config } = await loadConfig({
                         configFile: possiblePath,
+                        cwd: cwd, // Set the working directory for module resolution
                         jitiOptions: jitiOptions(cwd, noCache),
                     });
                     const hasConfig = Object.keys(config).length > 0;

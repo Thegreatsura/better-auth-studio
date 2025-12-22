@@ -227,7 +227,31 @@ async function findAuthConfigPath() {
     }
     return null;
 }
-export function createRoutes(authConfig, configPath, geoDbPath) {
+export function createRoutes(authConfig, configPath, geoDbPath, preloadedAdapter, // Optional preloaded adapter for self-hosted studio
+preloadedAuthOptions // Optional auth options for self-hosted (avoids reloading config)
+) {
+    const isSelfHosted = !!preloadedAdapter;
+    const getAuthConfigSafe = async () => {
+        if (isSelfHosted && preloadedAuthOptions) {
+            return preloadedAuthOptions;
+        }
+        try {
+            const authConfigPath = configPath || (await findAuthConfigPath());
+            if (authConfigPath) {
+                const { getConfig } = await import('./config.js');
+                return await getConfig({
+                    cwd: process.cwd(),
+                    configPath: authConfigPath,
+                    shouldThrowOnError: false,
+                    noCache: true,
+                });
+            }
+        }
+        catch (_error) {
+            // Ignors errors
+        }
+        return null;
+    };
     const router = Router();
     const base64UrlEncode = (value) => Buffer.from(value)
         .toString('base64')
@@ -252,7 +276,80 @@ export function createRoutes(authConfig, configPath, geoDbPath) {
         setGeoDbPath(geoDbPath);
     }
     initializeGeoService().catch(console.error);
-    const getAuthAdapterWithConfig = () => getAuthAdapter(configPath);
+    // Use preloaded adapter if available (self-hosted), otherwise load from config file (CLI)
+    const getAuthAdapterWithConfig = async () => {
+        if (preloadedAdapter) {
+            // For self-hosted studio, wrap the preloaded adapter to match expected interface
+            return {
+                ...preloadedAdapter,
+                findMany: preloadedAdapter.findMany?.bind(preloadedAdapter),
+                create: preloadedAdapter.create?.bind(preloadedAdapter),
+                update: preloadedAdapter.update?.bind(preloadedAdapter),
+                delete: preloadedAdapter.delete?.bind(preloadedAdapter),
+                createUser: async (data) => {
+                    return await preloadedAdapter.create({
+                        model: 'user',
+                        data: {
+                            createdAt: new Date(),
+                            updatedAt: new Date(),
+                            emailVerified: false,
+                            name: data.name,
+                            email: data.email?.toLowerCase(),
+                            role: data.role || null,
+                            image: data.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.email}`,
+                        },
+                    });
+                },
+                createSession: async (data) => {
+                    return await preloadedAdapter.create({
+                        model: 'session',
+                        data: { createdAt: new Date(), updatedAt: new Date(), ...data },
+                    });
+                },
+                createAccount: async (data) => {
+                    return await preloadedAdapter.create({
+                        model: 'account',
+                        data: { createdAt: new Date(), updatedAt: new Date(), ...data },
+                    });
+                },
+                createVerification: async (data) => {
+                    return await preloadedAdapter.create({
+                        model: 'verification',
+                        data: { createdAt: new Date(), updatedAt: new Date(), ...data },
+                    });
+                },
+                createOrganization: async (data) => {
+                    return await preloadedAdapter.create({
+                        model: 'organization',
+                        data: { createdAt: new Date(), updatedAt: new Date(), ...data },
+                    });
+                },
+                getUsers: async () => {
+                    try {
+                        if (typeof preloadedAdapter.findMany === 'function') {
+                            return await preloadedAdapter.findMany({ model: 'user' }) || [];
+                        }
+                        return [];
+                    }
+                    catch {
+                        return [];
+                    }
+                },
+                getSessions: async () => {
+                    try {
+                        if (typeof preloadedAdapter.findMany === 'function') {
+                            return await preloadedAdapter.findMany({ model: 'session' }) || [];
+                        }
+                        return [];
+                    }
+                    catch {
+                        return [];
+                    }
+                },
+            };
+        }
+        return getAuthAdapter(configPath);
+    };
     router.get('/api/health', (_req, res) => {
         const uptime = process.uptime();
         const hours = Math.floor(uptime / 3600);
@@ -361,6 +458,7 @@ export function createRoutes(authConfig, configPath, geoDbPath) {
         }
     });
     router.get('/api/config', async (_req, res) => {
+        const effectiveConfig = preloadedAuthOptions || authConfig;
         let databaseType = 'unknown';
         let databaseDialect = 'unknown';
         let databaseAdapter = 'unknown';
@@ -385,22 +483,25 @@ export function createRoutes(authConfig, configPath, geoDbPath) {
             }
         }
         catch (_error) { }
-        if (databaseType === 'unknown') {
-            const configPath = await findAuthConfigPath();
-            if (configPath) {
-                const content = readFileSync(configPath, 'utf-8');
-                if (content.includes('drizzleAdapter')) {
-                    databaseType = 'Drizzle';
+        if (databaseType === 'unknown' && !isSelfHosted) {
+            const authConfigPath = configPath || (await findAuthConfigPath());
+            if (authConfigPath) {
+                try {
+                    const content = readFileSync(authConfigPath, 'utf-8');
+                    if (content.includes('drizzleAdapter')) {
+                        databaseType = 'Drizzle';
+                    }
+                    else if (content.includes('prismaAdapter')) {
+                        databaseType = 'Prisma';
+                    }
+                    else if (content.includes('better-sqlite3') || content.includes('new Database(')) {
+                        databaseType = 'SQLite';
+                    }
                 }
-                else if (content.includes('prismaAdapter')) {
-                    databaseType = 'Prisma';
-                }
-                else if (content.includes('better-sqlite3') || content.includes('new Database(')) {
-                    databaseType = 'SQLite';
-                }
+                catch (_error) { }
             }
             if (databaseType === 'unknown') {
-                let type = authConfig.database?.type || authConfig.database?.adapter || 'unknown';
+                let type = effectiveConfig.database?.type || effectiveConfig.database?.adapter || 'unknown';
                 if (type && type !== 'unknown') {
                     type = type.charAt(0).toUpperCase() + type.slice(1);
                 }
@@ -408,52 +509,55 @@ export function createRoutes(authConfig, configPath, geoDbPath) {
             }
         }
         const config = {
-            appName: authConfig.appName || 'Better Auth',
-            baseURL: authConfig.baseURL || process.env.BETTER_AUTH_URL,
-            basePath: authConfig.basePath || '/api/auth',
-            secret: authConfig.secret ? 'Configured' : 'Not set',
+            appName: effectiveConfig.appName || 'Better Auth',
+            baseURL: effectiveConfig.baseURL || process.env.BETTER_AUTH_URL,
+            basePath: effectiveConfig.basePath || '/api/auth',
+            secret: effectiveConfig.secret ? 'Configured' : 'Not set',
             database: {
                 type: databaseType,
-                adapter: authConfig.database?.adapter || databaseAdapter,
+                adapter: effectiveConfig.database?.adapter || databaseAdapter,
                 version: databaseVersion,
-                casing: authConfig.database?.casing || 'camel',
-                debugLogs: authConfig.database?.debugLogs || false,
-                url: authConfig.database?.url,
+                casing: effectiveConfig.database?.casing || 'camel',
+                debugLogs: effectiveConfig.database?.debugLogs || false,
+                url: effectiveConfig.database?.url,
                 adapterConfig: adapterConfig,
                 dialect: adapterProvider,
             },
-            emailVerification: authConfig.emailVerification,
-            emailAndPassword: authConfig.emailAndPassword,
-            socialProviders: authConfig.socialProviders
-                ? authConfig.socialProviders.map((provider) => ({
-                    type: provider.id,
+            emailVerification: effectiveConfig.emailVerification,
+            emailAndPassword: effectiveConfig.emailAndPassword,
+            socialProviders: effectiveConfig.socialProviders
+                ? Object.entries(effectiveConfig.socialProviders).map(([id, provider]) => ({
+                    type: id,
                     clientId: provider.clientId,
                     clientSecret: provider.clientSecret,
-                    redirectUri: provider.redirectUri,
+                    id: id,
+                    name: id,
+                    redirectURI: provider.redirectURI,
+                    enabled: !!(provider.clientId && provider.clientSecret),
                     ...provider,
                 }))
-                : authConfig.providers || [],
+                : [],
             user: {
-                modelName: authConfig.user?.modelName || 'user',
+                modelName: effectiveConfig.user?.modelName || 'user',
                 changeEmail: {
-                    enabled: authConfig.user?.changeEmail?.enabled || false,
+                    enabled: effectiveConfig.user?.changeEmail?.enabled || false,
                 },
                 deleteUser: {
-                    enabled: authConfig.user?.deleteUser?.enabled || false,
-                    deleteTokenExpiresIn: authConfig.user?.deleteUser?.deleteTokenExpiresIn || 86400,
+                    enabled: effectiveConfig.user?.deleteUser?.enabled || false,
+                    deleteTokenExpiresIn: effectiveConfig.user?.deleteUser?.deleteTokenExpiresIn || 86400,
                 },
             },
-            session: authConfig.session,
-            account: authConfig.account,
+            session: effectiveConfig.session,
+            account: effectiveConfig.account,
             verification: {
-                modelName: authConfig.verification?.modelName || 'verification',
-                disableCleanup: authConfig.verification?.disableCleanup || false,
+                modelName: effectiveConfig.verification?.modelName || 'verification',
+                disableCleanup: effectiveConfig.verification?.disableCleanup || false,
             },
-            trustedOrigins: authConfig.trustedOrigins,
-            rateLimit: authConfig.rateLimit,
-            advanced: authConfig.advanced,
-            disabledPaths: authConfig.disabledPaths || [],
-            telemetry: authConfig.telemetry,
+            trustedOrigins: effectiveConfig.trustedOrigins,
+            rateLimit: effectiveConfig.rateLimit,
+            advanced: effectiveConfig.advanced,
+            disabledPaths: effectiveConfig.disabledPaths || [],
+            telemetry: effectiveConfig.telemetry,
             studio: {
                 version: getStudioVersion(),
                 nodeVersion: process.version,
@@ -497,23 +601,26 @@ export function createRoutes(authConfig, configPath, geoDbPath) {
             let organizationPluginEnabled = false;
             let teamsPluginEnabled = false;
             try {
-                const authConfigPath = configPath || (await findAuthConfigPath());
-                if (authConfigPath) {
-                    const { getConfig } = await import('./config.js');
-                    const betterAuthConfig = await getConfig({
-                        cwd: process.cwd(),
-                        configPath: authConfigPath,
-                        shouldThrowOnError: false,
-                        noCache: true, // Disable cache for real-time plugin checks
-                    });
-                    if (betterAuthConfig) {
-                        const plugins = betterAuthConfig.plugins || [];
-                        const organizationPlugin = plugins.find((plugin) => plugin.id === 'organization');
-                        organizationPluginEnabled = !!organizationPlugin;
-                        teamsPluginEnabled = !!organizationPlugin?.options?.teams?.enabled;
-                        if (organizationPlugin) {
-                            teamsPluginEnabled = organizationPlugin.options?.teams?.enabled === true;
-                        }
+                let betterAuthConfig = preloadedAuthOptions;
+                if (!betterAuthConfig && !isSelfHosted) {
+                    const authConfigPath = configPath || (await findAuthConfigPath());
+                    if (authConfigPath) {
+                        const { getConfig } = await import('./config.js');
+                        betterAuthConfig = await getConfig({
+                            cwd: process.cwd(),
+                            configPath: authConfigPath,
+                            shouldThrowOnError: false,
+                            noCache: true, // Disable cache for real-time plugin checks
+                        });
+                    }
+                }
+                if (betterAuthConfig) {
+                    const plugins = betterAuthConfig.plugins || [];
+                    const organizationPlugin = plugins.find((plugin) => plugin.id === 'organization');
+                    organizationPluginEnabled = !!organizationPlugin;
+                    teamsPluginEnabled = !!organizationPlugin?.options?.teams?.enabled;
+                    if (organizationPlugin) {
+                        teamsPluginEnabled = organizationPlugin.options?.teams?.enabled === true;
                     }
                 }
             }
@@ -1109,7 +1216,6 @@ export function createRoutes(authConfig, configPath, geoDbPath) {
                     authModule = await safeImportAuthConfig(authConfigPath, true); // Disable cache for real-time plugin checks
                 }
                 catch (_importError) {
-                    // Fallback: read file content directly
                     const content = readFileSync(authConfigPath, 'utf-8');
                     authModule = {
                         auth: {
@@ -1608,23 +1714,11 @@ export function createRoutes(authConfig, configPath, geoDbPath) {
     });
     router.post('/api/admin/ban-user', async (req, res) => {
         try {
-            const authConfigPath = configPath || (await findAuthConfigPath());
-            if (!authConfigPath) {
-                return res.status(400).json({
-                    success: false,
-                    error: 'No auth config found',
-                });
-            }
-            const { getConfig } = await import('./config.js');
-            const auth = await getConfig({
-                cwd: process.cwd(),
-                configPath: authConfigPath,
-                shouldThrowOnError: false,
-            });
+            const auth = await getAuthConfigSafe();
             if (!auth) {
                 return res.status(400).json({
                     success: false,
-                    error: 'Failed to load auth config',
+                    error: 'No auth config found',
                 });
             }
             const plugins = auth.plugins || [];
@@ -1659,23 +1753,11 @@ export function createRoutes(authConfig, configPath, geoDbPath) {
     });
     router.post('/api/admin/unban-user', async (req, res) => {
         try {
-            const authConfigPath = configPath || (await findAuthConfigPath());
-            if (!authConfigPath) {
-                return res.status(400).json({
-                    success: false,
-                    error: 'No auth config found',
-                });
-            }
-            const { getConfig } = await import('./config.js');
-            const auth = await getConfig({
-                cwd: process.cwd(),
-                configPath: authConfigPath,
-                shouldThrowOnError: false,
-            });
+            const auth = await getAuthConfigSafe();
             if (!auth) {
                 return res.status(400).json({
                     success: false,
-                    error: 'Failed to load auth config',
+                    error: 'No auth config found',
                 });
             }
             const plugins = auth.plugins || [];
@@ -1710,32 +1792,19 @@ export function createRoutes(authConfig, configPath, geoDbPath) {
     });
     router.get('/api/admin/status', async (_req, res) => {
         try {
-            const authConfigPath = configPath || (await findAuthConfigPath());
-            if (!authConfigPath) {
+            const betterAuthConfig = await getAuthConfigSafe();
+            if (!betterAuthConfig) {
                 return res.json({
                     enabled: false,
                     error: 'No auth config found',
                     configPath: null,
                 });
             }
-            const { getConfig } = await import('./config.js');
-            const betterAuthConfig = await getConfig({
-                cwd: process.cwd(),
-                configPath: authConfigPath,
-                shouldThrowOnError: false,
-            });
-            if (!betterAuthConfig) {
-                return res.json({
-                    enabled: false,
-                    error: 'Failed to load auth config',
-                    configPath: authConfigPath,
-                });
-            }
             const plugins = betterAuthConfig.plugins || [];
             const adminPlugin = plugins.find((plugin) => plugin.id === 'admin');
             res.json({
                 enabled: !!adminPlugin,
-                configPath: authConfigPath,
+                configPath: configPath || null,
                 adminPlugin: adminPlugin || null,
             });
         }
@@ -1950,50 +2019,31 @@ export function createRoutes(authConfig, configPath, geoDbPath) {
     });
     router.get('/api/plugins/teams/status', async (_req, res) => {
         try {
-            const authConfigPath = configPath || (await findAuthConfigPath());
-            if (!authConfigPath) {
+            const betterAuthConfig = await getAuthConfigSafe();
+            if (!betterAuthConfig) {
                 return res.json({
                     enabled: false,
                     error: 'No auth config found',
                     configPath: null,
                 });
             }
-            try {
-                const { getConfig } = await import('./config.js');
-                const betterAuthConfig = await getConfig({
-                    cwd: process.cwd(),
-                    configPath: authConfigPath,
-                    shouldThrowOnError: false,
-                    noCache: true, // Disable cache for real-time plugin status checks
-                });
-                if (betterAuthConfig) {
-                    const plugins = betterAuthConfig.plugins || [];
-                    const organizationPlugin = plugins.find((plugin) => plugin.id === 'organization');
-                    if (organizationPlugin) {
-                        const teamsEnabled = organizationPlugin.options?.teams?.enabled === true;
-                        return res.json({
-                            enabled: teamsEnabled,
-                            configPath: authConfigPath,
-                            organizationPlugin: organizationPlugin || null,
-                        });
-                    }
-                    else {
-                        return res.json({
-                            enabled: false,
-                            configPath: authConfigPath,
-                            organizationPlugin: null,
-                            error: 'Organization plugin not found',
-                        });
-                    }
-                }
-                res.json({
-                    enabled: false,
-                    error: 'Failed to load auth config - getConfig failed and regex extraction unavailable',
-                    configPath: authConfigPath,
+            const plugins = betterAuthConfig.plugins || [];
+            const organizationPlugin = plugins.find((plugin) => plugin.id === 'organization');
+            if (organizationPlugin) {
+                const teamsEnabled = organizationPlugin.options?.teams?.enabled === true;
+                return res.json({
+                    enabled: teamsEnabled,
+                    configPath: configPath || null,
+                    organizationPlugin: organizationPlugin || null,
                 });
             }
-            catch (_error) {
-                res.status(500).json({ error: 'Failed to check teams status' });
+            else {
+                return res.json({
+                    enabled: false,
+                    configPath: configPath || null,
+                    organizationPlugin: null,
+                    error: 'Organization plugin not found',
+                });
             }
         }
         catch (_error) {
@@ -2591,41 +2641,22 @@ export function createRoutes(authConfig, configPath, geoDbPath) {
     });
     router.get('/api/plugins/organization/status', async (_req, res) => {
         try {
-            const authConfigPath = configPath || (await findAuthConfigPath());
-            if (!authConfigPath) {
+            const betterAuthConfig = await getAuthConfigSafe();
+            if (!betterAuthConfig) {
                 return res.json({
                     enabled: false,
                     error: 'No auth config found',
                     configPath: null,
                 });
             }
-            try {
-                const { getConfig } = await import('./config.js');
-                const betterAuthConfig = await getConfig({
-                    cwd: process.cwd(),
-                    configPath: authConfigPath,
-                    shouldThrowOnError: false,
-                    noCache: true,
-                });
-                if (betterAuthConfig) {
-                    const plugins = betterAuthConfig?.plugins || [];
-                    const hasOrganizationPlugin = plugins.find((plugin) => plugin.id === 'organization');
-                    return res.json({
-                        enabled: !!hasOrganizationPlugin,
-                        configPath: authConfigPath,
-                        availablePlugins: plugins.map((p) => p.id) || [],
-                        organizationPlugin: hasOrganizationPlugin || null,
-                    });
-                }
-                res.json({
-                    enabled: false,
-                    error: 'Failed to load auth config - getConfig failed and regex extraction unavailable',
-                    configPath: authConfigPath,
-                });
-            }
-            catch (_error) {
-                res.status(500).json({ error: 'Failed to check plugin status' });
-            }
+            const plugins = betterAuthConfig?.plugins || [];
+            const hasOrganizationPlugin = plugins.find((plugin) => plugin.id === 'organization');
+            return res.json({
+                enabled: !!hasOrganizationPlugin,
+                configPath: configPath || null,
+                availablePlugins: plugins.map((p) => p.id) || [],
+                organizationPlugin: hasOrganizationPlugin || null,
+            });
         }
         catch (_error) {
             res.status(500).json({ error: 'Failed to check plugin status' });
@@ -2854,7 +2885,6 @@ export function createRoutes(authConfig, configPath, geoDbPath) {
             if (!adapter) {
                 return res.status(500).json({ error: 'Auth adapter not available' });
             }
-            // @ts-expect-error
             const user = await adapter.findOne({
                 model: 'user',
                 where: [{ field: 'id', value: userId }],
@@ -2908,7 +2938,6 @@ export function createRoutes(authConfig, configPath, geoDbPath) {
             if (!adapter) {
                 return res.status(500).json({ error: 'Auth adapter not available' });
             }
-            // @ts-expect-error
             const user = await adapter.findOne({
                 model: 'user',
                 where: [{ field: 'id', value: userId }],
@@ -5003,5 +5032,106 @@ export const authClient = createAuthClient({
         }
     });
     return router;
+}
+export async function handleStudioApiRequest(ctx) {
+    let preloadedAdapter = null;
+    if (ctx.auth) {
+        try {
+            const context = await ctx.auth.$context;
+            if (context?.adapter) {
+                preloadedAdapter = context.adapter;
+            }
+        }
+        catch {
+        }
+    }
+    const authOptions = ctx.auth?.options || null;
+    const router = createRoutes(ctx.auth, ctx.configPath || '', undefined, preloadedAdapter, authOptions);
+    const [pathname, queryString] = ctx.path.split('?');
+    const query = {};
+    if (queryString) {
+        queryString.split('&').forEach(param => {
+            const [key, value] = param.split('=');
+            if (key)
+                query[key] = decodeURIComponent(value || '');
+        });
+    }
+    try {
+        const route = findMatchingRoute(router, pathname, ctx.method);
+        if (!route) {
+            return { status: 404, data: { error: 'Not found', path: pathname } };
+        }
+        const mockReq = {
+            method: ctx.method,
+            url: ctx.path,
+            path: pathname,
+            originalUrl: ctx.path,
+            headers: ctx.headers,
+            body: ctx.body,
+            query: query,
+            params: route.params,
+        };
+        let responseStatus = 200;
+        let responseData = {};
+        const mockRes = {
+            status: (code) => {
+                responseStatus = code;
+                return mockRes;
+            },
+            json: (data) => {
+                responseData = data;
+                return mockRes;
+            },
+            send: (data) => {
+                responseData = data;
+                return mockRes;
+            },
+        };
+        await route.handler(mockReq, mockRes);
+        return { status: responseStatus, data: responseData };
+    }
+    catch (error) {
+        console.error('Studio API error:', error);
+        return { status: 500, data: { error: 'Internal server error' } };
+    }
+}
+function findMatchingRoute(router, path, method) {
+    const routes = router.stack || [];
+    for (const layer of routes) {
+        if (layer.route) {
+            const routePath = layer.route.path;
+            const routeMethods = Object.keys(layer.route.methods);
+            if (routeMethods.includes(method.toLowerCase())) {
+                const params = extractParams(routePath, path);
+                if (params !== null) {
+                    return {
+                        handler: layer.route.stack[0].handle,
+                        params,
+                    };
+                }
+            }
+        }
+    }
+    return null;
+}
+function extractParams(routePath, requestPath) {
+    if (routePath === requestPath)
+        return {};
+    const paramNames = [];
+    const routeRegex = routePath
+        .replace(/:([^/]+)/g, (_, paramName) => {
+        paramNames.push(paramName);
+        return '([^/]+)';
+    })
+        .replace(/\*/g, '.*');
+    const regex = new RegExp(`^${routeRegex}$`);
+    const match = requestPath.match(regex);
+    if (!match)
+        return null;
+    const params = {};
+    paramNames.forEach((name, index) => {
+        params[name] = match[index + 1];
+    });
+    return params;
 }
 //# sourceMappingURL=routes.js.map

@@ -10,6 +10,7 @@ import { findAuthConfig } from './config.js';
 import { startStudio } from './studio.js';
 import { detectDatabaseWithDialect } from './utils/database-detection.js';
 import { possibleConfigFiles } from './utils.js';
+import { initCommand } from './cli/commands/init.js';
 async function findAuthConfigPath() {
     let currentDir = process.cwd();
     const maxDepth = 10;
@@ -346,6 +347,18 @@ program
         }
     }
     catch (_error) {
+        process.exit(1);
+    }
+});
+program
+    .command('init')
+    .description('Initialize Better Auth Studio for self-hosting')
+    .action(async () => {
+    try {
+        await initCommand();
+    }
+    catch (error) {
+        console.error(chalk.red('Error initializing studio:'), error);
         process.exit(1);
     }
 });

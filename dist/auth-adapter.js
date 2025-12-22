@@ -43,7 +43,7 @@ export async function getAuthAdapter(configPath) {
             const configDir = dirname(resolve(importPath));
             const projectRoot = findTsconfigPath(configDir) || process.cwd();
             const alias = getPathAliases(projectRoot) || {};
-            const jitiInstance = createJiti(importPath, {
+            const jitiInstance = createJiti(projectRoot, {
                 debug: false,
                 fsCache: true,
                 moduleCache: true,

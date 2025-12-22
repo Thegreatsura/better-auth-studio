@@ -3,7 +3,8 @@ dotenv.config();
 import express from 'express';
 import { auth } from './auth';
 import { toNodeHandler } from "better-auth/node";
-
+import { betterAuthStudio } from 'better-auth-studio/express';
+import studioConfig from '../studio.config';
 const app = express();
 const PORT = process.env.PORT || 3000;
 const allowedOrigins = new Set([
@@ -37,6 +38,8 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString()
   });
 });
+
+app.use('/api/studio', betterAuthStudio(studioConfig));
 
 // Root endpoint
 app.get('/', async (req, res) => {

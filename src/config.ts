@@ -211,6 +211,7 @@ const jitiOptions = (cwd: string, noCache = false): JO => {
     },
     extensions: ['.ts', '.js', '.tsx', '.jsx'],
     alias,
+    interopDefault: true,
   };
 };
 
@@ -256,6 +257,7 @@ export async function getConfig({
           }
       >({
         configFile: resolvedPath,
+        cwd: projectRoot, // Set the working directory for module resolution
         dotenv: true,
         jitiOptions: jitiOptions(projectRoot, noCache),
       });
@@ -286,6 +288,7 @@ export async function getConfig({
             };
           }>({
             configFile: possiblePath,
+            cwd: cwd, // Set the working directory for module resolution
             jitiOptions: jitiOptions(cwd, noCache),
           });
           const hasConfig = Object.keys(config).length > 0;

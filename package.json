@@ -3,11 +3,19 @@
   "version": "1.0.79-beta.1",
   "description": "Studio for Better Auth",
   "main": "dist/index.js",
+  "type": "module",
   "bin": {
     "better-auth-studio": "./dist/cli.js"
   },
+  "exports": {
+    ".": "./dist/index.js",
+    "./express": "./dist/adapters/express.js",
+    "./nextjs": "./dist/adapters/nextjs.js",
+    "./config": "./dist/types/handler.js"
+  },
   "scripts": {
-    "build": "tsc && pnpm run frontend:build",
+    "build": "tsc && pnpm run frontend:build && pnpm run copy:public",
+    "copy:public": "cp -r public dist/",
     "dev": "tsx src/cli.ts",
     "start": "node dist/cli.js",
     "studio": "tsx src/cli.ts",

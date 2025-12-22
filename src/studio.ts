@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -9,6 +10,7 @@ import type { WebSocket } from 'ws';
 import { WebSocketServer } from 'ws';
 import type { AuthConfig } from './config.js';
 import { createRoutes } from './routes.js';
+import { serveIndexHtml } from './utils/html-injector.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -91,10 +93,35 @@ export async function startStudio(options: StudioOptions) {
 
   app.use(createRoutes(authConfig, configPath, geoDbPath));
 
-  app.use(express.static(join(__dirname, '../public')));
+  // Resolve public directory - works for both dev and installed package
+  const publicDir = existsSync(join(__dirname, '../public'))
+    ? join(__dirname, '../public')
+    : join(__dirname, '../../public');
 
+  // Serve only assets directory and vite.svg
+  app.use('/assets', express.static(join(publicDir, 'assets'), {
+    setHeaders: (res) => {
+      res.setHeader('Cache-Control', 'public, max-age=31536000');
+    }
+  }));
+  
+  app.get('/vite.svg', (_req, res) => {
+    res.sendFile(join(publicDir, 'vite.svg'));
+  });
+
+  // All other routes serve index.html with config injection (SPA)
   app.get('*', (_req, res) => {
-    res.sendFile(join(__dirname, '../public/index.html'));
+    // Use shared HTML injection utility with CLI-specific config
+    const html = serveIndexHtml(publicDir, {
+      basePath: '', // CLI studio uses root path
+      metadata: {
+        title: 'Better Auth Studio',
+        theme: 'dark',
+      }
+    });
+    
+    res.setHeader('Content-Type', 'text/html');
+    res.send(html);
   });
 
   server.listen(port, host, () => {
