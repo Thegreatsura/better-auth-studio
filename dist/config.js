@@ -19,6 +19,21 @@ possiblePaths = [
     ...possiblePaths.map((it) => `app/${it}`),
     ...possiblePaths.map((it) => `apps/${it}`),
 ];
+/**
+ * Find tsconfig.json by searching upwards from a starting directory
+ */
+function findTsconfigPath(startDir) {
+    let currentDir = path.resolve(startDir);
+    const root = path.parse(currentDir).root;
+    while (currentDir !== root) {
+        const tsconfigPath = path.join(currentDir, 'tsconfig.json');
+        if (fs.existsSync(tsconfigPath)) {
+            return currentDir;
+        }
+        currentDir = path.dirname(currentDir);
+    }
+    return null;
+}
 function resolveReferencePath(configDir, refPath) {
     const resolvedPath = path.resolve(configDir, refPath);
     if (refPath.endsWith('.json')) {
@@ -98,59 +113,18 @@ export function getPathAliases(cwd) {
         addSvelteKitEnvModules(result);
         return result;
     }
-    catch (_error) {
+    catch (error) {
+        if (error instanceof Error) {
+            logger.error(error.message);
+        }
         throw new BetterAuthError('Error parsing tsconfig.json');
     }
 }
 /**
- * Resolve aliased imports from config file content
- */
-function resolveAliasedImports(configFilePath, cwd) {
-    const aliases = {};
-    if (!existsSync(configFilePath)) {
-        return aliases;
-    }
-    const content = fs.readFileSync(configFilePath, 'utf-8');
-    const configDir = path.dirname(path.resolve(configFilePath));
-    const tsconfigAliases = getPathAliases(configDir) || {};
-    const aliasImportRegex = /import\s+.*?\s+from\s+['"](@[^'"]+)['"]/g;
-    let match;
-    while ((match = aliasImportRegex.exec(content)) !== null) {
-        const aliasPath = match[1];
-        const aliasBase = aliasPath.split('/')[0];
-        if (tsconfigAliases[aliasBase + '/']) {
-            const remainingPath = aliasPath.replace(aliasBase + '/', '');
-            const resolvedPath = path.join(tsconfigAliases[aliasBase + '/'], remainingPath);
-            const possiblePaths = [
-                `${resolvedPath}.ts`,
-                `${resolvedPath}.js`,
-                `${resolvedPath}.mjs`,
-                `${resolvedPath}.cjs`,
-                path.join(resolvedPath, 'index.ts'),
-                path.join(resolvedPath, 'index.js'),
-                path.join(resolvedPath, 'index.mjs'),
-                path.join(resolvedPath, 'index.cjs'),
-            ];
-            for (const filePath of possiblePaths) {
-                if (existsSync(filePath)) {
-                    aliases[aliasPath] = filePath;
-                    break;
-                }
-            }
-        }
-    }
-    return aliases;
-}
-/**
  * .tsx files are not supported by Jiti.
  */
-const jitiOptions = (cwd, configFilePath, noCache = false) => {
-    let alias = {};
-    if (configFilePath) {
-        alias = resolveAliasedImports(configFilePath, cwd);
-    }
-    const generalAliases = getPathAliases(cwd) || {};
-    alias = { ...generalAliases, ...alias };
+const jitiOptions = (cwd, noCache = false) => {
+    const alias = getPathAliases(cwd) || {};
     return {
         debug: false,
         fsCache: noCache ? false : undefined,
@@ -169,7 +143,7 @@ const jitiOptions = (cwd, configFilePath, noCache = false) => {
                 ],
             },
         },
-        extensions: ['.ts', '.js'],
+        extensions: ['.ts', '.js', '.tsx', '.jsx'],
         alias,
     };
 };
@@ -187,12 +161,13 @@ export async function getConfig({ cwd, configPath, shouldThrowOnError = false, n
             let resolvedPath = path.join(cwd, configPath);
             if (existsSync(configPath))
                 resolvedPath = configPath;
-            // Use config file's directory for resolving path aliases
+            // Find the project root with tsconfig.json by searching upwards from the config file
             const configDir = path.dirname(path.resolve(resolvedPath));
+            const projectRoot = findTsconfigPath(configDir) || cwd;
             const { config } = await loadConfig({
                 configFile: resolvedPath,
                 dotenv: true,
-                jitiOptions: jitiOptions(configDir, resolvedPath, noCache),
+                jitiOptions: jitiOptions(projectRoot, noCache),
             });
             if (!('auth' in config) && !isDefaultExport(config)) {
                 if (shouldThrowOnError) {
@@ -209,7 +184,7 @@ export async function getConfig({ cwd, configPath, shouldThrowOnError = false, n
                     const fullPath = path.join(cwd, possiblePath);
                     const { config } = await loadConfig({
                         configFile: possiblePath,
-                        jitiOptions: jitiOptions(cwd, fullPath, noCache),
+                        jitiOptions: jitiOptions(cwd, noCache),
                     });
                     const hasConfig = Object.keys(config).length > 0;
                     if (hasConfig) {

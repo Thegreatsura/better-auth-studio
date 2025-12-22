@@ -1,11 +1,31 @@
 import { randomBytes } from 'node:crypto';
 import { existsSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve, parse } from 'node:path';
+// @ts-expect-error - No types available
+import babelPresetReact from '@babel/preset-react';
+// @ts-expect-error - No types available
+import babelPresetTypeScript from '@babel/preset-typescript';
 // @ts-expect-error - No types available for current moduleResolution and bundler mode
 import { hex } from '@better-auth/utils/hex';
 import { scryptAsync } from '@noble/hashes/scrypt.js';
 import { createJiti } from 'jiti';
+import { getPathAliases } from './config.js';
 import { possibleConfigFiles } from './utils.js';
+/**
+ * Find tsconfig.json by searching upwards from a starting directory
+ */
+function findTsconfigPath(startDir) {
+    let currentDir = resolve(startDir);
+    const root = parse(currentDir).root;
+    while (currentDir !== root) {
+        const tsconfigPath = join(currentDir, 'tsconfig.json');
+        if (existsSync(tsconfigPath)) {
+            return currentDir;
+        }
+        currentDir = dirname(currentDir);
+    }
+    return null;
+}
 const _authInstance = null;
 let authAdapter = null;
 export async function getAuthAdapter(configPath) {
@@ -20,11 +40,30 @@ export async function getAuthAdapter(configPath) {
             if (!authConfigPath.startsWith('/')) {
                 importPath = join(process.cwd(), authConfigPath);
             }
+            const configDir = dirname(resolve(importPath));
+            const projectRoot = findTsconfigPath(configDir) || process.cwd();
+            const alias = getPathAliases(projectRoot) || {};
             const jitiInstance = createJiti(importPath, {
                 debug: false,
                 fsCache: true,
                 moduleCache: true,
                 interopDefault: true,
+                alias,
+                transformOptions: {
+                    babel: {
+                        presets: [
+                            [
+                                babelPresetTypeScript,
+                                {
+                                    isTSX: true,
+                                    allExtensions: true,
+                                },
+                            ],
+                            [babelPresetReact, { runtime: 'automatic' }],
+                        ],
+                    },
+                },
+                extensions: ['.ts', '.js', '.tsx', '.jsx', '.mjs', '.cjs'],
             });
             authModule = await jitiInstance.import(importPath);
         }

@@ -1,13 +1,14 @@
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { organization, admin } from 'better-auth/plugins';
-import { prisma } from './db';
-import { Account } from 'better-auth';
+import { prisma } from '@/lib/db';
+import { buttonConfig, apiConfig } from '@/components/Button';
+
 export const auth = betterAuth({
   secret: process.env.AUTH_SECRET || 'better-auth-secret-123456789',
   database: prismaAdapter(prisma, { provider: 'postgresql' }),
   baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:3000',
-  basePath: '/api/auth',
+  basePath: apiConfig.basePath,
   socialProviders: {
     github: {
       clientId: process.env.GITHUB_CLIENT_ID || '',
@@ -26,7 +27,9 @@ export const auth = betterAuth({
     maxPasswordLength: 128,
     autoSignIn: true,
     sendResetPassword: async ({ user, url, token }) => {
-      console.log(`Reset password email for ${user.email}: ${url}`);
+      const size = buttonConfig.size;
+      const color = buttonConfig.color;
+      console.log(`Reset password email for ${user.email}: ${url} [Button: ${size}/${color}]`);
     },
     resetPasswordTokenExpiresIn: 3600,
   },
