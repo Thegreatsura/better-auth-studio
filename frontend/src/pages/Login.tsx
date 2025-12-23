@@ -146,7 +146,7 @@ export default function LoginPage() {
                         </div>
 
                         <div className="mt-4 grid grid-cols-2 gap-2">
-                            <button
+                            {/* <button
                                 type="button"
                                 onClick={() => handleOAuthLogin('github')}
                                 className="h-10 border border-dashed border-white/20 text-white text-xs font-mono uppercase tracking-wider hover:bg-white/5 hover:border-white/30 transition-colors flex items-center justify-center gap-2"
@@ -168,7 +168,7 @@ export default function LoginPage() {
                                     <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                                 </svg>
                                 Google
-                            </button>
+                            </button> */}
                         </div>
                     </div>
 
