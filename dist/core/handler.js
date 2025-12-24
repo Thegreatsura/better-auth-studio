@@ -220,9 +220,7 @@ function findPublicDir() {
                 }
             }
         }
-        catch (error) {
-            continue;
-        }
+        catch (error) { }
     }
     // Fallback: return the first existing directory
     for (const candidate of candidates) {
@@ -231,9 +229,7 @@ function findPublicDir() {
                 return candidate;
             }
         }
-        catch (error) {
-            continue;
-        }
+        catch (error) { }
     }
     // Log error details for debugging
     console.error('[Studio] Could not find public directory');

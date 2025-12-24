@@ -6,8 +6,12 @@
  * the public directory isn't extracted properly (e.g., Vercel with pnpm)
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Find the package root
 const packageRoot = path.resolve(__dirname, '..');
