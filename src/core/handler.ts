@@ -206,15 +206,44 @@ async function handleApiRoute(
 }
 
 function findPublicDir(): string | null {
-  // When built and deployed (e.g., on Vercel), the structure is:
-  // node_modules/better-auth-studio/dist/core/handler.js
-  // node_modules/better-auth-studio/dist/public/
-  // So from __dirname (dist/core), we need to go up one level (../public)
-
-  // Use both __dirname and __realdir to handle symlinks (pnpm on Vercel)
-  const baseDirs = [__dirname, __realdir];
+  // Vercel recommendation: use process.cwd() to find files relative to project root
+  // This helps Vercel's Node File Trace include the files in the bundle
   const candidates: string[] = [];
 
+  // Method 1: Use process.cwd() to find node_modules (Vercel's recommended approach)
+  try {
+    const cwd = process.cwd();
+    const nodeModulesPath = join(cwd, 'node_modules');
+    const pnpmStorePath = join(nodeModulesPath, '.pnpm');
+    
+    candidates.push(
+      join(nodeModulesPath, 'better-auth-studio', 'dist', 'public'),
+      join(nodeModulesPath, 'better-auth-studio', 'public')
+    );
+    
+    // Check pnpm store if it exists
+    if (existsSync(pnpmStorePath)) {
+      try {
+        const pnpmDirs = readdirSync(pnpmStorePath);
+        for (const dir of pnpmDirs) {
+          if (dir.startsWith('better-auth-studio@')) {
+            const pnpmPackagePath = join(pnpmStorePath, dir, 'node_modules', 'better-auth-studio');
+            candidates.unshift(
+              join(pnpmPackagePath, 'dist', 'public'),
+              join(pnpmPackagePath, 'public')
+            );
+          }
+        }
+      } catch (err) {
+        // Silent failure
+      }
+    }
+  } catch (err) {
+    // Silent failure
+  }
+
+  // Method 2: Use __dirname relative paths (fallback for non-Vercel deployments)
+  const baseDirs = [__dirname, __realdir];
   for (const baseDir of baseDirs) {
     candidates.push(
       resolve(baseDir, '../public'), // dist/core -> dist/public (production)
@@ -225,7 +254,7 @@ function findPublicDir(): string | null {
     );
   }
 
-  // For pnpm on Vercel, also check the actual package location in the store
+  // Method 3: For pnpm on Vercel, check the actual package location in the store
   const pnpmMatch = __dirname.match(/(.+\/.pnpm\/[^/]+\/node_modules\/better-auth-studio)\//);
   if (pnpmMatch) {
     const pnpmPackageRoot = pnpmMatch[1];
@@ -236,7 +265,7 @@ function findPublicDir(): string | null {
     );
   }
 
-  // Also try to find package.json and work from there
+  // Method 4: Find package.json and work from there
   try {
     let searchDir = __dirname;
     for (let i = 0; i < 5; i++) {
@@ -316,15 +345,21 @@ function handleStaticFile(path: string, config: StudioConfig): UniversalResponse
   <h1>⚠️ Studio UI Not Available</h1>
   <p>The Better Auth Studio UI assets could not be located. This typically happens on serverless deployments with pnpm.</p>
   
-  <div class="steps">
-    <h3>To fix this:</h3>
-    <ol>
-      <li>Check your deployment logs for postinstall output</li>
-      <li>Ensure <code>better-auth-studio</code> is in <code>dependencies</code> (not devDependencies)</li>
-      <li>If using pnpm, try setting <code>public-hoist-pattern[]=better-auth-studio</code> in <code>.npmrc</code></li>
-      <li>Try clearing your build cache and redeploying</li>
-    </ol>
-  </div>
+      <div class="steps">
+        <h3>To fix this:</h3>
+        <ol>
+          <li><strong>For Next.js:</strong> Add to <code>next.config.js</code>:
+            <pre style="background: #1a202c; color: #e2e8f0; padding: 10px; border-radius: 4px; overflow-x: auto; margin: 10px 0;">
+experimental: {
+  outputFileTracingIncludes: {
+    '/api/studio': ['./node_modules/better-auth-studio/dist/public/**/*', './node_modules/better-auth-studio/public/**/*'],
+  },
+}</pre>
+          </li>
+          <li>Ensure <code>better-auth-studio</code> is in <code>dependencies</code> (not devDependencies)</li>
+          <li>Clear your build cache and redeploy</li>
+        </ol>
+      </div>
   
   <p><strong>Need help?</strong> Visit <a href="https://github.com/better-auth/better-auth-studio/issues">GitHub Issues</a></p>
 </body>
@@ -334,8 +369,8 @@ function handleStaticFile(path: string, config: StudioConfig): UniversalResponse
 
     return jsonResponse(503, {
       error: 'Public directory not found',
-      message: 'Studio UI assets could not be located. This may be a deployment issue.',
-      suggestion: 'Check deployment logs for postinstall errors or try clearing build cache.',
+      message: 'Studio UI assets could not be located. This is likely a Vercel bundling issue.',
+      suggestion: 'For Next.js, add outputFileTracingIncludes to next.config.js to include the public directory. See the HTML error page for details.',
     });
   }
 
