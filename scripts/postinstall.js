@@ -16,10 +16,30 @@ const publicInDist = path.join(distDir, 'public');
 const publicInRoot = path.join(packageRoot, 'public');
 
 console.log('[better-auth-studio] Running postinstall...');
+console.log('[better-auth-studio] Package root:', packageRoot);
+
+// List what's actually in the package
+try {
+  const packageContents = fs.readdirSync(packageRoot);
+  console.log('[better-auth-studio] Package contents:', packageContents.join(', '));
+  
+  if (fs.existsSync(distDir)) {
+    const distContents = fs.readdirSync(distDir);
+    console.log('[better-auth-studio] dist/ contents:', distContents.join(', '));
+  } else {
+    console.log('[better-auth-studio] dist/ directory does not exist');
+  }
+} catch (err) {
+  console.warn('[better-auth-studio] Could not list package contents:', err.message);
+}
 
 // Check if either public directory exists
 const hasPublicInDist = fs.existsSync(publicInDist) && fs.existsSync(path.join(publicInDist, 'index.html'));
 const hasPublicInRoot = fs.existsSync(publicInRoot) && fs.existsSync(path.join(publicInRoot, 'index.html'));
+
+console.log('[better-auth-studio] Checking public directories...');
+console.log('[better-auth-studio] - dist/public exists:', hasPublicInDist);
+console.log('[better-auth-studio] - public/ exists:', hasPublicInRoot);
 
 if (hasPublicInDist || hasPublicInRoot) {
   console.log('[better-auth-studio] ✓ Public directory found');

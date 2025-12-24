@@ -300,10 +300,49 @@ function handleStaticFile(path: string, config: StudioConfig): UniversalResponse
   }
 
   if (!cachedPublicDir) {
-    return jsonResponse(500, {
+    // Fallback: serve a basic error page with instructions
+    if (path === '/' || path === '') {
+      return {
+        status: 503,
+        headers: {
+          'Content-Type': 'text/html',
+          'Cache-Control': 'no-cache',
+        },
+        body: `<!DOCTYPE html>
+<html>
+<head>
+  <title>Better Auth Studio - Setup Required</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; line-height: 1.6; }
+    h1 { color: #e53e3e; }
+    code { background: #f7fafc; padding: 2px 6px; border-radius: 3px; }
+    .steps { background: #edf2f7; padding: 20px; border-radius: 8px; margin: 20px 0; }
+  </style>
+</head>
+<body>
+  <h1>⚠️ Studio UI Not Available</h1>
+  <p>The Better Auth Studio UI assets could not be located. This typically happens on serverless deployments with pnpm.</p>
+  
+  <div class="steps">
+    <h3>To fix this:</h3>
+    <ol>
+      <li>Check your deployment logs for postinstall output</li>
+      <li>Ensure <code>better-auth-studio</code> is in <code>dependencies</code> (not devDependencies)</li>
+      <li>If using pnpm, try setting <code>public-hoist-pattern[]=better-auth-studio</code> in <code>.npmrc</code></li>
+      <li>Try clearing your build cache and redeploying</li>
+    </ol>
+  </div>
+  
+  <p><strong>Need help?</strong> Visit <a href="https://github.com/better-auth/better-auth-studio/issues">GitHub Issues</a></p>
+</body>
+</html>`,
+      };
+    }
+    
+    return jsonResponse(503, {
       error: 'Public directory not found',
       message: 'Studio UI assets could not be located. This may be a deployment issue.',
-      suggestion: 'Try reinstalling the package or check deployment logs for errors.',
+      suggestion: 'Check deployment logs for postinstall errors or try clearing build cache.',
     });
   }
 
