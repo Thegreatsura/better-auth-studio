@@ -224,6 +224,44 @@ function findPublicDir(): string | null {
       resolve(baseDir, '../../../dist/public') // deeply nested
     );
   }
+  
+  // For pnpm on Vercel, also check the actual package location in the store
+  // Path is like: /vercel/path0/node_modules/.pnpm/better-auth-studio@version_hash/node_modules/better-auth-studio/
+  const pnpmMatch = __dirname.match(/(.+\/.pnpm\/[^/]+\/node_modules\/better-auth-studio)\//);
+  if (pnpmMatch) {
+    const pnpmPackageRoot = pnpmMatch[1];
+    console.log(`[Studio Debug] Detected pnpm package root: ${pnpmPackageRoot}`);
+    // Check both with and without dist, as pnpm might flatten differently
+    candidates.unshift(
+      join(pnpmPackageRoot, 'dist', 'public'),
+      join(pnpmPackageRoot, 'public'),
+      join(pnpmPackageRoot, '..', 'dist', 'public'), // One level up
+    );
+  }
+  
+  // Also try to find package.json and work from there
+  try {
+    let searchDir = __dirname;
+    for (let i = 0; i < 5; i++) {
+      const pkgPath = join(searchDir, 'package.json');
+      if (existsSync(pkgPath)) {
+        const pkgContent = readFileSync(pkgPath, 'utf-8');
+        if (pkgContent.includes('"name": "better-auth-studio"')) {
+          console.log(`[Studio Debug] Found package.json at: ${searchDir}`);
+          candidates.unshift(
+            join(searchDir, 'dist', 'public'),
+            join(searchDir, 'public')
+          );
+          break;
+        }
+      }
+      searchDir = resolve(searchDir, '..');
+    }
+  } catch (err) {
+    console.log(`[Studio Debug] Error searching for package.json:`, err);
+  }
+
+  console.log(`[Studio Debug] Searching for public directory, ${candidates.length} candidates`);
 
   // First, try to find a directory with index.html
   for (const candidate of candidates) {
@@ -285,8 +323,16 @@ function findPublicDir(): string | null {
       const contents = readdirSync(distDir);
       console.error('[Studio] Contents of dist directory:', contents);
     }
+    
+    // Also check the package root
+    const packageRoot = resolve(__dirname, '../..');
+    console.error('[Studio] Checking package root:', packageRoot);
+    if (existsSync(packageRoot)) {
+      const rootContents = readdirSync(packageRoot);
+      console.error('[Studio] Contents of package root:', rootContents);
+    }
   } catch (err) {
-    console.error('[Studio] Could not read dist directory:', err);
+    console.error('[Studio] Could not read directories:', err);
   }
   
   return null;

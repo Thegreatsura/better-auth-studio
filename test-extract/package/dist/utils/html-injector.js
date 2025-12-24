@@ -1,0 +1,61 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+export function serveIndexHtml(publicDir, config = {}) {
+    const indexPath = join(publicDir, 'index.html');
+    let html = readFileSync(indexPath, 'utf-8');
+    const frontendConfig = prepareFrontendConfig(config);
+    html = injectConfig(html, frontendConfig);
+    return html;
+}
+function prepareFrontendConfig(config) {
+    const defaultMetadata = {
+        title: 'Better Auth Studio',
+        logo: '',
+        favicon: '',
+        company: {
+            name: '',
+            website: '',
+        },
+        theme: 'dark',
+        customStyles: '',
+    };
+    const mergedMetadata = {
+        ...defaultMetadata,
+        ...(config.metadata || {}),
+        company: {
+            ...defaultMetadata.company,
+            ...(config.metadata?.company || {}),
+        },
+    };
+    return {
+        basePath: config.basePath || '',
+        metadata: mergedMetadata,
+    };
+}
+function injectConfig(html, config) {
+    // Safely serialize (prevent XSS)
+    const safeJson = JSON.stringify(config)
+        .replace(/</g, '\\u003c')
+        .replace(/>/g, '\\u003e')
+        .replace(/&/g, '\\u0026');
+    const script = `
+    <script>
+      window.__STUDIO_CONFIG__ = ${safeJson};
+      Object.freeze(window.__STUDIO_CONFIG__);
+    </script>
+  `;
+    let modifiedHtml = html;
+    if (config.basePath) {
+        const basePath = config.basePath;
+        modifiedHtml = modifiedHtml
+            .replace(/href="\/assets\//g, `href="${basePath}/assets/`)
+            .replace(/src="\/assets\//g, `src="${basePath}/assets/`)
+            .replace(/href="\/vite\.svg"/g, `href="${basePath}/vite.svg"`)
+            .replace(/href="\/favicon\.svg"/g, `href="${basePath}/favicon.svg"`)
+            .replace(/href="\/logo\.png"/g, `href="${basePath}/logo.png"`)
+            .replace(/src="\/logo\.png"/g, `src="${basePath}/logo.png"`);
+    }
+    // Inject the script before </head>
+    return modifiedHtml.replace('</head>', `${script}</head>`);
+}
+//# sourceMappingURL=html-injector.js.map
