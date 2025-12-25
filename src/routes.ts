@@ -1044,7 +1044,7 @@ export function createRoutes(
 
   router.get('/api/stats', async (_req: Request, res: Response) => {
     try {
-      const stats = await getAuthData(authConfig, 'stats', undefined, configPath);
+      const stats = await getAuthData(authConfig, 'stats', undefined, configPath, preloadedAdapter);
       res.json(stats);
     } catch (_error) {
       res.status(500).json({ error: 'Failed to fetch statistics' });
@@ -1063,7 +1063,8 @@ export function createRoutes(
           from: from as string | undefined,
           to: to as string | undefined,
         },
-        configPath
+        configPath,
+        preloadedAdapter
       );
       res.json(analytics);
     } catch (_error) {
@@ -1662,7 +1663,7 @@ export function createRoutes(
         }
       } catch (_adapterError) {}
 
-      const result = await getAuthData(authConfig, 'users', { page, limit, search }, configPath);
+      const result = await getAuthData(authConfig, 'users', { page, limit, search }, configPath, preloadedAdapter);
 
       const transformedUsers = (result.data || []).map((user: any) => ({
         id: user.id,
@@ -1690,7 +1691,7 @@ export function createRoutes(
       const page = parseInt(req.query.page as string, 10) || 1;
       const limit = parseInt(req.query.limit as string, 10) || 20;
 
-      const sessions = await getAuthData(authConfig, 'sessions', { page, limit }, configPath);
+      const sessions = await getAuthData(authConfig, 'sessions', { page, limit }, configPath, preloadedAdapter);
       res.json(sessions);
     } catch (_error) {
       res.status(500).json({ error: 'Failed to fetch sessions' });
@@ -1699,7 +1700,7 @@ export function createRoutes(
 
   router.get('/api/providers', async (_req: Request, res: Response) => {
     try {
-      const providers = await getAuthData(authConfig, 'providers', undefined, configPath);
+      const providers = await getAuthData(authConfig, 'providers', undefined, configPath, preloadedAdapter);
       res.json(providers);
     } catch (_error) {
       res.status(500).json({ error: 'Failed to fetch providers' });
@@ -1709,7 +1710,7 @@ export function createRoutes(
   router.delete('/api/users/:id', async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      await getAuthData(authConfig, 'deleteUser', { id }, configPath);
+      await getAuthData(authConfig, 'deleteUser', { id }, configPath, preloadedAdapter);
       res.json({ success: true });
     } catch (_error) {
       res.status(500).json({ error: 'Failed to delete user' });
@@ -3679,7 +3680,7 @@ export function createRoutes(
       const { id } = req.params;
       const userData = req.body;
 
-      const updatedUser = await getAuthData(authConfig, 'updateUser', { id, userData }, configPath);
+      const updatedUser = await getAuthData(authConfig, 'updateUser', { id, userData }, configPath, preloadedAdapter);
       res.json({ success: true, user: updatedUser });
     } catch (_error) {
       res.status(500).json({ error: 'Failed to update user' });

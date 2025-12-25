@@ -1997,7 +1997,6 @@ export function createRoutes(authConfig, configPath, geoDbPath, preloadedAdapter
             });
         }
     });
-    // Database Detection endpoint - Auto-detect database from installed packages
     router.get('/api/database/detect', async (_req, res) => {
         try {
             const detectedDb = await detectDatabaseWithDialect();

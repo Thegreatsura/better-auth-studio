@@ -51,10 +51,12 @@ export async function getAuthData(
     | 'updateUser'
     | 'analytics' = 'stats',
   options?: any,
-  configPath?: string
+  configPath?: string,
+  preloadedAdapter?: any
 ): Promise<any> {
   try {
-    const adapter = await getAuthAdapter(configPath);
+    // Use preloaded adapter if available (self-hosted mode), otherwise load from config
+    const adapter = preloadedAdapter || (await getAuthAdapter(configPath));
     setTimeout(() => {
       if (adapter === null) {
         const githubUrl = 'https://github.com/Kinfe123/better-auth-studio/issues';
