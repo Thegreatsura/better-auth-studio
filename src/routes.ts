@@ -973,7 +973,6 @@ export function createRoutes(
       }
     } catch (_error) {}
 
-    // Get studio version - always fetch from npm registry for latest version
     let studioVersion = '1.0.0';
     try {
       const response = await fetch('https://registry.npmjs.org/better-auth-studio/latest', {
@@ -984,7 +983,6 @@ export function createRoutes(
         studioVersion = data.version || '1.0.0';
       }
     } catch (_npmError) {
-      // Fallback to local version if npm fetch fails
       studioVersion = getStudioVersion();
     }
 

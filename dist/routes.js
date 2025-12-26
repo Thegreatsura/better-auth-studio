@@ -1,13 +1,13 @@
 import { createHmac, randomBytes } from 'node:crypto';
 import { existsSync, readFileSync, writeFileSync, } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { createRequire } from 'module';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 // @ts-expect-error
 import { hex } from '@better-auth/utils/hex';
 import { scryptAsync } from '@noble/hashes/scrypt.js';
 import { Router } from 'express';
 import { createJiti } from 'jiti';
+import { createRequire } from 'module';
 import { createMockAccount, createMockSession, createMockUser, createMockVerification, getAuthAdapter, } from './auth-adapter.js';
 import { possiblePaths } from './config.js';
 import { getAuthData } from './data.js';
@@ -71,11 +71,9 @@ function getStudioVersion() {
                 return packageJson.version || '1.0.0';
             }
         }
-        catch (_resolveError) {
-        }
+        catch (_resolveError) { }
     }
-    catch (_error) {
-    }
+    catch (_error) { }
     return '1.0.0';
 }
 function _resolveModuleWithExtensions(id, parent) {
