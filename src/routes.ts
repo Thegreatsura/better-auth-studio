@@ -1090,9 +1090,14 @@ export function createRoutes(
           const plugins = betterAuthConfig.plugins || [];
           const organizationPlugin = plugins.find((plugin: any) => plugin.id === 'organization');
           organizationPluginEnabled = !!organizationPlugin;
-          teamsPluginEnabled = !!organizationPlugin?.options?.teams?.enabled;
+          
           if (organizationPlugin) {
-            teamsPluginEnabled = organizationPlugin.options?.teams?.enabled === true;
+            // Check multiple possible paths for teams configuration
+            teamsPluginEnabled =
+              organizationPlugin.options?.teams?.enabled === true ||
+              organizationPlugin.teams?.enabled === true ||
+              organizationPlugin.config?.teams?.enabled === true ||
+              false;
           }
         }
       } catch (_error) {
@@ -2882,7 +2887,24 @@ export function createRoutes(
       const organizationPlugin = plugins.find((plugin: any) => plugin.id === 'organization');
 
       if (organizationPlugin) {
-        const teamsEnabled = organizationPlugin.options?.teams?.enabled === true;
+        let teamsEnabled = false;
+        
+        if (organizationPlugin.options?.teams?.enabled === true) {
+          teamsEnabled = true;
+        }
+        else if (organizationPlugin.teams?.enabled === true) {
+          teamsEnabled = true;
+        }
+        else if (organizationPlugin.config?.teams?.enabled === true) {
+          teamsEnabled = true;
+        }
+        else if (organizationPlugin.options?.teams && typeof organizationPlugin.options.teams === 'object') {
+          teamsEnabled = organizationPlugin.options.teams.enabled === true;
+        } 
+          else if (organizationPlugin.teams && typeof organizationPlugin.teams === 'object') {
+          teamsEnabled = organizationPlugin.teams.enabled === true;
+        }
+        
         return res.json({
           enabled: teamsEnabled,
           configPath: isSelfHosted ? null : configPath || null,

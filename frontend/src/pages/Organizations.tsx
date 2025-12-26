@@ -500,7 +500,7 @@ export default function Organizations() {
               <Building2 className="w-8 h-8 text-white" />
             </div>
             <div className="flex-1">
-              <h3 className="text-xl text-white font-light font-mono uppercase mb-2">Organization Plugin Required</h3>
+              <h3 className="text-md text-white tracking-tight font-light font-mono uppercase mb-1">Organization Plugin Required</h3>
               <p className="text-gray-300 mb-6 text-sm">
                 To use Organizations in Better Auth Studio, you need to enable the organization
                 plugin in your Better Auth configuration.

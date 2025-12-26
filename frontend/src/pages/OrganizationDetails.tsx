@@ -840,8 +840,8 @@ export default function OrganizationDetails() {
             <button
               onClick={() => setActiveTab('details')}
               className={`flex items-center space-x-2 py-4 px-2 border-b-2 font-medium text-sm ${activeTab === 'details'
-                  ? 'border-white text-white'
-                  : 'border-transparent text-gray-400 hover:text-white hover:border-white/50'
+                ? 'border-white text-white'
+                : 'border-transparent text-gray-400 hover:text-white hover:border-white/50'
                 }`}
             >
               <Building2 className="w-4 h-4 text-white/90" />
@@ -861,8 +861,8 @@ export default function OrganizationDetails() {
             <button
               onClick={() => setActiveTab('members')}
               className={`flex items-center space-x-2 py-4 px-2 border-b-2 font-medium text-sm ${activeTab === 'members'
-                  ? 'border-white text-white'
-                  : 'border-transparent text-gray-400 hover:text-white hover:border-white/50'
+                ? 'border-white text-white'
+                : 'border-transparent text-gray-400 hover:text-white hover:border-white/50'
                 }`}
             >
               <Users className="w-4 h-4 text-white/90" />
@@ -882,8 +882,8 @@ export default function OrganizationDetails() {
             <button
               onClick={() => setActiveTab('invitations')}
               className={`flex items-center space-x-2 py-4 px-2 border-b-2 font-medium text-sm ${activeTab === 'invitations'
-                  ? 'border-white text-white'
-                  : 'border-transparent text-gray-400 hover:text-white hover:border-white/50'
+                ? 'border-white text-white'
+                : 'border-transparent text-gray-400 hover:text-white hover:border-white/50'
                 }`}
             >
               <Mail className="w-4 h-4 text-white/90" />
@@ -903,8 +903,8 @@ export default function OrganizationDetails() {
             <button
               onClick={() => setActiveTab('teams')}
               className={`flex items-center space-x-2 py-4 px-2 border-b-2 font-medium text-sm ${activeTab === 'teams'
-                  ? 'border-white text-white'
-                  : 'border-transparent text-gray-400 hover:text-white hover:border-white/50'
+                ? 'border-white text-white'
+                : 'border-transparent text-gray-400 hover:text-white hover:border-white/50'
                 }`}
             >
               <Users className="w-4 h-4 text-white/90" />
@@ -1062,7 +1062,7 @@ export default function OrganizationDetails() {
                       <Users className="w-8 h-8 text-white" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-xl text-white font-light font-mono uppercase mb-2">Teams Feature Required</h3>
+                      <h3 className="text-md text-white tracking-tight font-light font-mono uppercase mb-1">Teams Feature Required</h3>
                       <p className="text-gray-300 mb-6 text-sm">
                         To use Teams in Better Auth Studio, you need to enable the teams feature in
                         your organization plugin configuration.
@@ -1413,10 +1413,10 @@ export default function OrganizationDetails() {
                               <Badge
                                 variant="secondary"
                                 className={`text-xs font-normal font-mono uppercase rounded-none border-dashed flex items-center gap-1 w-fit ${invitation.status === 'pending'
-                                    ? 'bg-yellow-900/10 border border-yellow-500/30 text-yellow-400/70'
-                                    : invitation.status === 'accepted'
-                                      ? 'bg-green-900/10 border border-green-500/30 text-green-400/70'
-                                      : 'bg-red-900/10 border border-red-500/30 text-red-400/70'
+                                  ? 'bg-yellow-900/10 border border-yellow-500/30 text-yellow-400/70'
+                                  : invitation.status === 'accepted'
+                                    ? 'bg-green-900/10 border border-green-500/30 text-green-400/70'
+                                    : 'bg-red-900/10 border border-red-500/30 text-red-400/70'
                                   }`}
                               >
                                 {invitation.status === 'pending' && <Clock className="w-2 h-2" />}
@@ -1570,7 +1570,7 @@ export default function OrganizationDetails() {
                 disabled={inviting}
                 className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none disabled:opacity-50"
               >
-                  <Send className="w-4 h-4 mr-2" />
+                <Send className="w-4 h-4 mr-2" />
                 {inviting ? 'Sending...' : 'Send Invitation'}
               </Button>
             </div>
