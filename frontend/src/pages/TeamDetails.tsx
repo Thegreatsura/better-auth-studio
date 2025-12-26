@@ -484,11 +484,11 @@ export default function TeamDetails() {
                     <table className="w-full">
                       <thead>
                         <tr className="border-b border-dashed border-white/10">
-                          <th className="text-left py-4 px-4 text-white font-light">User</th>
-                          <th className="text-left py-4 px-4 text-white font-light">Email</th>
-                          <th className="text-left py-4 px-4 text-white font-light">Role</th>
-                          <th className="text-left py-4 px-4 text-white font-light">Joined</th>
-                          <th className="text-right py-4 px-4 text-white font-light">Actions</th>
+                          <th className="text-left py-4 px-4 text-white font-mono uppercase text-xs">User</th>
+                          <th className="text-left py-4 px-4 text-white font-mono uppercase text-xs">Email</th>
+                          <th className="text-left py-4 px-4 text-white font-mono uppercase text-xs">Role</th>
+                          <th className="text-left py-4 px-4 text-white font-mono uppercase text-xs">Joined</th>
+                          <th className="text-right py-4 px-4 text-white font-mono uppercase text-xs">Actions</th>
                         </tr>
                       </thead>
                       <tbody>

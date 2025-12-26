@@ -975,21 +975,19 @@ export function createRoutes(
       }
     } catch (_error) {}
 
-    // Get studio version - try local first, then npm as fallback
-    let studioVersion = getStudioVersion();
-    if (studioVersion === '1.0.0') {
-      // Fallback: try to fetch from npm registry
-      try {
-        const response = await fetch('https://registry.npmjs.org/better-auth-studio/latest', {
-          signal: AbortSignal.timeout(2000), // 2 second timeout
-        });
-        if (response.ok) {
-          const data = (await response.json()) as { version?: string };
-          studioVersion = data.version || '1.0.0';
-        }
-      } catch (_npmError) {
-        // Ignore npm fetch errors, use default
+    // Get studio version - always fetch from npm registry for latest version
+    let studioVersion = '1.0.0';
+    try {
+      const response = await fetch('https://registry.npmjs.org/better-auth-studio/latest', {
+        signal: AbortSignal.timeout(2000), // 2 second timeout
+      });
+      if (response.ok) {
+        const data = (await response.json()) as { version?: string };
+        studioVersion = data.version || '1.0.0';
       }
+    } catch (_npmError) {
+      // Fallback to local version if npm fetch fails
+      studioVersion = getStudioVersion();
     }
 
     if (databaseType === 'unknown' && !isSelfHosted) {

@@ -770,10 +770,10 @@ export default function Organizations() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-dashed border-white/10">
-                <th className="text-left py-4 px-4 text-white font-light">Organization</th>
-                <th className="text-left py-4 px-4 text-white font-light">Slug</th>
-                <th className="text-left py-4 px-4 text-white font-light">Created</th>
-                <th className="text-right py-4 px-4 text-white font-light">Actions</th>
+                <th className="text-left py-4 px-4 text-white font-mono uppercase text-xs">Organization</th>
+                <th className="text-left py-4 px-4 text-white font-mono uppercase text-xs">Slug</th>
+                <th className="text-left py-4 px-4 text-white font-mono uppercase text-xs">Created</th>
+                <th className="text-right py-4 px-4 text-white font-mono uppercase text-xs">Actions</th>
               </tr>
             </thead>
             <tbody>
