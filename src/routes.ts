@@ -3523,40 +3523,88 @@ export function createRoutes(
       }
 
       const adapter = await getAuthAdapterWithConfig();
-      if (!adapter || !adapter.create) {
+      if (!adapter) {
         return res.status(500).json({ error: 'Adapter not available' });
+      }
+
+      if (!adapter.create) {
+        return res.status(500).json({ error: 'Adapter create method not available' });
       }
 
       const results = [];
       for (const userId of userIds) {
         try {
+          let existingMember = null;
+          if (adapter.findMany) {
+            try {
+              const existing = await adapter.findMany({
+                model: 'teamMember',
+                where: [
+                  { field: 'teamId', value: teamId },
+                  { field: 'userId', value: userId },
+                ],
+                limit: 1,
+              });
+              existingMember = existing && existing.length > 0 ? existing[0] : null;
+            } catch (_findError) {
+              // if where clause isn't working. 
+              try {
+                const allMembers = await adapter.findMany({
+                  model: 'teamMember',
+                  limit: 10000,
+                });
+                existingMember = (allMembers || []).find(
+                  (m: any) => m.teamId === teamId && m.userId === userId
+                );
+              } catch (_fallbackError) {
+              }
+            }
+          }
+
+          if (existingMember) {
+            results.push({
+              success: false,
+              userId,
+              error: 'User is already a member of this team',
+            });
+            continue;
+          }
+
+          const now = new Date();
           await adapter.create({
             model: 'teamMember',
             data: {
               teamId,
               userId,
               role: 'member',
-              createdAt: new Date(),
+              createdAt: now,
+              updatedAt: now,
             },
           });
 
           results.push({ success: true, userId });
-        } catch (error) {
+        } catch (error: any) {
+          const errorMessage = error?.message || error?.toString() || 'Unknown error';
           results.push({
             success: false,
             userId,
-            error: error instanceof Error ? error.message : 'Unknown error',
+            error: errorMessage,
           });
         }
       }
 
+      const successCount = results.filter((r) => r.success).length;
       res.json({
         success: true,
-        message: `Added ${results.filter((r) => r.success).length} members`,
+        message: `Added ${successCount} member${successCount !== 1 ? 's' : ''}`,
         results,
       });
-    } catch (_error) {
-      res.status(500).json({ error: 'Failed to add team members' });
+    } catch (error: any) {
+      res.status(500).json({ 
+        success: false,
+        error: 'Failed to add team members',
+        message: error?.message || 'Unknown error'
+      });
     }
   });
 
