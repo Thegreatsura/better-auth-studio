@@ -544,7 +544,7 @@ export default function Settings() {
                       {getProviderIcon(provider.type)}
                     </div>
                     <div>
-                      <p className="text-sm font-light uppercase text-white capitalize">
+                      <p className="text-sm font-light text-white capitalize">
                         {provider.type}
                       </p>
                       <p className="text-[10px] font-light uppercase font-mono text-gray-400">
