@@ -285,6 +285,16 @@ pnpx better-auth-studio --help
 
 Deploy Better Auth Studio alongside your application for production use.
 
+### Installation for Self-Hosting
+
+**Important:** For self-hosting, install `better-auth-studio` as a **regular dependency** (not devDependency) since it's required at runtime in production:
+
+```bash
+pnpm add better-auth-studio
+```
+
+> **Note:** The CLI usage (standalone studio) can be installed as a dev dependency, but self-hosting requires it in `dependencies` for production deployments.
+
 ### Setup
 
 **Step 1: Initialize configuration**

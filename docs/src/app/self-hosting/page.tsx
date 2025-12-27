@@ -94,7 +94,7 @@ export default function SelfHosting() {
               <ul className="text-sm font-light tracking-tight text-white/70 space-y-2">
                 <li className="flex items-start gap-2">
                   <span className="text-white/50">1.</span>
-                  <span>Better Auth Studio installed as a dependency</span>
+                  <span>Better Auth Studio installed as a <strong className="font-bold">regular dependency</strong> (required for production)</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-white/50">2.</span>
@@ -105,9 +105,12 @@ export default function SelfHosting() {
                   <span>Database adapter configured (Prisma, Drizzle, or SQLite)</span>
                 </li>
               </ul>
-              <div className="mt-4">
+              <div className="mt-4 space-y-2">
+                <p className="text-xs font-light tracking-tight text-white/60">
+                  ⚠️ <strong className="font-bold text-white/80">Important:</strong> For self-hosting, install as a regular dependency (not devDependency) since it's needed at runtime in production.
+                </p>
                 <CodeBlock
-                  code="pnpm add -D better-auth-studio"
+                  code="pnpm add better-auth-studio"
                   className="flex-1 min-w-0"
                 />
               </div>

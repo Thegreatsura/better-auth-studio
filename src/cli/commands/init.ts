@@ -86,12 +86,15 @@ async function setupNextJS(basePath: string, customApiDir?: string) {
 
   console.log(`
 ╔═══════════════════════════════════════════════════════════════╗
-║                    ✅ Next.js Setup Complete!                  ║
+║                    ✅ Next.js Setup Complete!                 ║
 ╠═══════════════════════════════════════════════════════════════╣
 ║                                                               ║
 ║  📁 Files created:                                            ║
 ║     • studio.config.ts                                        ║
 ║     • ${relativePath}                                        ║
+║                                                               ║
+║  ⚠️  Important: Ensure better-auth-studio is in dependencies ║
+║     (not devDependencies) for production deployments          ║
 ║                                                               ║
 ║  🚀 Start your app:                                           ║
 ║     pnpm dev                                                  ║
