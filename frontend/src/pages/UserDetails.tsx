@@ -1739,7 +1739,8 @@ export default function UserDetails() {
                 </div>
               </div>
               <p className="text-gray-400">
-                Are you sure you want to unban this user? This will restore their access to the system.
+                Are you sure you want to unban this user? This will restore their access to the
+                system.
               </p>
             </div>
 
@@ -1972,7 +1973,10 @@ export default function UserDetails() {
                 </div>
               </div>
               <div>
-                <Label htmlFor="session-count" className="text-xs text-white/80 font-mono uppercase">
+                <Label
+                  htmlFor="session-count"
+                  className="text-xs text-white/80 font-mono uppercase"
+                >
                   Number of Sessions
                 </Label>
                 <Input
@@ -2075,7 +2079,10 @@ export default function UserDetails() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="account-count" className="text-xs text-white/80 font-mono uppercase">
+                  <Label
+                    htmlFor="account-count"
+                    className="text-xs text-white/80 font-mono uppercase"
+                  >
                     Number of Accounts
                   </Label>
                   <Input
@@ -2089,7 +2096,10 @@ export default function UserDetails() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="account-provider" className="text-xs text-white/80 font-mono uppercase">
+                  <Label
+                    htmlFor="account-provider"
+                    className="text-xs text-white/80 font-mono uppercase"
+                  >
                     Provider
                   </Label>
                   <Select value={accountSeedProvider} onValueChange={setAccountSeedProvider}>

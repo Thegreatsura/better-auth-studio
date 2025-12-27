@@ -60,7 +60,7 @@ function detectNextJSAppDir(): string {
 
 async function setupNextJS(basePath: string, customApiDir?: string) {
   const segments = basePath.split('/').filter(Boolean);
-  
+
   let appDir: string;
   if (customApiDir) {
     appDir = customApiDir;
@@ -69,7 +69,7 @@ async function setupNextJS(basePath: string, customApiDir?: string) {
     appDir = detectNextJSAppDir();
     console.log(`📂 Auto-detected app directory: ${appDir}`);
   }
-  
+
   const routeDir = join(process.cwd(), appDir, ...segments, '[[...path]]');
   const routeFile = join(routeDir, 'route.ts');
 
