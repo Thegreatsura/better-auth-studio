@@ -317,7 +317,7 @@ export default function UserDetails() {
         setSessions(sessions);
         resolveSessionLocations(sessions);
       }
-    } catch (_error) {}
+    } catch (_error) { }
   }, [userId, resolveSessionLocations]);
 
   const fetchUserAccounts = useCallback(async () => {
@@ -327,7 +327,7 @@ export default function UserDetails() {
         const data = await response.json();
         setAccounts(data.accounts || []);
       }
-    } catch (_error) {}
+    } catch (_error) { }
   }, [userId]);
 
   const fetchUserInvitations = useCallback(async () => {
@@ -337,7 +337,7 @@ export default function UserDetails() {
         const data = await response.json();
         setInvitations(data.invitations || []);
       }
-    } catch (_error) {}
+    } catch (_error) { }
   }, [userId]);
 
   const handleEditUser = async () => {
@@ -1017,11 +1017,10 @@ export default function UserDetails() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`flex items-center space-x-2 py-4 px-2 border-b-2 font-medium text-sm ${
-                    activeTab === tab.id
+                  className={`flex items-center space-x-2 py-4 px-2 border-b-2 font-medium text-sm ${activeTab === tab.id
                       ? 'border-white text-white'
                       : 'border-transparent text-gray-400 hover:text-white hover:border-white/50'
-                  }`}
+                    }`}
                 >
                   <tab.icon className="w-4 h-4 text-white/90" />
                   <span className="inline-flex items-start">
@@ -1300,7 +1299,7 @@ export default function UserDetails() {
                                   variant="subscript"
                                   nonSliced={
                                     membership.team.organizationSlug ||
-                                    membership.team.organizationName
+                                      membership.team.organizationName
                                       ? true
                                       : false
                                   }
@@ -1531,7 +1530,7 @@ export default function UserDetails() {
                               </div>
                             </div>
                           </div>
-                          <div className="flex flex-col items-end space-y-2">
+                          <div className="flex flex-col items-start space-y-1">
                             <div className="flex items-center space-x-2">
                               <span className="text-gray-500 font-mono text-xs uppercase">
                                 Expires:{' '}
@@ -1550,7 +1549,6 @@ export default function UserDetails() {
                                 })}
                               </span>
                             </div>
-                            <div className="flex items-center space-x-2">
                               <div className="flex items-center space-x-2">
                                 <span className="text-gray-500 font-mono text-xs uppercase">
                                   Created:{' '}
@@ -1569,7 +1567,6 @@ export default function UserDetails() {
                                   })}
                                 </span>
                               </div>
-                            </div>
                           </div>
                         </div>
                         <div className="flex items-center justify-end">
@@ -1695,16 +1692,15 @@ export default function UserDetails() {
                             </td>
                             <td className="py-4 px-4">
                               <span
-                                className={`text-xs font-mono uppercase px-2 border-dashed py-1 rounded-none ${
-                                  invitation.status === 'accepted'
+                                className={`text-xs font-mono uppercase px-2 border-dashed py-1 rounded-none ${invitation.status === 'accepted'
                                     ? 'bg-green-900/50 text-green-400 border border-green-500/30'
                                     : invitation.status === 'rejected' ||
-                                        invitation.status === 'cancelled'
+                                      invitation.status === 'cancelled'
                                       ? 'bg-red-900/50 text-red-400 border border-red-500/30'
                                       : invitation.status === 'expired'
                                         ? 'bg-yellow-900/50 text-yellow-400 border border-yellow-500/30'
                                         : 'bg-blue-900/50 text-blue-400 border border-blue-500/30'
-                                }`}
+                                  }`}
                               >
                                 {invitation.status}
                               </span>
@@ -1755,10 +1751,10 @@ export default function UserDetails() {
                                   invitation.status === 'rejected' ||
                                   invitation.status === 'cancelled' ||
                                   invitation.status === 'expired') && (
-                                  <span className="text-gray-500 text-xs font-mono uppercase">
-                                    No actions available
-                                  </span>
-                                )}
+                                    <span className="text-gray-500 text-xs font-mono uppercase">
+                                      No actions available
+                                    </span>
+                                  )}
                               </div>
                             </td>
                           </tr>

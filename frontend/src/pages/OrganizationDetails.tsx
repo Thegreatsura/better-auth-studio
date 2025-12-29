@@ -182,8 +182,6 @@ export default function OrganizationDetails() {
     try {
       const response = await fetch(`/api/organizations/${orgId}`);
       const data = await response.json();
-
-      // Handle both response formats: { success: true, organization: ... } and { organization: ... }
       if (data.success && data.organization) {
         setOrganization(data.organization);
       } else if (data.organization) {
@@ -848,11 +846,10 @@ export default function OrganizationDetails() {
           <nav className="flex space-x-8 px-6">
             <button
               onClick={() => setActiveTab('details')}
-              className={`flex items-center space-x-2 py-4 px-2 border-b-2 font-medium text-sm ${
-                activeTab === 'details'
+              className={`flex items-center space-x-2 py-4 px-2 border-b-2 font-medium text-sm ${activeTab === 'details'
                   ? 'border-white text-white'
                   : 'border-transparent text-gray-400 hover:text-white hover:border-white/50'
-              }`}
+                }`}
             >
               <Building2 className="w-4 h-4 text-white/90" />
               <span className="inline-flex items-start font-mono uppercase text-xs font-normal">
@@ -870,11 +867,10 @@ export default function OrganizationDetails() {
             </button>
             <button
               onClick={() => setActiveTab('members')}
-              className={`flex items-center space-x-2 py-4 px-2 border-b-2 font-medium text-sm ${
-                activeTab === 'members'
+              className={`flex items-center space-x-2 py-4 px-2 border-b-2 font-medium text-sm ${activeTab === 'members'
                   ? 'border-white text-white'
                   : 'border-transparent text-gray-400 hover:text-white hover:border-white/50'
-              }`}
+                }`}
             >
               <Users className="w-4 h-4 text-white/90" />
               <span className="inline-flex items-start font-mono uppercase text-xs font-normal">
@@ -892,11 +888,10 @@ export default function OrganizationDetails() {
             </button>
             <button
               onClick={() => setActiveTab('invitations')}
-              className={`flex items-center space-x-2 py-4 px-2 border-b-2 font-medium text-sm ${
-                activeTab === 'invitations'
+              className={`flex items-center space-x-2 py-4 px-2 border-b-2 font-medium text-sm ${activeTab === 'invitations'
                   ? 'border-white text-white'
                   : 'border-transparent text-gray-400 hover:text-white hover:border-white/50'
-              }`}
+                }`}
             >
               <Mail className="w-4 h-4 text-white/90" />
               <span className="inline-flex items-start font-mono uppercase text-xs font-normal">
@@ -914,11 +909,10 @@ export default function OrganizationDetails() {
             </button>
             <button
               onClick={() => setActiveTab('teams')}
-              className={`flex items-center space-x-2 py-4 px-2 border-b-2 font-medium text-sm ${
-                activeTab === 'teams'
+              className={`flex items-center space-x-2 py-4 px-2 border-b-2 font-medium text-sm ${activeTab === 'teams'
                   ? 'border-white text-white'
                   : 'border-transparent text-gray-400 hover:text-white hover:border-white/50'
-              }`}
+                }`}
             >
               <Users className="w-4 h-4 text-white/90" />
               <span className="inline-flex items-start font-mono uppercase text-xs font-normal">
@@ -1019,7 +1013,7 @@ export default function OrganizationDetails() {
                         <AnimatedNumber
                           value={Math.ceil(
                             (new Date().getTime() - new Date(organization.createdAt).getTime()) /
-                              (1000 * 60 * 60 * 24)
+                            (1000 * 60 * 60 * 24)
                           )}
                           format={{ notation: 'standard', maximumFractionDigits: 0 }}
                         />
@@ -1440,13 +1434,15 @@ export default function OrganizationDetails() {
                                 </div>
                                 <div>
                                   <div className="text-white font-light">{invitation.email}</div>
-                                  <div className="text-sm text-gray-400">
+                                  <div className="text-[11px] font-mono uppercase text-gray-400">
                                     Expires on{' '}
-                                    {new Date(invitation.expiresAt).toLocaleDateString('en-US', {
-                                      month: 'short',
-                                      year: 'numeric',
-                                      day: 'numeric',
-                                    })}
+                                    <span className='text-whtie'>
+                                      {new Date(invitation.expiresAt).toLocaleDateString('en-US', {
+                                        month: 'short',
+                                        year: 'numeric',
+                                        day: 'numeric',
+                                      })}
+                                    </span>
                                   </div>
                                 </div>
                               </div>
@@ -1482,16 +1478,15 @@ export default function OrganizationDetails() {
                             </td>
                             <td className="py-4 px-4">
                               <span
-                                className={`text-xs font-mono uppercase px-2 border-dashed py-1 rounded-none ${
-                                  invitation.status === 'accepted'
+                                className={`text-xs font-mono uppercase px-2 border-dashed py-1 rounded-none ${invitation.status === 'accepted'
                                     ? 'bg-green-900/50 text-green-400 border border-green-500/30'
                                     : invitation.status === 'rejected' ||
-                                        invitation.status === 'cancelled'
+                                      invitation.status === 'cancelled'
                                       ? 'bg-red-900/50 text-red-400 border border-red-500/30'
                                       : invitation.status === 'expired'
                                         ? 'bg-yellow-900/50 text-yellow-400 border border-yellow-500/30'
                                         : 'bg-blue-900/50 text-blue-400 border border-blue-500/30'
-                                }`}
+                                  }`}
                               >
                                 {invitation.status}
                               </span>

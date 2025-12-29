@@ -70,8 +70,8 @@ export function CopyableId({
       className={`flex items-center gap-1.5 text-sm text-gray-400 hover:text-white transition-colors group ${className}`}
       title="Click to copy"
     >
-      <span>{label}:</span>
-      <span className="font-mono">{id}</span>
+      <span className="text-[11px] font-mono uppercase text-gray-400">{label}:</span>
+      <span className="text-[11px] font-mono text-white">{id}</span>
       {copied ? (
         <Check className="w-3 h-3 text-green-500" />
       ) : (
