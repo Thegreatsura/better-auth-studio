@@ -23,14 +23,10 @@ export async function handleStudioRequest(request, config) {
         const isSelfHosted = !!config.basePath;
         const basePath = config.basePath || '';
         let path = request.url;
-        // Extract just the pathname (remove query string for processing)
         const [pathname, queryString] = path.split('?');
         if (isSelfHosted && basePath) {
-            // Remove basePath from the beginning of the path
-            // Handle both with and without trailing slash
             const normalizedBasePath = basePath.endsWith('/') ? basePath.slice(0, -1) : basePath;
             let normalizedPath = pathname;
-            // Normalize the path - ensure it starts with the basePath
             if (normalizedPath === normalizedBasePath || normalizedPath === normalizedBasePath + '/') {
                 normalizedPath = '/';
             }
@@ -40,7 +36,6 @@ export async function handleStudioRequest(request, config) {
             else if (normalizedPath.startsWith(normalizedBasePath)) {
                 normalizedPath = normalizedPath.slice(normalizedBasePath.length) || '/';
             }
-            // Reconstruct path with query string
             path = normalizedPath + (queryString ? '?' + queryString : '');
         }
         else {
@@ -76,8 +71,6 @@ export async function handleStudioRequest(request, config) {
             const wantsJson = acceptHeader.includes('application/json') ||
                 acceptHeader === '*/*' ||
                 !acceptHeader.includes('text/html');
-            // If client wants JSON or this looks like an API call, route to API
-            // /users → /api/users, /config → /api/config
             if (wantsJson) {
                 const apiPath = '/api' + path;
                 if (isProtectedApiPath(apiPath)) {
@@ -88,10 +81,9 @@ export async function handleStudioRequest(request, config) {
                 }
                 return await handleApiRoute(request, apiPath, config);
             }
-            // Otherwise, it's a browser navigation - serve SPA
+            // it's a browser navigation - serve SPA
             return handleStaticFile(path, config);
         }
-        // Fallback: serve index.html for SPA routing
         return handleStaticFile(path, config);
     }
     catch (error) {

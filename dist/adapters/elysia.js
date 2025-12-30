@@ -17,7 +17,7 @@ export function betterAuthStudio(config) {
     };
 }
 async function convertElysiaToUniversal(context) {
-    let body = undefined;
+    let body;
     const method = context.request.method;
     if (method !== 'GET' && method !== 'HEAD') {
         const elysiaBody = context.body ?? context.query ?? undefined;
@@ -30,7 +30,8 @@ async function convertElysiaToUniversal(context) {
                 if (contentType.includes('application/json')) {
                     body = await context.request.json();
                 }
-                else if (contentType.includes('application/x-www-form-urlencoded') || contentType.includes('multipart/form-data')) {
+                else if (contentType.includes('application/x-www-form-urlencoded') ||
+                    contentType.includes('multipart/form-data')) {
                     const formData = await context.request.formData();
                     body = Object.fromEntries(formData.entries());
                 }
@@ -46,8 +47,7 @@ async function convertElysiaToUniversal(context) {
                     }
                 }
             }
-            catch (error) {
-            }
+            catch (error) { }
         }
     }
     const headers = {};
