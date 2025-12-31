@@ -72,7 +72,7 @@ if (hasPublicInDist || hasPublicInRoot) {
     '[better-auth-studio] ⚠ Warning: Public directory not found. Studio UI may not work correctly.'
   );
   console.warn(
-    '[better-auth-studio] Please report this issue at: https://github.com/better-auth/better-auth-studio/issues'
+    '[better-auth-studio] Please report this issue at: https://github.com/Kinfe123/better-auth-studio/issues'
   );
 }
 
