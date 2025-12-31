@@ -246,6 +246,31 @@ function findPublicDir(): string | null {
     }
   } catch (err) {}
 
+  // Try to resolve from import.meta.url for better ESM support (SvelteKit)
+  try {
+    const moduleUrl = import.meta.url;
+    if (moduleUrl) {
+      const modulePath = fileURLToPath(moduleUrl);
+      const moduleDir = dirname(modulePath);
+      const realModuleDir = (() => {
+        try {
+          return realpathSync(moduleDir);
+        } catch {
+          return moduleDir;
+        }
+      })();
+      
+      candidates.unshift(
+        resolve(realModuleDir, '../public'),
+        resolve(realModuleDir, '../../public'),
+        resolve(realModuleDir, '../../../public'),
+        resolve(realModuleDir, '../../dist/public'),
+        resolve(realModuleDir, '../../../dist/public'),
+        resolve(realModuleDir, '../dist/public')
+      );
+    }
+  } catch (err) {}
+
   const baseDirs = [__dirname, __realdir];
   for (const baseDir of baseDirs) {
     candidates.push(
@@ -253,7 +278,8 @@ function findPublicDir(): string | null {
       resolve(baseDir, '../../public'),
       resolve(baseDir, '../../../public'),
       resolve(baseDir, '../../dist/public'),
-      resolve(baseDir, '../../../dist/public')
+      resolve(baseDir, '../../../dist/public'),
+      resolve(baseDir, '../dist/public')
     );
   }
 
@@ -266,6 +292,29 @@ function findPublicDir(): string | null {
       join(pnpmPackageRoot, '..', 'dist', 'public')
     );
   }
+
+  try {
+    const svelteKitOutput = join(process.cwd(), '.svelte-kit', 'output', 'server');
+    if (existsSync(svelteKitOutput)) {
+      candidates.unshift(
+        join(svelteKitOutput, 'node_modules', 'better-auth-studio', 'dist', 'public'),
+        join(svelteKitOutput, 'node_modules', 'better-auth-studio', 'public')
+      );
+    }
+    
+    const buildOutput = join(process.cwd(), 'build');
+    if (existsSync(buildOutput)) {
+      candidates.unshift(
+        join(buildOutput, 'node_modules', 'better-auth-studio', 'dist', 'public'),
+        join(buildOutput, 'node_modules', 'better-auth-studio', 'public')
+      );
+    }
+    
+    const staticDir = join(process.cwd(), 'static', 'studio-assets');
+    if (existsSync(staticDir)) {
+      candidates.unshift(staticDir);
+    }
+  } catch (err) {}
 
   try {
     let searchDir = __dirname;
@@ -305,7 +354,19 @@ function findPublicDir(): string | null {
   }
 
   console.error('[Studio] Could not find public directory');
-  console.error('[Studio] Tried paths:', candidates.slice(0, 5).join(', '), '...');
+  console.error('[Studio] Current working directory:', process.cwd());
+  console.error('[Studio] __dirname:', __dirname);
+  console.error('[Studio] __realdir:', __realdir);
+  
+  try {
+    if (typeof import.meta !== 'undefined' && import.meta.url) {
+      console.error('[Studio] import.meta.url:', import.meta.url);
+      const modulePath = fileURLToPath(import.meta.url);
+      console.error('[Studio] Resolved module path:', modulePath);
+    }
+  } catch (err) {
+    console.error('[Studio] Could not resolve import.meta.url');
+  }
 
   return null;
 }
@@ -418,6 +479,7 @@ function handleStaticFile(path: string, config: StudioConfig): UniversalResponse
     '/api/studio': ['./node_modules/better-auth-studio/dist/public/**/*', './node_modules/better-auth-studio/public/**/*'],
 }</pre>
           </li>
+          <li><strong>For SvelteKit:</strong> Ensure <code>better-auth-studio</code> is in <code>dependencies</code> (not devDependencies). For serverless deployments, you may need to configure your adapter to include the public directory. Check your <code>vite.config.ts</code> or adapter configuration.</li>
           <li>Ensure <code>better-auth-studio</code> is in <code>dependencies</code> (not devDependencies)</li>
           <li>Clear your build cache and redeploy</li>
         </ol>

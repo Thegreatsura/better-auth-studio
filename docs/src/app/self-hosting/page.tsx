@@ -482,6 +482,9 @@ export async function handle({ event, resolve }) {
                 <p className="text-xs font-light tracking-tight text-white/60 mb-2">
                   <strong className="font-bold text-white/80">Note:</strong> SvelteKit uses file-based routing. The catch-all route <code className="text-white/70 bg-white/10 px-1 py-0.5">[...path]</code> will match all paths under <code className="text-white/70 bg-white/10 px-1 py-0.5">/api/studio</code>.
                 </p>
+                <p className="text-xs font-light tracking-tight text-white/50 mt-2">
+                  <strong className="font-bold text-white/70">Production Deployment:</strong> For serverless deployments (Vercel, Cloudflare Pages, etc.), ensure <code className="text-white/70 bg-white/10 px-1 py-0.5">better-auth-studio</code> is in <code className="text-white/70 bg-white/10 px-1 py-0.5">dependencies</code> (not devDependencies). The adapter will automatically locate the UI assets. If you encounter "Studio UI Not Available", check your deployment logs for path resolution details.
+                </p>
               </div>
             </div>
           </PixelCard>
