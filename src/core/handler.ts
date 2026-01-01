@@ -13,7 +13,6 @@ import { decryptSession, isSessionValid, STUDIO_COOKIE_NAME } from '../utils/ses
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-// Resolve real path in case of symlinks (important for pnpm on Vercel)
 const __realdir = (() => {
   try {
     return realpathSync(__dirname);
