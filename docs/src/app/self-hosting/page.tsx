@@ -13,12 +13,13 @@ import {
   HonoIcon,
   ElysiaIcon,
   SvelteKitIcon,
+  SolidStartIcon,
   ConfigIcon,
   WarningIcon,
   PrerequisitesIcon,
 } from "@/components/icons";
 
-type Framework = "nextjs" | "express" | "hono" | "elysia" | "sveltekit";
+type Framework = "nextjs" | "express" | "hono" | "elysia" | "sveltekit" | "solidstart";
 
 const frameworks: Array<{
   id: Framework;
@@ -30,6 +31,7 @@ const frameworks: Array<{
     { id: "hono", name: "Hono", icon: HonoIcon },
     { id: "elysia", name: "Elysia", icon: ElysiaIcon },
     { id: "sveltekit", name: "SvelteKit", icon: SvelteKitIcon },
+    { id: "solidstart", name: "SolidStart", icon: SolidStartIcon },
   ];
 
 export default function SelfHosting() {
@@ -459,6 +461,44 @@ export default config;`}
                           language="javascript"
                         />
                       </div>
+                    </div>
+                  </PixelCard>
+                )}
+
+                {activeFramework === "solidstart" && (
+                  <PixelCard variant="highlight" className="relative">
+                    <div className="pt-4 space-y-4 relative">
+                      <p className="text-sm font-light tracking-tight text-white/70">
+                        For SolidStart apps, create a catch-all route handler for the studio:
+                      </p>
+                      <CodeHighlighter
+                        code={`// src/routes/api/studio/*studio.ts
+import { betterAuthStudio } from "better-auth-studio/solid-start";
+import studioConfig from "../../../../studio.config";
+
+const handler = betterAuthStudio(studioConfig);
+
+export const GET = handler;
+export const POST = handler;
+export const PUT = handler;
+export const DELETE = handler;
+export const PATCH = handler;`}
+                        language="typescript"
+                      />
+                      <p className="text-sm font-light tracking-tight text-white/70">
+                        Make sure your Better Auth routes are set up. For example, in <code className="text-white/90 bg-white/10 px-1 py-0.5">src/routes/api/auth/*auth.ts</code>:
+                      </p>
+                      <CodeHighlighter
+                        code={`// src/routes/api/auth/*auth.ts
+import { auth } from "~/lib/auth";
+import { toSolidStartHandler } from "better-auth/solid-start";
+
+export const { GET, POST } = toSolidStartHandler(auth);`}
+                        language="typescript"
+                      />
+                      <p className="text-sm font-light tracking-tight text-white/70">
+                        Access the studio at <code className="text-white/90 bg-white/10 px-1 py-0.5">http://localhost:3000/api/studio</code>
+                      </p>
                     </div>
                   </PixelCard>
                 )}
