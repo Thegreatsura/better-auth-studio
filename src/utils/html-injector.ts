@@ -100,10 +100,7 @@ function injectConfig(html: string, config: WindowStudioConfig): string {
 
   let modifiedHtml = html;
 
-  modifiedHtml = modifiedHtml.replace(
-    /<title>.*?<\/title>/i,
-    `<title>${escapedTitle}</title>`
-  );
+  modifiedHtml = modifiedHtml.replace(/<title>.*?<\/title>/i, `<title>${escapedTitle}</title>`);
 
   if (config.basePath) {
     const basePath = config.basePath;
