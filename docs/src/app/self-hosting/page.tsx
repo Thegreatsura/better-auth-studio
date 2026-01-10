@@ -710,8 +710,98 @@ ADMIN_EMAIL_3=admin3@example.com`}
                   <code className="text-white/90 text-sm">metadata</code>
                   <span className="text-white/50 text-xs ml-2">(optional)</span>
                   <p className="text-sm font-light tracking-tight text-white/50 mt-1">
-                    Custom branding with <code className="text-white/70 bg-white/10 px-1 py-0.5">title</code> and <code className="text-white/70 bg-white/10 px-1 py-0.5">theme</code>
+                    Custom branding and configuration options for the studio interface
                   </p>
+                  <div className="mt-3 space-y-3">
+                    <div className="pl-4 border-l-2 border-white/10">
+                      <code className="text-white/90 text-xs">metadata.title</code>
+                      <span className="text-white/50 text-xs ml-2">(optional)</span>
+                      <p className="text-xs font-light tracking-tight text-white/50 mt-1">
+                        Custom title displayed in the browser tab and application header. Default: <code className="text-white/70 bg-white/10 px-1 py-0.5">"Better Auth Studio"</code>
+                      </p>
+                    </div>
+                    <div className="pl-4 border-l-2 border-white/10">
+                      <code className="text-white/90 text-xs">metadata.logo</code>
+                      <span className="text-white/50 text-xs ml-2">(optional)</span>
+                      <p className="text-xs font-light tracking-tight text-white/50 mt-1">
+                        URL or path to your custom logo image. Supports external URLs (http/https) or local paths. Will be displayed in the header navbar. Default: <code className="text-white/70 bg-white/10 px-1 py-0.5">"/logo.png"</code>
+                      </p>
+                    </div>
+                    <div className="pl-4 border-l-2 border-white/10">
+                      <code className="text-white/90 text-xs">metadata.favicon</code>
+                      <span className="text-white/50 text-xs ml-2">(optional)</span>
+                      <p className="text-xs font-light tracking-tight text-white/50 mt-1">
+                        URL or path to your custom favicon. Supports multiple formats: .png, .ico, .svg, .jpg, .webp. Will be displayed in browser tabs. Default: <code className="text-white/70 bg-white/10 px-1 py-0.5">"/logo.png"</code>
+                      </p>
+                    </div>
+                    <div className="pl-4 border-l-2 border-white/10">
+                      <code className="text-white/90 text-xs">metadata.company.name</code>
+                      <span className="text-white/50 text-xs ml-2">(optional)</span>
+                      <p className="text-xs font-light tracking-tight text-white/50 mt-1">
+                        Your company or organization name displayed in the header navbar. Default: <code className="text-white/70 bg-white/10 px-1 py-0.5">"Better-Auth Studio."</code>
+                      </p>
+                    </div>
+                    <div className="pl-4 border-l-2 border-white/10">
+                      <code className="text-white/90 text-xs">metadata.company.website</code>
+                      <span className="text-white/50 text-xs ml-2">(optional)</span>
+                      <p className="text-xs font-light tracking-tight text-white/50 mt-1">
+                        Your company website URL. When provided, the company name in the header becomes a clickable link. Opens in a new tab with proper security attributes.
+                      </p>
+                    </div>
+                    <div className="pl-4 border-l-2 border-white/10">
+                      <code className="text-white/90 text-xs">metadata.theme</code>
+                      <span className="text-white/50 text-xs ml-2">(optional)</span>
+                      <p className="text-xs font-light tracking-tight text-white/50 mt-1">
+                        Theme preference for the studio interface. Options: <code className="text-white/70 bg-white/10 px-1 py-0.5">"light"</code> or <code className="text-white/70 bg-white/10 px-1 py-0.5">"dark"</code>. Default: <code className="text-white/70 bg-white/10 px-1 py-0.5">"dark"</code>
+                      </p>
+                    </div>
+                    <div className="pl-4 border-l-2 border-white/10">
+                      <code className="text-white/90 text-xs">metadata.customStyles</code>
+                      <span className="text-white/50 text-xs ml-2">(optional)</span>
+                      <p className="text-xs font-light tracking-tight text-white/50 mt-1">
+                        Custom CSS styles to inject into the studio interface. Allows for advanced theming and customization beyond the default theme options.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-4 p-3 bg-white/5 border border-white/10 rounded-none">
+                    <p className="text-xs font-light tracking-tight text-white/60 mb-2">
+                      <strong className="font-bold text-white/80">💡 Example:</strong> Complete metadata configuration:
+                    </p>
+                    <CodeHighlighter
+                      code={`// studio.config.ts
+import type { StudioConfig } from "better-auth-studio";
+import { auth } from "./lib/auth";
+
+const config: StudioConfig = {
+  auth,
+  basePath: process.env.STUDIO_BASE_PATH || "/api/studio",
+  metadata: {
+    title: "Acme Admin Dashboard",
+    logo: "https://www.acme.com/logo.png",
+    favicon: "https://www.acme.com/favicon.png",
+    company: {
+      name: "Acme",
+      website: "https://www.acme.com",
+    },
+    theme: "dark",
+    customStyles: \`
+      :root {
+        --custom-accent-color: #00ff00;
+      }
+    \`,
+  },
+  access: {
+    allowEmails: [
+      process.env.ADMIN_EMAIL_1,
+      process.env.ADMIN_EMAIL_2,
+    ].filter(Boolean) as string[],
+  },
+};
+
+export default config;`}
+                      language="typescript"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
