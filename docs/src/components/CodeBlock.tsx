@@ -43,12 +43,12 @@ export default function CodeBlock({
   return (
     <div className={`relative group ${className}`}>
       <PixelCard variant="code">
-        <div className="flex items-start justify-between">
-          <code className="text-sm font-mono text-white/90 flex-1 whitespace-pre">{code}</code>
+        <div className="flex items-center justify-between gap-3">
+          <code className="text-sm font-mono text-white/90 flex-1 whitespace-pre leading-normal py-0.5">{code}</code>
           {showCopy && (
             <button
               onClick={copyToClipboard}
-              className="ml-4 p-1.5 rounded-none border border-white/20 bg-black/50 hover:bg-white/10 transition-colors duration-200 opacity-0 group-hover:opacity-100 focus:opacity-100"
+              className="shrink-0 p-1.5 rounded-none border border-white/20 bg-black/50 hover:bg-white/10 transition-colors duration-200 opacity-0 group-hover:opacity-100 focus:opacity-100"
               title={copied ? 'Copied!' : 'Copy code'}
             >
               {copied ? (
