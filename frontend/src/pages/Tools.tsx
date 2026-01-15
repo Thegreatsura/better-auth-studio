@@ -45,6 +45,12 @@ import {
   SelectValue,
 } from '../components/ui/select';
 import { getProviderIcon } from '../lib/icons';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '../components/ui/tooltip-docs';
 
 interface Tool {
   id: string;
@@ -367,6 +373,8 @@ migrateFromClerk()
 
 export default function Tools() {
   const [searchParams, setSearchParams] = useSearchParams();
+  
+  const isSelfHosted = !!(window as any).__STUDIO_CONFIG__?.basePath;
   const [runningTool, setRunningTool] = useState<string | null>(null);
   const [toolLogs, setToolLogs] = useState<
     Array<{
@@ -5615,28 +5623,41 @@ export const authClient = createAuthClient({
                         </div>
                       )}
                     </div>
-                    <Button
-                      onClick={handleWriteToEnv}
-                      disabled={isWritingToEnv || isCheckingEnv}
-                      className="rounded-none"
-                    >
-                      {isCheckingEnv ? (
-                        <>
-                          <Loader className="w-4 h-4 mr-2 animate-spin" />
-                          Checking...
-                        </>
-                      ) : isWritingToEnv ? (
-                        <>
-                          <Loader className="w-4 h-4 mr-2 animate-spin" />
-                          Writing...
-                        </>
-                      ) : (
-                        <>
-                          <FileText className="w-4 h-4 mr-2" />
-                          Write to .env
-                        </>
-                      )}
-                    </Button>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span>
+                            <Button
+                              onClick={handleWriteToEnv}
+                              disabled={isWritingToEnv || isCheckingEnv || isSelfHosted}
+                              className="rounded-none"
+                            >
+                              {isCheckingEnv ? (
+                                <>
+                                  <Loader className="w-4 h-4 mr-2 animate-spin" />
+                                  Checking...
+                                </>
+                              ) : isWritingToEnv ? (
+                                <>
+                                  <Loader className="w-4 h-4 mr-2 animate-spin" />
+                                  Writing...
+                                </>
+                              ) : (
+                                <>
+                                  <FileText className="w-4 h-4 mr-2" />
+                                  Write to .env
+                                </>
+                              )}
+                            </Button>
+                          </span>
+                        </TooltipTrigger>
+                        {isSelfHosted && (
+                          <TooltipContent>
+                            <p>On hosted versions, writing to the file system is not allowed. Please use the studio one</p>
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                 </div>
               )}
@@ -5819,21 +5840,34 @@ export const authClient = createAuthClient({
                   </div>
 
                   <div className="flex justify-end space-x-2 pt-2">
-                    <Button
-                      variant="outline"
-                      onClick={handleWriteSecretToEnv}
-                      disabled={isCheckingSecret || isWritingSecret}
-                      className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none"
-                    >
-                      {isCheckingSecret || isWritingSecret ? (
-                        <>
-                          <Loader className="w-4 h-4 mr-2 animate-spin" />
-                          {isWritingSecret ? 'Writing...' : 'Checking...'}
-                        </>
-                      ) : (
-                        'Write to .env'
-                      )}
-                    </Button>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span>
+                            <Button
+                              variant="outline"
+                              onClick={handleWriteSecretToEnv}
+                              disabled={isCheckingSecret || isWritingSecret || isSelfHosted}
+                              className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none"
+                            >
+                              {isCheckingSecret || isWritingSecret ? (
+                                <>
+                                  <Loader className="w-4 h-4 mr-2 animate-spin" />
+                                  {isWritingSecret ? 'Writing...' : 'Checking...'}
+                                </>
+                              ) : (
+                                'Write to .env'
+                              )}
+                            </Button>
+                          </span>
+                        </TooltipTrigger>
+                        {isSelfHosted && (
+                          <TooltipContent>
+                            <p>On hosted versions, writing to the file system is not allowed</p>
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
 
                   <div className="border border-dashed border-white/20 bg-black text-gray-300 text-xs font-mono p-3 rounded-none">
@@ -5916,28 +5950,54 @@ export const authClient = createAuthClient({
                 >
                   No, Cancel
                 </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => writeCredentialsToEnv('append')}
-                  disabled={isWritingToEnv}
-                  className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none"
-                >
-                  Append
-                </Button>
-                <Button
-                  onClick={() => writeCredentialsToEnv('override')}
-                  disabled={isWritingToEnv}
-                  className="rounded-none"
-                >
-                  {isWritingToEnv ? (
-                    <>
-                      <Loader className="w-4 h-4 mr-2 animate-spin" />
-                      Writing...
-                    </>
-                  ) : (
-                    'Yes, Overwrite'
-                  )}
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span>
+                        <Button
+                          variant="outline"
+                          onClick={() => writeCredentialsToEnv('append')}
+                          disabled={isWritingToEnv || isSelfHosted}
+                          className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none"
+                        >
+                          Append
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    {isSelfHosted && (
+                      <TooltipContent>
+                        <p>On hosted versions, they are not to write it to file system</p>
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+                </TooltipProvider>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span>
+                        <Button
+                          onClick={() => writeCredentialsToEnv('override')}
+                          disabled={isWritingToEnv || isSelfHosted}
+                          className="rounded-none"
+                        >
+                          {isWritingToEnv ? (
+                            <>
+                              <Loader className="w-4 h-4 mr-2 animate-spin" />
+                              Writing...
+                            </>
+                          ) : (
+                            'Yes, Overwrite'
+                          )}
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    {isSelfHosted && (
+                      <TooltipContent>
+                        <p>On hosted versions, they are not to write it to file system</p>
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             </div>
           </div>
@@ -5999,20 +6059,33 @@ export const authClient = createAuthClient({
                 >
                   No, Cancel
                 </Button>
-                <Button
-                  onClick={() => writeSecretToEnv('override')}
-                  disabled={isWritingSecret}
-                  className="rounded-none"
-                >
-                  {isWritingSecret ? (
-                    <>
-                      <Loader className="w-4 h-4 mr-2 animate-spin" />
-                      Writing...
-                    </>
-                  ) : (
-                    'Yes, Overwrite'
-                  )}
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span>
+                        <Button
+                          onClick={() => writeSecretToEnv('override')}
+                          disabled={isWritingSecret || isSelfHosted}
+                          className="rounded-none"
+                        >
+                          {isWritingSecret ? (
+                            <>
+                              <Loader className="w-4 h-4 mr-2 animate-spin" />
+                              Writing...
+                            </>
+                          ) : (
+                            'Yes, Overwrite'
+                          )}
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    {isSelfHosted && (
+                      <TooltipContent>
+                        <p>On hosted versions, they are not to write it to file system</p>
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             </div>
           </div>
