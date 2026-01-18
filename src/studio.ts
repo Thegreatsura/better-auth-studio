@@ -8,9 +8,17 @@ import express from 'express';
 import open from 'open';
 import type { WebSocket } from 'ws';
 import { WebSocketServer } from 'ws';
+import { loadConfig } from 'c12';
+import type { JitiOptions as JO } from 'jiti/native';
+// @ts-expect-error - No types available
+import babelPresetReact from '@babel/preset-react';
+// @ts-expect-error - No types available
+import babelPresetTypeScript from '@babel/preset-typescript';
 import type { AuthConfig } from './config.js';
+import { getPathAliases } from './config.js';
 import { createRoutes } from './routes.js';
 import { serveIndexHtml } from './utils/html-injector.js';
+import type { StudioConfig } from './types/handler.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -97,6 +105,7 @@ export async function startStudio(options: StudioOptions) {
     ? join(__dirname, '../public')
     : join(__dirname, '../../public');
   let studioEnabled = false;
+  let studioConfigPath: string | null = null;
   const possibleFiles = [
     'studio.config.ts',
     'studio.config.js',
@@ -104,10 +113,66 @@ export async function startStudio(options: StudioOptions) {
     'studio.config.cjs',
   ];
   for (const file of possibleFiles) {
-    const studioConfigPath = join(process.cwd(), file);
-    if (existsSync(studioConfigPath)) {
+    const path = join(process.cwd(), file);
+    if (existsSync(path)) {
       studioEnabled = true;
+      studioConfigPath = path;
       break;
+    }
+  }
+
+  let eventsStatus: { enabled: boolean; configured: boolean; clientType?: string } | null = null;
+  if (studioConfigPath) {
+    try {
+      const alias = getPathAliases(process.cwd()) || {};
+      const jitiOptions: JO = {
+        debug: false,
+        transformOptions: {
+          babel: {
+            presets: [
+              [
+                babelPresetTypeScript,
+                {
+                  isTSX: true,
+                  allExtensions: true,
+                },
+              ],
+              [babelPresetReact, { runtime: 'automatic' }],
+            ],
+          },
+        },
+        extensions: ['.ts', '.js', '.tsx', '.jsx'],
+        alias,
+        interopDefault: true,
+      };
+      
+      const { config } = await loadConfig<{ default?: StudioConfig; config?: StudioConfig }>({
+        configFile: studioConfigPath,
+        cwd: process.cwd(),
+        dotenv: true,
+        jitiOptions,
+      });
+      console.log({config})
+      const studioConfig = config?.default || config?.config || (config as any);
+      if (studioConfig?.events) {
+        const eventsConfig = studioConfig.events;
+        const enabled = eventsConfig.enabled === true;
+        const hasProvider = !!eventsConfig.provider;
+        const hasClient = !!eventsConfig.client && !!eventsConfig.clientType;
+        const configured = hasProvider || hasClient || !!studioConfig.auth; // If auth exists, can fallback to adapter
+        
+        eventsStatus = {
+          enabled,
+          configured,
+          clientType: eventsConfig.clientType,
+        };
+      } else {
+        eventsStatus = {
+          enabled: false,
+          configured: false,
+        };
+      }
+    } catch (_error) {
     }
   }
   app.use(
@@ -165,6 +230,27 @@ export async function startStudio(options: StudioOptions) {
       process.stdout.write('\n');
       if (studioEnabled) {
         process.stdout.write(chalk.white('📋 Studio config found: studio.config.ts\n'));
+        process.stdout.write('\n');
+      }
+      if (eventsStatus) {
+        if (eventsStatus.enabled) {
+          if (eventsStatus.configured) {
+            const clientTypeInfo = eventsStatus.clientType
+              ? ` (${eventsStatus.clientType})`
+              : '';
+            process.stdout.write(
+              chalk.green(`✅ Events enabled${clientTypeInfo} - configuration is valid\n`)
+            );
+          } else {
+            process.stdout.write(
+              chalk.yellow(
+                '⚠️  Events enabled but not fully configured - ensure you have a client/provider set up\n'
+              )
+            );
+          }
+        } else {
+          process.stdout.write(chalk.gray('ℹ️  Events are disabled\n'));
+        }
         process.stdout.write('\n');
       }
       if (watchMode) {
