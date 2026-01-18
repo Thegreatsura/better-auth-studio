@@ -305,6 +305,5 @@ export function wrapAuthCallbacks(auth: any, eventsConfig: StudioConfig['events'
       emailOtpPlugin.__studio_wrapped = true;
     }
   } catch (error) {
-    // Silently fail - callback wrapping is optional
   }
 }
