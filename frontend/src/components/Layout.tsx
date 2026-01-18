@@ -17,6 +17,7 @@ import { assetPath } from '@/lib/utils';
 import { useCounts } from '../contexts/CountsContext';
 import { useWebSocket } from '../hooks/useWebSocket';
 import CommandPalette from './CommandPalette';
+import { LiveEventMarquee } from './LiveEventMarquee';
 
 interface UserProfile {
   id: string;
@@ -676,7 +677,31 @@ export default function Layout({ children }: LayoutProps) {
         </div>
       </div>
 
-      <div className="flex-1 p-0">{children}</div>
+      {location.pathname === '/' &&
+        (() => {
+          const config = getStudioConfig();
+          const liveMarqueeConfig = config?.liveMarquee;
+          const liveMarqueeEnabled = liveMarqueeConfig?.enabled !== false;
+
+          const pollInterval = liveMarqueeConfig?.pollInterval ?? 2000;
+          const speed = liveMarqueeConfig?.speed ?? 0.5;
+          const pauseOnHover = liveMarqueeConfig?.pauseOnHover ?? true;
+          const limit = liveMarqueeConfig?.limit ?? 50;
+          const sort = liveMarqueeConfig?.sort ?? 'desc';
+          const colors = liveMarqueeConfig?.colors;
+          return liveMarqueeEnabled && isSelfHosted ? (
+            <LiveEventMarquee
+              maxEvents={limit}
+              pollInterval={pollInterval}
+              speed={speed}
+              pauseOnHover={pauseOnHover}
+              sort={sort}
+              colors={colors}
+            />
+          ) : null;
+        })()}
+
+      <div className="flex-1">{children}</div>
 
       <CommandPalette
         isOpen={isCommandPaletteOpen}

@@ -18,9 +18,8 @@ app.use(
     exposeHeaders: ['Content-Length'],
     maxAge: 600,
     credentials: true,
-  })
+  }),
 );
-
 // Health check
 app.get('/health', (c) => {
   return c.json({
@@ -41,6 +40,7 @@ app.on(['POST', 'GET'], '/api/auth/*', (c) => {
 // Root endpoint
 app.get('/', async (c) => {
   try {
+
     const sessionResponse = await auth.api.getSession({ headers: c.req.raw.headers });
     const recentAccounts = await (await auth.$context).adapter.findMany({
       model: 'account',
@@ -77,7 +77,39 @@ app.get('/', async (c) => {
     );
   }
 });
-
+app.get("/test", async (c) => {
+  const {success} = await auth.api.forgetPasswordEmailOTP({
+    body: {
+      email: "user@test.com",
+    }
+  }) 
+  // for normal password reset requeset   
+  // const result = await auth.api.requestPasswordReset({
+  //   body: {
+  //     email: "user@test.com",
+  //   }
+  // })
+  return c.json({ message: 'Test', success });
+});
+app.get("/test/reset", async (c) => { 
+  const token = c.req.query("token");
+  const codeOtp = await prisma!.codeOtp.findMany();
+  const {success} = await auth.api.resetPasswordEmailOTP({
+    body: {
+      email: "user@test.com",
+      otp: "912210",
+      password: "someonepassword"
+    }
+  })
+  // for normal password reset
+  // const result = await auth.api.resetPassword({
+  //   body: {
+  //     token: token,
+  //     newPassword: "someonepassword"
+  //   }
+  // })  
+  return c.json({ message: 'Test', success });
+}); 
 // Start server
 const PORT = parseInt(process.env.PORT || '3000', 10);
 serve({

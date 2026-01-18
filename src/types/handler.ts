@@ -10,7 +10,15 @@ export type UniversalResponse = {
   headers: Record<string, string>;
   body: string | Buffer;
 };
-
+export type LiveMarqueeConfig = {
+  enabled?: boolean;
+  pollInterval?: number; // Polling interval in milliseconds (default: 2000)
+  speed?: number; // Animation speed in pixels per frame (default: 0.5)
+  pauseOnHover?: boolean; // Pause animation when hovered (default: true)
+  limit?: number; // Maximum number of events to display in marquee (default: 50)
+  sort?: 'asc' | 'desc'; // Sort order for events: 'desc' = newest first (default), 'asc' = oldest first
+  colors?: EventColors;
+};
 export type StudioMetadata = {
   title?: string;
   logo?: string;
@@ -45,16 +53,40 @@ export type StudioAccessConfig = {
   secret?: string;
 };
 
+import type { AuthEventType, EventIngestionProvider } from './events.js';
+
 export type StudioConfig = {
   auth: any;
   basePath?: string;
   access?: StudioAccessConfig;
   metadata?: StudioMetadata;
+  events?: {
+    enabled?: boolean;
+    tableName?: string; // Auto-use Better Auth adapter if provided
+    provider?: EventIngestionProvider; // Custom provider
+    client?: any; // Client instance (Postgres pool, ClickHouse client, etc.)
+    clientType?: 'postgres' | 'clickhouse' | 'http' | 'custom';
+    include?: AuthEventType[];
+    exclude?: AuthEventType[];
+    batchSize?: number;
+    flushInterval?: number;
+    retryOnError?: boolean;
+    liveMarquee?: LiveMarqueeConfig;
+  };
+};
+
+export type EventColors = {
+  success?: string;
+  info?: string;
+  warning?: string;
+  error?: string;
+  failed?: string;
 };
 
 export type WindowStudioConfig = {
   basePath: string;
   metadata: Required<StudioMetadata>;
+  liveMarquee?: LiveMarqueeConfig;
 };
 
 export function defineStudioConfig(config: StudioConfig): StudioConfig {

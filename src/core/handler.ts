@@ -1,6 +1,13 @@
 import { existsSync, readdirSync, readFileSync, realpathSync, statSync } from 'fs';
 import { dirname, extname, join, resolve } from 'path';
 import { fileURLToPath } from 'url';
+import {
+  createClickHouseProvider,
+  createHttpProvider,
+  createPostgresProvider,
+  createStorageProvider,
+} from '../providers/events/helpers.js';
+import type { EventIngestionProvider } from '../types/events.js';
 import type {
   StudioConfig,
   StudioMetadata,
@@ -8,6 +15,8 @@ import type {
   UniversalResponse,
   WindowStudioConfig,
 } from '../types/handler.js';
+import { initializeEventIngestion, isEventIngestionInitialized } from '../utils/event-ingestion.js';
+import { injectEventHooks } from '../utils/hook-injector.js';
 import { serveIndexHtml as getIndexHtml } from '../utils/html-injector.js';
 import { decryptSession, isSessionValid, STUDIO_COOKIE_NAME } from '../utils/session.js';
 
@@ -29,6 +38,71 @@ export async function handleStudioRequest(
   request: UniversalRequest,
   config: StudioConfig
 ): Promise<UniversalResponse> {
+  // Initialize event ingestion if enabled
+  if (config.events?.enabled && !isEventIngestionInitialized()) {
+    let provider: EventIngestionProvider | undefined;
+
+    // Check if provider is already a provider object (has ingest method)
+    if (
+      config.events.provider &&
+      typeof config.events.provider === 'object' &&
+      typeof config.events.provider.ingest === 'function'
+    ) {
+      provider = config.events.provider;
+    } else if (config.events.client && config.events.clientType) {
+      // Create provider based on clientType
+      switch (config.events.clientType) {
+        case 'postgres':
+          provider = createPostgresProvider({
+            client: config.events.client,
+            tableName: config.events.tableName,
+          });
+          break;
+        case 'clickhouse':
+          provider = createClickHouseProvider({
+            client: config.events.client,
+            table: config.events.tableName,
+          });
+          break;
+        case 'http':
+          provider = createHttpProvider({
+            url: config.events.client,
+            headers: (config.events as any).headers || {},
+          });
+          break;
+      }
+    } else {
+      // Fallback to storage provider using auth adapter
+      const authAdapter = await getAuthAdapter(config.auth);
+      if (authAdapter) {
+        provider = createStorageProvider({
+          adapter: authAdapter,
+          tableName: config.events.tableName || 'auth_events',
+        });
+      }
+    }
+
+    if (provider) {
+      console.log('[Event Ingestion] Initializing with provider:', {
+        hasIngest: typeof provider.ingest === 'function',
+        hasQuery: typeof provider.query === 'function',
+        clientType: config.events.clientType,
+      });
+
+      initializeEventIngestion({
+        ...config.events,
+        provider,
+      });
+
+      // Inject hooks into Better Auth
+      if (config.auth) {
+        injectEventHooks(config.auth, config.events);
+      }
+    } else {
+      console.warn('[Event Ingestion] No provider available - events will not be ingested');
+    }
+  }
+
   try {
     const isSelfHosted = !!config.basePath;
     const basePath = config.basePath || '';
@@ -114,6 +188,29 @@ export async function handleStudioRequest(
       error: 'Internal server error',
       message: error instanceof Error ? error.message : 'Unknown error',
     });
+  }
+}
+
+async function getAuthAdapter(auth: any): Promise<any> {
+  try {
+    if (auth?.adapter) {
+      return auth.adapter;
+    }
+
+    if (auth?.$context) {
+      const context = await auth.$context;
+      if (context?.adapter) {
+        return context.adapter;
+      }
+    }
+
+    if (auth?.options?.database) {
+      return auth.options.database;
+    }
+
+    return null;
+  } catch {
+    return null;
   }
 }
 
@@ -521,10 +618,7 @@ function handleStaticFileFromDir(
 }
 
 function serveIndexHtml(publicDir: string, config: StudioConfig): UniversalResponse {
-  const html = getIndexHtml(publicDir, {
-    basePath: config.basePath || '/api/studio',
-    metadata: config.metadata as any,
-  });
+  const html = getIndexHtml(publicDir, config as any);
 
   return {
     status: 200,

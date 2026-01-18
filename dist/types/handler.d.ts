@@ -9,6 +9,15 @@ export type UniversalResponse = {
     headers: Record<string, string>;
     body: string | Buffer;
 };
+export type LiveMarqueeConfig = {
+    enabled?: boolean;
+    pollInterval?: number;
+    speed?: number;
+    pauseOnHover?: boolean;
+    limit?: number;
+    sort?: 'asc' | 'desc';
+    colors?: EventColors;
+};
 export type StudioMetadata = {
     title?: string;
     logo?: string;
@@ -44,15 +53,37 @@ export type StudioAccessConfig = {
     sessionDuration?: number;
     secret?: string;
 };
+import type { AuthEventType, EventIngestionProvider } from './events.js';
 export type StudioConfig = {
     auth: any;
     basePath?: string;
     access?: StudioAccessConfig;
     metadata?: StudioMetadata;
+    events?: {
+        enabled?: boolean;
+        tableName?: string;
+        provider?: EventIngestionProvider;
+        client?: any;
+        clientType?: 'postgres' | 'clickhouse' | 'http' | 'custom';
+        include?: AuthEventType[];
+        exclude?: AuthEventType[];
+        batchSize?: number;
+        flushInterval?: number;
+        retryOnError?: boolean;
+        liveMarquee?: LiveMarqueeConfig;
+    };
+};
+export type EventColors = {
+    success?: string;
+    info?: string;
+    warning?: string;
+    error?: string;
+    failed?: string;
 };
 export type WindowStudioConfig = {
     basePath: string;
     metadata: Required<StudioMetadata>;
+    liveMarquee?: LiveMarqueeConfig;
 };
 export declare function defineStudioConfig(config: StudioConfig): StudioConfig;
 //# sourceMappingURL=handler.d.ts.map

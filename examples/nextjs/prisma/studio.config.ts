@@ -1,23 +1,31 @@
 import type { StudioConfig } from 'better-auth-studio';
-import { auth } from '@/lib/auth';
+import { auth } from './lib/auth';
+import { createClient } from '@clickhouse/client';
 
+const clickhouseClient = createClient({
+  host: process.env.CLICKHOUSE_HOST,
+  username: process.env.CLICKHOUSE_USERNAME || 'default',
+  password: process.env.CLICKHOUSE_PASSWORD || '',
+});
 const config: StudioConfig = {
   auth,
-  basePath: '/dashboard',
+  basePath: '/api/studio',
   metadata: {
-    title: 'Acme Admin Dashboard',
+    title: 'Better Auth Studio',
     theme: 'dark',
-    logo: 'https://better-auth.com/logo.png',
-    favicon: 'https://better-auth.com/favicon.png',
-    company: {
-      name: 'Better-Auth',
-      website: 'https://better-auth.com',
-    },
   },
   access: {
     roles: ['admin'],
-    allowEmails: ["kinfetare83@gmail.com"],
+    allowEmails: ['kinfetare83@gmail.com'],
   },
+  events: {
+    enabled: true,
+    client: clickhouseClient,
+    clientType: 'clickhouse',
+    tableName: 'auth_events',
+    // batchSize: 10,
+    // flushInterval: 5000
+  }
 };
 
 export default config;
