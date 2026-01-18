@@ -30,8 +30,7 @@ function getRequestInfo(request) {
                 }
             }
         }
-        catch (e) {
-        }
+        catch (e) { }
     }
     return { headers: headersObj, ip };
 }

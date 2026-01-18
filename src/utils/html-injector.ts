@@ -36,7 +36,6 @@ export interface EventColors {
   failed?: string;
 }
 
-// LiveMarqueeConfig is defined in types/handler.ts
 export interface LiveMarqueeConfig {
   enabled?: boolean;
   pollInterval?: number;
@@ -150,7 +149,6 @@ function injectConfig(html: string, config: WindowStudioConfig): string {
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
 
-    // Determine MIME type from file extension
     const faviconLower = config.metadata.favicon.toLowerCase();
     let mimeType = 'image/png'; // default
     if (faviconLower.endsWith('.ico')) {

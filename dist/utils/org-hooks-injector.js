@@ -22,7 +22,6 @@ export function createOrganizationHooksWithEvents(eventsConfig, userHooks) {
         afterCreateOrganization: userHooks?.afterCreateOrganization
             ? async (data) => {
                 await userHooks.afterCreateOrganization(data);
-                // Emit event
                 emitEvent('organization.created', {
                     status: 'success',
                     organizationId: data.organization.id,
@@ -60,7 +59,6 @@ export function createOrganizationHooksWithEvents(eventsConfig, userHooks) {
         afterUpdateOrganization: userHooks?.afterUpdateOrganization
             ? async (data) => {
                 await userHooks.afterUpdateOrganization?.(data);
-                // Emit event
                 if (data.organization) {
                     emitEvent('organization.updated', {
                         status: 'success',
@@ -101,7 +99,6 @@ export function createOrganizationHooksWithEvents(eventsConfig, userHooks) {
         afterDeleteOrganization: userHooks?.afterDeleteOrganization
             ? async (data) => {
                 await userHooks.afterDeleteOrganization?.(data);
-                // Emit event
                 emitEvent('organization.deleted', {
                     status: 'success',
                     organizationId: data.organization.id,
@@ -140,7 +137,6 @@ export function createOrganizationHooksWithEvents(eventsConfig, userHooks) {
         afterAddMember: userHooks?.afterAddMember
             ? async (data) => {
                 await userHooks.afterAddMember?.(data);
-                // Emit event
                 emitEvent('member.added', {
                     status: 'success',
                     organizationId: data.organization.id,
@@ -183,7 +179,6 @@ export function createOrganizationHooksWithEvents(eventsConfig, userHooks) {
         afterRemoveMember: userHooks?.afterRemoveMember
             ? async (data) => {
                 await userHooks.afterRemoveMember?.(data);
-                // Emit event
                 emitEvent('member.removed', {
                     status: 'success',
                     organizationId: data.organization.id,
@@ -221,7 +216,6 @@ export function createOrganizationHooksWithEvents(eventsConfig, userHooks) {
         afterUpdateMemberRole: userHooks?.afterUpdateMemberRole
             ? async (data) => {
                 await userHooks.afterUpdateMemberRole?.(data);
-                // Emit event
                 emitEvent('member.role_changed', {
                     status: 'success',
                     organizationId: data.organization.id,
@@ -264,7 +258,6 @@ export function createOrganizationHooksWithEvents(eventsConfig, userHooks) {
         afterCreateTeam: userHooks?.afterCreateTeam
             ? async (data) => {
                 await userHooks.afterCreateTeam?.(data);
-                // Emit event
                 emitEvent('team.created', {
                     status: 'success',
                     organizationId: data.organization.id,
@@ -306,7 +299,6 @@ export function createOrganizationHooksWithEvents(eventsConfig, userHooks) {
         afterUpdateTeam: userHooks?.afterUpdateTeam
             ? async (data) => {
                 await userHooks.afterUpdateTeam?.(data);
-                // Emit event
                 if (data.team) {
                     emitEvent('team.updated', {
                         status: 'success',
@@ -351,7 +343,6 @@ export function createOrganizationHooksWithEvents(eventsConfig, userHooks) {
         afterDeleteTeam: userHooks?.afterDeleteTeam
             ? async (data) => {
                 await userHooks.afterDeleteTeam?.(data);
-                // Emit event
                 emitEvent('team.deleted', {
                     status: 'success',
                     organizationId: data.organization.id,
@@ -394,7 +385,6 @@ export function createOrganizationHooksWithEvents(eventsConfig, userHooks) {
         afterAddTeamMember: userHooks?.afterAddTeamMember
             ? async (data) => {
                 await userHooks.afterAddTeamMember?.(data);
-                // Emit event
                 emitEvent('team.member.added', {
                     status: 'success',
                     organizationId: data.organization.id,
@@ -441,7 +431,6 @@ export function createOrganizationHooksWithEvents(eventsConfig, userHooks) {
         afterRemoveTeamMember: userHooks?.afterRemoveTeamMember
             ? async (data) => {
                 await userHooks.afterRemoveTeamMember?.(data);
-                // Emit event
                 emitEvent('team.member.removed', {
                     status: 'success',
                     organizationId: data.organization.id,
@@ -486,7 +475,6 @@ export function createOrganizationHooksWithEvents(eventsConfig, userHooks) {
         afterCreateInvitation: userHooks?.afterCreateInvitation
             ? async (data) => {
                 await userHooks.afterCreateInvitation?.(data);
-                // Emit event
                 emitEvent('invitation.created', {
                     status: 'success',
                     organizationId: data.organization.id,
@@ -531,7 +519,6 @@ export function createOrganizationHooksWithEvents(eventsConfig, userHooks) {
         afterAcceptInvitation: userHooks?.afterAcceptInvitation
             ? async (data) => {
                 await userHooks.afterAcceptInvitation?.(data);
-                // Emit event
                 emitEvent('invitation.accepted', {
                     status: 'success',
                     organizationId: data.organization.id,
@@ -572,7 +559,6 @@ export function createOrganizationHooksWithEvents(eventsConfig, userHooks) {
         afterRejectInvitation: userHooks?.afterRejectInvitation
             ? async (data) => {
                 await userHooks.afterRejectInvitation?.(data);
-                // Emit event
                 emitEvent('invitation.rejected', {
                     status: 'success',
                     organizationId: data.organization.id,
@@ -611,7 +597,6 @@ export function createOrganizationHooksWithEvents(eventsConfig, userHooks) {
         afterCancelInvitation: userHooks?.afterCancelInvitation
             ? async (data) => {
                 await userHooks.afterCancelInvitation?.(data);
-                // Emit event
                 emitEvent('invitation.cancelled', {
                     status: 'success',
                     organizationId: data.organization.id,

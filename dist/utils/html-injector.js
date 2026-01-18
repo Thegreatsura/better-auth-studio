@@ -81,7 +81,6 @@ function injectConfig(html, config) {
             .replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#39;');
-        // Determine MIME type from file extension
         const faviconLower = config.metadata.favicon.toLowerCase();
         let mimeType = 'image/png'; // default
         if (faviconLower.endsWith('.ico')) {
