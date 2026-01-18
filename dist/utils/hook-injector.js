@@ -1,4 +1,3 @@
-import { getSessionFromCtx } from 'better-auth/api';
 import { createAuthMiddleware } from 'better-auth/plugins';
 import { wrapAuthCallbacks } from './auth-callbacks-injector.js';
 import { emitEvent } from './event-ingestion.js';
@@ -22,15 +21,11 @@ function createEventIngestionPlugin(eventsConfig) {
                 const returned = ctx?.context?.returned;
                 if (!returned)
                     return;
-                // Guard against Better Auth internal errors
                 if (typeof returned === 'object' && returned !== null) {
-                    // Check if returned has problematic properties that might cause errors
                     try {
-                        // Try to access common properties safely
                         const _ = returned.statusCode;
                     }
                     catch (e) {
-                        // If accessing properties causes errors, skip processing
                         return;
                     }
                 }
@@ -160,7 +155,6 @@ function createEventIngestionPlugin(eventsConfig) {
                         }, capturedConfig).catch(() => { });
                     }
                 }
-                // User deleted
                 // OAuth unlinked
                 if (path === '/unlink-account') {
                     const session = ctx.context?.session;
@@ -301,61 +295,12 @@ function createEventIngestionPlugin(eventsConfig) {
                         }
                     }
                     catch (callbackError) {
-                        // Suppress Better Auth internal errors
                         const errorMessage = callbackError?.message || String(callbackError || '');
                         if (!errorMessage.includes('reloadNavigation') &&
                             !errorMessage.includes('Cannot read properties of undefined')) {
                             console.error('[OAuth Callback] Error:', errorMessage);
                         }
                     }
-                }
-                // Organization created
-                if (path === '/organization/create') {
-                    const orgReturned = ctx.context?.returned || returned;
-                    getSessionFromCtx(ctx)
-                        .then((session) => {
-                        if (!isError &&
-                            orgReturned &&
-                            typeof orgReturned === 'object' &&
-                            'id' in orgReturned) {
-                            emitEvent('organization.created', {
-                                status: 'success',
-                                organizationId: orgReturned.id,
-                                userId: session?.user.id,
-                                metadata: {
-                                    organizationName: orgReturned.name,
-                                    organizationSlug: orgReturned.slug,
-                                    email: session?.user.email,
-                                    name: session?.user.name,
-                                },
-                                request: {
-                                    headers: headersObj,
-                                    ip: ip || undefined,
-                                },
-                            }, capturedConfig).catch(() => { });
-                        }
-                        else if (isError) {
-                            const body = ctx.body || {};
-                            emitEvent('organization.created', {
-                                status: 'failed',
-                                userId: session?.user.id,
-                                metadata: {
-                                    organizationName: body?.name,
-                                    organizationSlug: body?.slug,
-                                    reason: returned.statusCode === 400
-                                        ? 'validation_failed'
-                                        : returned.statusCode === 409
-                                            ? 'organization_exists'
-                                            : returned.body?.code || returned.body?.message || 'unknown',
-                                },
-                                request: {
-                                    headers: headersObj,
-                                    ip: ip || undefined,
-                                },
-                            }, capturedConfig).catch(() => { });
-                        }
-                    })
-                        .catch(() => { });
                 }
                 if (path === '/admin/ban-user') {
                     const body = ctx.body || {};
@@ -476,11 +421,9 @@ function createEventIngestionPlugin(eventsConfig) {
                 }
             }
             catch (error) {
-                // Suppress Better Auth internal errors (reloadNavigation, etc.)
                 const errorMessage = error?.message || String(error || '');
                 if (errorMessage.includes('reloadNavigation') ||
                     errorMessage.includes('Cannot read properties of undefined')) {
-                    // These are Better Auth internal errors, not our issue
                     return;
                 }
                 console.error('[Event Hook] Error:', errorMessage);

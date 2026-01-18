@@ -221,7 +221,6 @@ export function wrapAuthCallbacks(auth, eventsConfig) {
         }
     }
     catch (error) {
-        // Silently fail - callback wrapping is optional
     }
 }
 //# sourceMappingURL=auth-callbacks-injector.js.map
