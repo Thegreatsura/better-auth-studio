@@ -1,3 +1,8 @@
+import {
+  createClickHouseProvider,
+  createHttpProvider,
+  createPostgresProvider,
+} from '../providers/events/helpers.js';
 import type {
   AuthEvent,
   AuthEventType,
@@ -24,12 +29,48 @@ export function initializeEventIngestion(eventsConfig: StudioConfig['events']): 
   }
 
   config = eventsConfig;
-  provider = eventsConfig.provider || null;
+
+  if (eventsConfig.provider) {
+    provider = eventsConfig.provider;
+  } else if (eventsConfig.client && eventsConfig.clientType) {
+    switch (eventsConfig.clientType) {
+      case 'postgres':
+        provider = createPostgresProvider({
+          client: eventsConfig.client,
+          tableName: eventsConfig.tableName,
+        });
+        break;
+      case 'clickhouse':
+        provider = createClickHouseProvider({
+          client: eventsConfig.client,
+          table: eventsConfig.tableName,
+        });
+        break;
+      case 'http':
+        provider = createHttpProvider({
+          url: eventsConfig.client,
+          headers: (eventsConfig as any).headers || {},
+        });
+        break;
+    }
+  }
 
   if (!provider) {
     console.warn('Event ingestion is enabled but no provider provided');
+    console.warn('Config details:', {
+      hasProvider: !!eventsConfig.provider,
+      hasClient: !!eventsConfig.client,
+      clientType: eventsConfig.clientType,
+    });
     return;
   }
+
+  console.log('[Event Ingestion] Provider initialized successfully:', {
+    hasIngest: typeof provider.ingest === 'function',
+    hasQuery: typeof provider.query === 'function',
+    hasIngestBatch: typeof provider.ingestBatch === 'function',
+    clientType: eventsConfig.clientType,
+  });
 
   isInitialized = true;
 
@@ -56,12 +97,22 @@ export async function emitEvent(
   },
   eventsConfig?: StudioConfig['events']
 ): Promise<void> {
-  const activeConfig = eventsConfig || config;
-  if (!activeConfig?.enabled) {
+  if (!isInitialized && eventsConfig?.enabled) {
     initializeEventIngestion(eventsConfig);
   }
+
+  const activeConfig = eventsConfig || config;
+  if (!activeConfig?.enabled) {
+    return;
+  }
+
   const useConfig = activeConfig || config;
   if (!useConfig) {
+    return;
+  }
+
+  if (!provider) {
+    console.warn(`[Event Ingestion] Provider not initialized. Skipping event: ${type}`);
     return;
   }
 
@@ -111,12 +162,17 @@ export async function emitEvent(
       await flushEvents();
     }
   } else {
+    if (!provider) {
+      console.warn(`[Event Ingestion] Provider not available. Skipping event: ${type}`);
+      return;
+    }
+
     try {
       console.log(`[Event Ingestion] Emitting event: ${type}`, {
         userId: event.userId,
         message: event.display?.message,
       });
-      await provider?.ingest(event);
+      await provider.ingest(event);
       console.log(`[Event Ingestion] ✅ Successfully ingested event: ${type}`);
     } catch (error) {
       console.error(`[Event Ingestion] ❌ Failed to ingest event ${type}:`, error);
