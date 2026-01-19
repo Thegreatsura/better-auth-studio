@@ -13,7 +13,6 @@ import {
   PrismaIcon,
   DrizzleIcon,
   ClickHouseIcon,
-  MySQLIcon,
   InstallIcon,
 } from '@/components/icons';
 
@@ -170,7 +169,7 @@ export default studioConfig;`,
                   <hr className="w-full border-white/10 h-px" />
                 </div>
                 <p className="text-[11px] sm:text-sm lg:text-xs font-light text-white/90 leading-relaxed font-mono uppercase mb-3 sm:mb-4">
-                  <span>{"// "}</span>  Better Auth Studio now supports multiple database clients including PostgreSQL, SQLite, Prisma, Drizzle ORM, ClickHouse, and MySQL with seamless event ingestion and automatic table creation.
+                  <span>{"// "}</span>  Better Auth Studio now supports multiple database clients including PostgreSQL, SQLite, Prisma, Drizzle ORM, and ClickHouse with seamless event ingestion and automatic table creation.
                 </p>
 
                 <div className="mb-3 sm:mb-4">
@@ -207,7 +206,7 @@ export default studioConfig;`,
                 <div className="space-y-2 sm:space-y-2.5 font-sans">
                   <div>
                     <p className="text-[11px] sm:text-xs lg:text-sm leading-relaxed text-white/80 font-light mb-3 sm:mb-4">
-                      <strong className="font-light font-mono uppercase text-white">Database Event Ingestion:</strong> Better Auth Studio now supports comprehensive event ingestion across multiple database clients including PostgreSQL (pg Pool/Client), SQLite (better-sqlite3), Prisma Client, Drizzle ORM, ClickHouse, and MySQL.
+                      <strong className="font-light font-mono uppercase text-white">Database Event Ingestion:</strong> Better Auth Studio now supports comprehensive event ingestion across multiple database clients including PostgreSQL (pg Pool/Client), SQLite (better-sqlite3), Prisma Client, Drizzle ORM, and ClickHouse.
                     </p>
                     <div className="space-y-2">
                       <div className="relative min-h-0">
