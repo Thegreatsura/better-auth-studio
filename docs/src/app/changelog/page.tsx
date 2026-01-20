@@ -122,7 +122,29 @@ export default function Changelog() {
       title="CHANGLOG"
       description="Track the Better Auth Studio development with detailed release updates."
     >
-      <div className="space-y-8">
+      <div className="space-y-8 relative">
+        <div className="fixed top-12 right-12 text-right space-y-8 z-20 hidden md:block">
+          <section>
+            <h3 className="text-[10px] font-mono tracking-[0.2em] text-white/40 mb-1">■ VERSIONS</h3>
+            <Link href="/v/1.1.1" className="text-[11px] font-mono uppercase tracking-widest block hover:text-white transition-colors duration-300 text-white/70">
+              v1.1.1
+            </Link>
+            <Link href="/v/1.1.0" className="text-[11px] font-mono uppercase tracking-widest block hover:text-white transition-colors duration-300 text-white/70">
+              v1.1.0
+            </Link>
+          </section>
+          <section>
+            <h3 className="text-[10px] font-mono tracking-[0.2em] text-white/40 mb-1">■ CREATED BY</h3>
+            <a 
+              href="https://twitter.com/KinfishT" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-[11px] font-mono uppercase tracking-widest block hover:text-white transition-colors duration-300 text-white/70"
+            >
+              @KinfishT
+            </a>
+          </section>
+        </div>
         <section>
           <PixelCard variant="highlight" className="relative">
             <div className="absolute -top-10 left-0">
