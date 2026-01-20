@@ -381,9 +381,7 @@ export default function Events() {
   };
 
   const updateEventTypes = (filterType: string, eventTypes: string[]) => {
-    setActiveFilters((prev) =>
-      prev.map((f) => (f.type === filterType ? { ...f, eventTypes } : f))
-    );
+    setActiveFilters((prev) => prev.map((f) => (f.type === filterType ? { ...f, eventTypes } : f)));
   };
 
   const toggleEventType = (filterType: string, eventType: string) => {
