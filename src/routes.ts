@@ -1080,6 +1080,108 @@ export function createRoutes(
     res.json(config);
   });
 
+  router.get('/api/events/status', async (_req: Request, res: Response) => {
+    try {
+      const { isEventIngestionInitialized, getEventIngestionProvider } = await import(
+        './utils/event-ingestion.js'
+      );
+
+      const initialized = isEventIngestionInitialized();
+      const provider = getEventIngestionProvider();
+
+      // If not initialized, try to initialize it
+      if (!initialized) {
+        try {
+          const { initializeEventIngestionAndHooks } = await import('./core/handler.js');
+          const { existsSync } = await import('node:fs');
+          const { join } = await import('node:path');
+
+          const possibleFiles = [
+            'studio.config.ts',
+            'studio.config.js',
+            'studio.config.mjs',
+            'studio.config.cjs',
+          ];
+          let studioConfigPath: string | null = null;
+
+          for (const file of possibleFiles) {
+            const path = join(process.cwd(), file);
+            if (existsSync(path)) {
+              studioConfigPath = path;
+              break;
+            }
+          }
+
+          if (!studioConfigPath && configPath) {
+            const configDir = require('node:path').dirname(configPath);
+            for (const file of possibleFiles) {
+              const path = require('node:path').join(configDir, file);
+              if (existsSync(path)) {
+                studioConfigPath = path;
+                break;
+              }
+            }
+          }
+
+          if (studioConfigPath) {
+            const { loadConfig } = await import('c12');
+            const { getPathAliases } = await import('./config.js');
+            // @ts-expect-error - No types available
+            const babelPresetTypeScript = (await import('@babel/preset-typescript')).default;
+            // @ts-expect-error - No types available
+            const babelPresetReact = (await import('@babel/preset-react')).default;
+
+            const alias = getPathAliases(process.cwd()) || {};
+            const jitiOptions = {
+              debug: false,
+              transformOptions: {
+                babel: {
+                  presets: [
+                    [babelPresetTypeScript, { isTSX: true, allExtensions: true }],
+                    [babelPresetReact, { runtime: 'automatic' }],
+                  ],
+                },
+              },
+              extensions: ['.ts', '.js', '.tsx', '.jsx'],
+              alias,
+              interopDefault: true,
+            };
+
+            const { config } = await loadConfig<{ default?: any; config?: any }>({
+              configFile: studioConfigPath,
+              cwd: process.cwd(),
+              dotenv: true,
+              jitiOptions,
+            });
+
+            const studioConfig = config?.default || config?.config || (config as any);
+            if (studioConfig?.events?.enabled) {
+              await initializeEventIngestionAndHooks(studioConfig);
+            }
+          }
+        } catch (initError: any) {
+          console.warn('Failed to initialize event ingestion:', initError?.message || initError);
+        }
+      }
+
+      const isEnabled = isEventIngestionInitialized() && !!getEventIngestionProvider();
+
+      res.json({
+        enabled: isEnabled,
+        initialized: isEventIngestionInitialized(),
+        hasProvider: !!getEventIngestionProvider(),
+      });
+    } catch (error: any) {
+      console.error('Failed to check events status:', error);
+      res.json({
+        enabled: false,
+        initialized: false,
+        hasProvider: false,
+        error: error?.message || 'Unknown error',
+      });
+    }
+  });
+
   router.get('/api/stats', async (_req: Request, res: Response) => {
     try {
       const stats = await getAuthData(authConfig, 'stats', undefined, configPath, preloadedAdapter);
@@ -1180,11 +1282,39 @@ export function createRoutes(
         }
       }
 
+      // Get events count
+      let eventsCount = 0;
+      try {
+        const { getEventIngestionProvider } = await import('./utils/event-ingestion.js');
+        const eventProvider = getEventIngestionProvider();
+        if (eventProvider && eventProvider.query) {
+          // Query with a reasonable limit to get count
+          // If we get exactly the limit, there might be more, but we'll show the count we have
+          const result = await eventProvider.query({ limit: 10000, sort: 'desc' });
+          eventsCount = result.events?.length || 0;
+        }
+      } catch (error: any) {
+        // Handle case where table/model doesn't exist yet - don't log as error
+        if (
+          error?.message?.includes('not found in schema') ||
+          error?.message?.includes('Model') ||
+          error?.code === 'P2025' ||
+          error?.code === '42P01'
+        ) {
+          // Table doesn't exist yet - count stays 0
+          eventsCount = 0;
+        } else {
+          // Events not configured or other error - count stays 0
+          eventsCount = 0;
+        }
+      }
+
       res.json({
         users: userCount,
         sessions: sessionCount,
         organizations: organizationCount,
         teams: teamCount,
+        events: eventsCount,
       });
     } catch (_error) {
       res.status(500).json({ error: 'Failed to fetch counts' });
@@ -1721,7 +1851,76 @@ export function createRoutes(
       const type = req.query.type as string;
       const userId = req.query.userId as string;
 
-      const { getEventIngestionProvider } = await import('./utils/event-ingestion.js');
+      const { getEventIngestionProvider, isEventIngestionInitialized } = await import(
+        './utils/event-ingestion.js'
+      );
+
+      // Check if event ingestion is initialized, if not, try to initialize it
+      if (!isEventIngestionInitialized()) {
+        try {
+          const { initializeEventIngestionAndHooks } = await import('./core/handler.js');
+          const { existsSync } = await import('node:fs');
+          const { join } = await import('node:path');
+
+          // Try to find and load studio config
+          const possibleFiles = [
+            'studio.config.ts',
+            'studio.config.js',
+            'studio.config.mjs',
+            'studio.config.cjs',
+          ];
+          let studioConfigPath: string | null = null;
+
+          for (const file of possibleFiles) {
+            const path = join(process.cwd(), file);
+            if (existsSync(path)) {
+              studioConfigPath = path;
+              break;
+            }
+          }
+
+          if (studioConfigPath) {
+            const { loadConfig } = await import('c12');
+            const { getPathAliases } = await import('./config.js');
+            // @ts-expect-error - No types available
+            const babelPresetTypeScript = (await import('@babel/preset-typescript')).default;
+            // @ts-expect-error - No types available
+            const babelPresetReact = (await import('@babel/preset-react')).default;
+
+            const alias = getPathAliases(process.cwd()) || {};
+            const jitiOptions = {
+              debug: false,
+              transformOptions: {
+                babel: {
+                  presets: [
+                    [babelPresetTypeScript, { isTSX: true, allExtensions: true }],
+                    [babelPresetReact, { runtime: 'automatic' }],
+                  ],
+                },
+              },
+              extensions: ['.ts', '.js', '.tsx', '.jsx'],
+              alias,
+              interopDefault: true,
+            };
+
+            const { config } = await loadConfig<{ default?: any; config?: any }>({
+              configFile: studioConfigPath,
+              cwd: process.cwd(),
+              dotenv: true,
+              jitiOptions,
+            });
+
+            const studioConfig = config?.default || config?.config || (config as any);
+            if (studioConfig?.events?.enabled) {
+              await initializeEventIngestionAndHooks(studioConfig);
+            }
+          }
+        } catch (initError: any) {
+          // If initialization fails, continue - we'll handle it gracefully below
+          console.warn('Failed to initialize event ingestion:', initError?.message || initError);
+        }
+      }
+
       const eventProvider = getEventIngestionProvider();
 
       if (eventProvider && eventProvider.query) {
@@ -1767,6 +1966,21 @@ export function createRoutes(
             nextCursor: result.nextCursor,
           });
         } catch (providerError: any) {
+          // Handle case where table/model doesn't exist yet
+          if (
+            providerError?.message?.includes('not found in schema') ||
+            providerError?.message?.includes('Model') ||
+            providerError?.code === 'P2025' ||
+            providerError?.code === '42P01'
+          ) {
+            // Table doesn't exist yet - return empty result instead of error
+            return res.json({
+              events: [],
+              hasMore: false,
+              nextCursor: null,
+            });
+          }
+
           console.error('Event provider query failed:', providerError);
           // If provider query fails, don't fall back to adapter - return error
           return res.status(500).json({
