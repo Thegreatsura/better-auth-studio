@@ -203,10 +203,10 @@ export default function Events() {
       (e) => e.display?.severity === 'info' || (!e.display?.severity && e.status !== 'failed')
     ).length;
     const success = events.filter(
-      (e) => 
-        e.status === 'success' && 
-        e.display?.severity !== 'failed' && 
-        e.display?.severity !== 'warning' && 
+      (e) =>
+        e.status === 'success' &&
+        e.display?.severity !== 'failed' &&
+        e.display?.severity !== 'warning' &&
         e.display?.severity !== 'info' &&
         !e.display?.severity
     ).length;
@@ -746,15 +746,11 @@ export const auth = betterAuth({
               if (groupedData[key]) {
                 const status = event.status || 'success';
                 const severity = event.display?.severity;
-                
+
                 const isFailed = status === 'failed' || severity === 'failed';
                 const isWarning = severity === 'warning';
                 const isInfo = severity === 'info' || (!severity && status !== 'failed');
-                const isSuccess = 
-                  status === 'success' && 
-                  !isFailed && 
-                  !isWarning && 
-                  !isInfo;
+                const isSuccess = status === 'success' && !isFailed && !isWarning && !isInfo;
 
                 if (isFailed) {
                   groupedData[key].failed++;

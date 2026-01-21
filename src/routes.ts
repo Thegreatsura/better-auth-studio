@@ -17,10 +17,11 @@ import babelPresetReact from '@babel/preset-react';
 import babelPresetTypeScript from '@babel/preset-typescript';
 // @ts-expect-error
 import { hex } from '@better-auth/utils/hex';
-import type { JitiOptions as JO } from 'jiti/native';
 import { scryptAsync } from '@noble/hashes/scrypt.js';
+import { loadConfig } from 'c12';
 import { type Request, type Response, Router } from 'express';
 import { createJiti } from 'jiti';
+import type { JitiOptions as JO } from 'jiti/native';
 import { createRequire } from 'module';
 import {
   createMockAccount,
@@ -34,6 +35,7 @@ import { getPathAliases, possiblePaths } from './config.js';
 import { getAuthData } from './data.js';
 import { initializeGeoService, resolveIPLocation, setGeoDbPath } from './geo-service.js';
 import type { AuthEvent, AuthEventType } from './types/events.js';
+import type { StudioConfig } from './types/handler.js';
 import { detectDatabaseWithDialect } from './utils/database-detection.js';
 import type { StudioAccessConfig } from './utils/html-injector.js';
 import {
@@ -44,8 +46,6 @@ import {
   STUDIO_COOKIE_NAME,
   type StudioSession,
 } from './utils/session.js';
-import { loadConfig } from 'c12';
-import { StudioConfig } from './types/handler.js';
 
 const config = {
   N: 16384,
@@ -109,8 +109,8 @@ function getStudioVersion(): string {
         const packageJson = JSON.parse(readFileSync(resolvedPath, 'utf-8'));
         return packageJson.version || '1.0.0';
       }
-    } catch (_resolveError) { }
-  } catch (_error) { }
+    } catch (_resolveError) {}
+  } catch (_error) {}
   return '1.0.0';
 }
 
@@ -895,7 +895,7 @@ export function createRoutes(
               '1.0.0';
             currentVersion = versionString.replace(/[\^~>=<]/g, '');
           }
-        } catch { }
+        } catch {}
       }
 
       let latestVersion = currentVersion;
@@ -977,7 +977,7 @@ export function createRoutes(
         adapterConfig = (adapterResult as any).options.adapterConfig;
         adapterProvider = (adapterResult as any).options.provider;
       }
-    } catch (_error) { }
+    } catch (_error) {}
 
     try {
       const detectedDb = await detectDatabaseWithDialect();
@@ -987,7 +987,7 @@ export function createRoutes(
         databaseAdapter = detectedDb.adapter || detectedDb.name;
         databaseVersion = detectedDb.version;
       }
-    } catch (_error) { }
+    } catch (_error) {}
 
     let studioVersion = '1.0.0';
     try {
@@ -1014,7 +1014,7 @@ export function createRoutes(
           } else if (content.includes('better-sqlite3') || content.includes('new Database(')) {
             databaseType = 'SQLite';
           }
-        } catch (_error) { }
+        } catch (_error) {}
       }
 
       if (databaseType === 'unknown') {
@@ -1045,15 +1045,15 @@ export function createRoutes(
       emailAndPassword: effectiveConfig.emailAndPassword,
       socialProviders: effectiveConfig.socialProviders
         ? Object.entries(effectiveConfig.socialProviders).map(([id, provider]: [string, any]) => ({
-          type: id,
-          clientId: provider.clientId,
-          clientSecret: provider.clientSecret,
-          id: id,
-          name: id,
-          redirectURI: provider.redirectURI,
-          enabled: !!(provider.clientId && provider.clientSecret),
-          ...provider,
-        }))
+            type: id,
+            clientId: provider.clientId,
+            clientSecret: provider.clientSecret,
+            id: id,
+            name: id,
+            redirectURI: provider.redirectURI,
+            enabled: !!(provider.clientId && provider.clientSecret),
+            ...provider,
+          }))
         : [],
 
       user: {
@@ -1119,7 +1119,7 @@ export function createRoutes(
               break;
             }
           }
-          
+
           if (!studioConfigPath && configPath) {
             const configDir = require('node:path').dirname(configPath);
             for (const file of possibleFiles) {
@@ -1160,7 +1160,7 @@ export function createRoutes(
               dotenv: true,
               jitiOptions,
             });
-            
+
             if (config) {
               configToUse = config?.default || config?.config || (config as any);
             }
@@ -1170,7 +1170,6 @@ export function createRoutes(
         }
       }
 
-      // Initialize if we have a config and events are enabled
       if (!initialized && configToUse?.events?.enabled) {
         try {
           const { initializeEventIngestionAndHooks } = await import('./core/handler.js');
@@ -1180,9 +1179,10 @@ export function createRoutes(
         }
       }
 
-      const isEnabled = 
-        (configToUse?.events?.enabled === true) && 
-        (isEventIngestionInitialized() && !!getEventIngestionProvider());
+      const isEnabled =
+        configToUse?.events?.enabled === true &&
+        isEventIngestionInitialized() &&
+        !!getEventIngestionProvider();
 
       res.json({
         enabled: isEnabled,
@@ -1268,14 +1268,14 @@ export function createRoutes(
             const users = await adapter.findMany({ model: 'user', limit: 100000 });
             userCount = users?.length || 0;
           }
-        } catch (_error) { }
+        } catch (_error) {}
 
         try {
           if (typeof adapter.findMany === 'function') {
             const sessions = await adapter.findMany({ model: 'session', limit: 100000 });
             sessionCount = sessions?.length || 0;
           }
-        } catch (_error) { }
+        } catch (_error) {}
 
         if (organizationPluginEnabled) {
           try {
@@ -1411,7 +1411,7 @@ export function createRoutes(
         userId,
         metadata: updateData,
         request: { headers: req.headers as Record<string, string>, ip: req.ip },
-      }).catch(() => { });
+      }).catch(() => {});
 
       res.json({ success: true, user });
     } catch (_error) {
@@ -1522,18 +1522,18 @@ export function createRoutes(
           id: membership.id,
           organization: organization
             ? {
-              id: organization.id,
-              name: organization.name || 'Unknown Organization',
-              slug: organization.slug || 'unknown',
-              image: organization.image,
-              createdAt: organization.createdAt,
-            }
+                id: organization.id,
+                name: organization.name || 'Unknown Organization',
+                slug: organization.slug || 'unknown',
+                image: organization.image,
+                createdAt: organization.createdAt,
+              }
             : {
-              id: membership.organizationId,
-              name: 'Unknown Organization',
-              slug: 'unknown',
-              createdAt: membership.createdAt,
-            },
+                id: membership.organizationId,
+                name: 'Unknown Organization',
+                slug: 'unknown',
+                createdAt: membership.createdAt,
+              },
           role: membership.role || 'member',
           joinedAt: membership.createdAt,
         };
@@ -1571,21 +1571,21 @@ export function createRoutes(
           id: membership.id,
           team: team
             ? {
-              id: team.id,
-              name: team.name || 'Unknown Team',
-              organizationId: team.organizationId,
-              organizationName: organization
-                ? organization.name || 'Unknown Organization'
-                : 'Unknown Organization',
-              organizationSlug: organization ? organization.slug || 'unknown' : 'unknown',
-            }
+                id: team.id,
+                name: team.name || 'Unknown Team',
+                organizationId: team.organizationId,
+                organizationName: organization
+                  ? organization.name || 'Unknown Organization'
+                  : 'Unknown Organization',
+                organizationSlug: organization ? organization.slug || 'unknown' : 'unknown',
+              }
             : {
-              id: membership.teamId,
-              name: 'Unknown Team',
-              organizationId: 'unknown',
-              organizationName: 'Unknown Organization',
-              organizationSlug: 'unknown',
-            },
+                id: membership.teamId,
+                name: 'Unknown Team',
+                organizationId: 'unknown',
+                organizationName: 'Unknown Organization',
+                organizationSlug: 'unknown',
+              },
           role: membership.role || 'member',
           joinedAt: membership.createdAt,
         };
@@ -1658,7 +1658,7 @@ export function createRoutes(
           reason: req.body?.reason,
         },
         request: { headers: req.headers as Record<string, string>, ip: req.ip },
-      }).catch(() => { });
+      }).catch(() => {});
 
       res.json({ success: true, user });
     } catch (_error) {
@@ -1801,7 +1801,7 @@ export function createRoutes(
           limit: 1,
         });
         organization = orgs && orgs.length > 0 ? orgs[0] : null;
-      } catch (_error) { }
+      } catch (_error) {}
 
       const transformedTeam = {
         id: team.id,
@@ -1813,9 +1813,9 @@ export function createRoutes(
         memberCount: team.memberCount || 0,
         organization: organization
           ? {
-            id: organization.id,
-            name: organization.name,
-          }
+              id: organization.id,
+              name: organization.name,
+            }
           : null,
       };
 
@@ -2159,7 +2159,7 @@ export function createRoutes(
           res.json({ users: transformedUsers });
           return;
         }
-      } catch (_adapterError) { }
+      } catch (_adapterError) {}
 
       const result = await getAuthData(
         authConfig,
@@ -2682,12 +2682,12 @@ export function createRoutes(
       const effectiveSocialProviders = Array.isArray(socialProvidersRaw)
         ? socialProvidersRaw
         : Object.entries(socialProvidersRaw).map(([id, p]: [string, any]) => ({
-          id,
-          type: id,
-          name: id,
-          ...p,
-          enabled: !!(p.clientId && p.clientSecret),
-        }));
+            id,
+            type: id,
+            name: id,
+            ...p,
+            enabled: !!(p.clientId && p.clientSecret),
+          }));
       if (effectiveSocialProviders.length === 0) {
         addResult(
           'OAuth Providers',
@@ -3105,7 +3105,7 @@ export function createRoutes(
           email: unbannedUser?.email,
         },
         request: { headers: req.headers as Record<string, string>, ip: req.ip },
-      }).catch(() => { });
+      }).catch(() => {});
 
       res.json({ success: true, user: unbannedUser });
     } catch (error) {
@@ -3160,7 +3160,7 @@ export function createRoutes(
         try {
           const context = await authInstance.$context;
           return context?.tables || null;
-        } catch (_error) { }
+        } catch (_error) {}
       }
 
       const authConfigPath = await resolveSchemaConfigPath();
@@ -3454,7 +3454,7 @@ export function createRoutes(
           }));
           res.json({ success: true, invitations: transformedInvitations });
           return;
-        } catch (_error) { }
+        } catch (_error) {}
       }
 
       res.json({ success: true, invitations: [] });
@@ -3493,12 +3493,12 @@ export function createRoutes(
                     joinedAt: member.joinedAt || member.createdAt,
                     user: user
                       ? {
-                        id: user.id,
-                        name: user.name,
-                        email: user.email,
-                        image: user.image,
-                        emailVerified: user.emailVerified,
-                      }
+                          id: user.id,
+                          name: user.name,
+                          email: user.email,
+                          image: user.image,
+                          emailVerified: user.emailVerified,
+                        }
                       : null,
                   };
                 }
@@ -3513,7 +3513,7 @@ export function createRoutes(
 
           res.json({ success: true, members: validMembers });
           return;
-        } catch (_error) { }
+        } catch (_error) {}
       }
 
       res.json({ success: true, members: [] });
@@ -3842,9 +3842,9 @@ export function createRoutes(
                   where: [{ field: 'id', value: invitation.teamId }],
                 });
                 teamName = team?.name;
-              } catch (_teamError) { }
+              } catch (_teamError) {}
             }
-          } catch (_error) { }
+          } catch (_error) {}
 
           return {
             id: invitation.id,
@@ -4090,7 +4090,7 @@ export function createRoutes(
               return res.status(404).json({ error: 'Organization not found' });
             }
           }
-        } catch (_fallbackError) { }
+        } catch (_fallbackError) {}
       }
 
       try {
@@ -4122,7 +4122,7 @@ export function createRoutes(
             .status(400)
             .json({ error: 'A pending invitation already exists for this email' });
         }
-      } catch (_duplicateCheckError) { }
+      } catch (_duplicateCheckError) {}
 
       const invitationData: any = {
         email: email.toLowerCase(),
@@ -4330,12 +4330,12 @@ export function createRoutes(
                     joinedAt: member.joinedAt || member.createdAt,
                     user: user
                       ? {
-                        id: user.id,
-                        name: user.name,
-                        email: user.email,
-                        image: user.image,
-                        emailVerified: user.emailVerified,
-                      }
+                          id: user.id,
+                          name: user.name,
+                          email: user.email,
+                          image: user.image,
+                          emailVerified: user.emailVerified,
+                        }
                       : null,
                   };
                 }
@@ -4350,7 +4350,7 @@ export function createRoutes(
 
           res.json({ success: true, members: validMembers });
           return;
-        } catch (_error) { }
+        } catch (_error) {}
       }
 
       res.json({ success: true, members: [] });
@@ -4402,7 +4402,7 @@ export function createRoutes(
                 existingMember = (allMembers || []).find(
                   (m: any) => m.teamId === teamId && m.userId === userId
                 );
-              } catch (_fallbackError) { }
+              } catch (_fallbackError) {}
             }
           }
 
@@ -5064,12 +5064,12 @@ export function createRoutes(
       const providers = Array.isArray(socialProviders)
         ? socialProviders
         : Object.entries(socialProviders).map(([id, provider]: [string, any]) => ({
-          id,
-          name: provider.name || id,
-          type: id,
-          enabled: !!(provider.clientId && provider.clientSecret),
-          ...provider,
-        }));
+            id,
+            name: provider.name || id,
+            type: id,
+            enabled: !!(provider.clientId && provider.clientSecret),
+            ...provider,
+          }));
 
       res.json({
         success: true,
@@ -5196,10 +5196,10 @@ export function createRoutes(
       const providers = Array.isArray(socialProviders)
         ? socialProviders
         : Object.entries(socialProviders).map(([id, p]: [string, any]) => ({
-          id,
-          type: id,
-          ...p,
-        }));
+            id,
+            type: id,
+            ...p,
+          }));
 
       const selectedProvider = providers.find((p: any) => (p.id || p.type) === provider);
 
@@ -5573,7 +5573,7 @@ export function createRoutes(
           .sort((a: any, b: any) => b.created - a.created)[0];
 
         recentAccount = accountCandidate?.account ?? null;
-      } catch (_accountError) { }
+      } catch (_accountError) {}
 
       try {
         const sessions = await adapter.findMany({
@@ -5586,16 +5586,16 @@ export function createRoutes(
             session: sessionItem,
             created: parseDate(
               sessionItem.createdAt ||
-              sessionItem.created_at ||
-              sessionItem.updatedAt ||
-              sessionItem.updated_at
+                sessionItem.created_at ||
+                sessionItem.updatedAt ||
+                sessionItem.updated_at
             ),
           }))
           .filter((entry: any) => entry.created >= threshold)
           .sort((a: any, b: any) => b.created - a.created)[0];
 
         recentSession = sessionCandidate?.session ?? null;
-      } catch (_sessionError) { }
+      } catch (_sessionError) {}
 
       if (recentAccount || recentSession) {
         let userInfo: any = null;
@@ -5618,7 +5618,7 @@ export function createRoutes(
               };
             }
           }
-        } catch (_userError) { }
+        } catch (_userError) {}
         const result = {
           testSessionId: testSessionId as string,
           provider,
@@ -5626,15 +5626,15 @@ export function createRoutes(
           userInfo,
           account: recentAccount
             ? {
-              id: recentAccount.id,
-              userId: recentAccount.userId,
-            }
+                id: recentAccount.id,
+                userId: recentAccount.userId,
+              }
             : null,
           session: recentSession
             ? {
-              id: recentSession.id,
-              userId: recentSession.userId,
-            }
+                id: recentSession.id,
+                userId: recentSession.userId,
+              }
             : null,
           timestamp: new Date().toISOString(),
         };
@@ -5858,59 +5858,59 @@ export function createRoutes(
       const schemaCode =
         tables.length > 0
           ? tables
-            .map((table: any) => {
-              const fields =
-                table.fields
-                  ?.filter((f: any) => f.name.trim())
-                  .map((field: any) => {
-                    const attrs: string[] = [`type: "${field.type}"`];
-                    attrs.push(`required: ${field.required ? 'true' : 'false'}`);
-                    attrs.push(`unique: ${field.unique ? 'true' : 'false'}`);
-                    attrs.push('input: false');
+              .map((table: any) => {
+                const fields =
+                  table.fields
+                    ?.filter((f: any) => f.name.trim())
+                    .map((field: any) => {
+                      const attrs: string[] = [`type: "${field.type}"`];
+                      attrs.push(`required: ${field.required ? 'true' : 'false'}`);
+                      attrs.push(`unique: ${field.unique ? 'true' : 'false'}`);
+                      attrs.push('input: false');
 
-                    // Handle defaultValue
-                    if (
-                      field.defaultValue !== undefined &&
-                      field.defaultValue !== null &&
-                      field.defaultValue !== ''
-                    ) {
-                      if (field.type === 'string') {
-                        attrs.push(`defaultValue: "${field.defaultValue}"`);
-                      } else if (field.type === 'boolean') {
-                        attrs.push(
-                          `defaultValue: ${field.defaultValue === 'true' || field.defaultValue === true}`
-                        );
-                      } else if (field.type === 'number') {
-                        attrs.push(`defaultValue: ${field.defaultValue}`);
-                      } else if (field.type === 'date') {
-                        if (field.defaultValue === 'now()') {
-                          attrs.push('defaultValue: new Date()');
-                        } else {
-                          attrs.push(`defaultValue: new Date("${field.defaultValue}")`);
+                      // Handle defaultValue
+                      if (
+                        field.defaultValue !== undefined &&
+                        field.defaultValue !== null &&
+                        field.defaultValue !== ''
+                      ) {
+                        if (field.type === 'string') {
+                          attrs.push(`defaultValue: "${field.defaultValue}"`);
+                        } else if (field.type === 'boolean') {
+                          attrs.push(
+                            `defaultValue: ${field.defaultValue === 'true' || field.defaultValue === true}`
+                          );
+                        } else if (field.type === 'number') {
+                          attrs.push(`defaultValue: ${field.defaultValue}`);
+                        } else if (field.type === 'date') {
+                          if (field.defaultValue === 'now()') {
+                            attrs.push('defaultValue: new Date()');
+                          } else {
+                            attrs.push(`defaultValue: new Date("${field.defaultValue}")`);
+                          }
                         }
+                      } else if (field.type === 'boolean') {
+                        // Default to false for boolean if no defaultValue specified
+                        attrs.push('defaultValue: false');
                       }
-                    } else if (field.type === 'boolean') {
-                      // Default to false for boolean if no defaultValue specified
-                      attrs.push('defaultValue: false');
-                    }
 
-                    const attrStr = attrs.join(',\n            ');
-                    return `          ${field.name}: {\n            ${attrStr}\n          }`;
-                  })
-                  .join(',\n') || '';
+                      const attrStr = attrs.join(',\n            ');
+                      return `          ${field.name}: {\n            ${attrStr}\n          }`;
+                    })
+                    .join(',\n') || '';
 
-              const tableName =
-                table.isExtending && table.extendedTableName
-                  ? table.extendedTableName.trim()
-                  : table.name.trim();
+                const tableName =
+                  table.isExtending && table.extendedTableName
+                    ? table.extendedTableName.trim()
+                    : table.name.trim();
 
-              return `      ${tableName}: {
+                return `      ${tableName}: {
         fields: {
 ${fields}
         },
       }`;
-            })
-            .join(',\n')
+              })
+              .join(',\n')
           : '';
 
       const preserveIndentation = (code: string, baseIndent: string): string => {
@@ -6019,17 +6019,17 @@ ${formattedMiddlewareLogic}
       const endpointsCode =
         endpoints.length > 0
           ? endpoints
-            .map((endpoint: any) => {
-              const endpointName =
-                endpoint.name?.trim() || `endpoint${endpoints.indexOf(endpoint) + 1}`;
-              const sanitizedName = endpointName.replace(/[^a-zA-Z0-9]/g, '');
-              const endpointPath = endpoint.path?.trim() || `/${camelCaseName}/${sanitizedName}`;
-              const handlerLogic =
-                endpoint.handlerLogic ||
-                '// Endpoint handler logic here\nreturn ctx.json({ success: true });';
-              const formattedHandlerLogic = preserveIndentation(handlerLogic, '          ');
+              .map((endpoint: any) => {
+                const endpointName =
+                  endpoint.name?.trim() || `endpoint${endpoints.indexOf(endpoint) + 1}`;
+                const sanitizedName = endpointName.replace(/[^a-zA-Z0-9]/g, '');
+                const endpointPath = endpoint.path?.trim() || `/${camelCaseName}/${sanitizedName}`;
+                const handlerLogic =
+                  endpoint.handlerLogic ||
+                  '// Endpoint handler logic here\nreturn ctx.json({ success: true });';
+                const formattedHandlerLogic = preserveIndentation(handlerLogic, '          ');
 
-              return `      ${sanitizedName}: createAuthEndpoint(
+                return `      ${sanitizedName}: createAuthEndpoint(
         "${endpointPath}",
         {
           method: "${endpoint.method || 'POST'}",
@@ -6038,31 +6038,31 @@ ${formattedMiddlewareLogic}
 ${formattedHandlerLogic}
         },
       ),`;
-            })
-            .join('\n')
+              })
+              .join('\n')
           : '';
 
       const rateLimitCode = rateLimit
         ? (() => {
-          const rl = rateLimit as any;
-          let pathMatcher = '';
-          if (rl.pathType === 'exact') {
-            pathMatcher = `(path: string) => path === "${rl.path}"`;
-          } else if (rl.pathType === 'prefix') {
-            pathMatcher = `(path: string) => path.startsWith("${rl.path}")`;
-          } else if (rl.pathType === 'regex') {
-            pathMatcher = `(path: string) => new RegExp("${rl.path.replace(/"/g, '\\"')}").test(path)`;
-          } else {
-            pathMatcher = `(path: string) => true`;
-          }
+            const rl = rateLimit as any;
+            let pathMatcher = '';
+            if (rl.pathType === 'exact') {
+              pathMatcher = `(path: string) => path === "${rl.path}"`;
+            } else if (rl.pathType === 'prefix') {
+              pathMatcher = `(path: string) => path.startsWith("${rl.path}")`;
+            } else if (rl.pathType === 'regex') {
+              pathMatcher = `(path: string) => new RegExp("${rl.path.replace(/"/g, '\\"')}").test(path)`;
+            } else {
+              pathMatcher = `(path: string) => true`;
+            }
 
-          const windowValue = rl.window && rl.window > 0 ? rl.window : 15 * 60 * 1000;
-          const maxValue = rl.max && rl.max > 0 ? rl.max : 100;
+            const windowValue = rl.window && rl.window > 0 ? rl.window : 15 * 60 * 1000;
+            const maxValue = rl.max && rl.max > 0 ? rl.max : 100;
 
-          return `      window: ${windowValue},
+            return `      window: ${windowValue},
       max: ${maxValue},
       pathMatcher: ${pathMatcher}`;
-        })()
+          })()
         : '';
 
       const cleanCode = (code: string): string => {
@@ -6133,12 +6133,12 @@ ${serverPluginBody}
       const pathMethods =
         endpoints.length > 0
           ? endpoints
-            .map((endpoint: any) => {
-              const endpointPath = endpoint.path?.trim() || '';
-              const method = endpoint.method || 'POST';
-              return `      "${endpointPath}": "${method}"`;
-            })
-            .join(',\n')
+              .map((endpoint: any) => {
+                const endpointPath = endpoint.path?.trim() || '';
+                const method = endpoint.method || 'POST';
+                return `      "${endpointPath}": "${method}"`;
+              })
+              .join(',\n')
           : '';
 
       const sessionAffectingPaths = endpoints
@@ -7198,7 +7198,7 @@ export const authClient = createAuthClient({
             // User can manually enter verified email
           }
         }
-      } catch (_error) { }
+      } catch (_error) {}
 
       res.json({
         success: true,
@@ -7354,7 +7354,7 @@ export async function handleStudioApiRequest(ctx: {
       if (context?.adapter) {
         preloadedAdapter = context.adapter;
       }
-    } catch { }
+    } catch {}
   }
 
   const authOptions = ctx.auth?.options || null;
