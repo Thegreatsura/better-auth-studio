@@ -17,13 +17,13 @@ import {
   Users as UsersIcon,
   X,
 } from 'lucide-react';
-import { Check, Mail } from "../components/PixelIcons"
 import { useCallback, useEffect, useState } from 'react';
 import type { DateRange } from 'react-day-picker';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { AnimatedNumber } from '../components/AnimatedNumber';
 import { CopyableId } from '../components/CopyableId';
+import { Check, Mail } from '../components/PixelIcons';
 import { Terminal } from '../components/Terminal';
 import { Button } from '../components/ui/button';
 import { Calendar } from '../components/ui/calendar';
@@ -983,8 +983,9 @@ export default function Users() {
                 currentUsers.map((user) => (
                   <tr
                     key={user.id}
-                    className={`border-b border-dashed hover:bg-white/5 cursor-pointer ${user.banned ? 'border-red-500/30 bg-red-500/5' : 'border-white/5'
-                      }`}
+                    className={`border-b border-dashed hover:bg-white/5 cursor-pointer ${
+                      user.banned ? 'border-red-500/30 bg-red-500/5' : 'border-white/5'
+                    }`}
                     onClick={() => navigate(`/users/${user.id}`)}
                   >
                     <td className="py-4 px-4">
@@ -996,8 +997,9 @@ export default function Users() {
                               `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`
                             )}
                             alt={user.name}
-                            className={`w-10 h-10 rounded-none border border-dashed object-cover ${user.banned ? 'border-red-400/50 opacity-60' : 'border-white/20'
-                              }`}
+                            className={`w-10 h-10 rounded-none border border-dashed object-cover ${
+                              user.banned ? 'border-red-400/50 opacity-60' : 'border-white/20'
+                            }`}
                             onError={(e) => {
                               // Fallback to default avatar if image fails to load
                               (e.target as HTMLImageElement).src =
