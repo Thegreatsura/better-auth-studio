@@ -327,10 +327,10 @@ export default config;
 
 The init command automatically creates `app/api/studio/[[...path]]/route.ts`:
 ```typescript
-import { createStudioHandler } from "better-auth-studio/nextjs";
+import { betterAuthStudio } from "better-auth-studio/nextjs";
 import studioConfig from "@/studio.config";
 
-const handler = createStudioHandler(studioConfig);
+const handler = betterAuthStudio(studioConfig);
 
 export {
   handler as GET,
