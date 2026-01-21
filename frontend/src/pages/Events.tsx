@@ -982,7 +982,7 @@ export const auth = betterAuth({
                               </div>
                               <div className="space-y-2">
                                 <div className="flex items-center justify-between">
-                                  <span className="text-sm text-white font-mono font-medium">
+                                  <span className="text-sm text-white font-mono font-light uppercase">
                                     Total
                                   </span>
                                   <span className="text-sm text-white font-mono">{total}</span>
