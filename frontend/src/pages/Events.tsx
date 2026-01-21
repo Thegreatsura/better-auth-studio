@@ -1343,7 +1343,7 @@ export const auth = betterAuth({
                               e.stopPropagation();
                               navigate(`/users/${event.userId}`);
                             }}
-                            className="underline underline-offset-4 decoration-dashed hover:underline font-mono text-xs transition-colors"
+                            className="underline underline-offset-4 decoration-dashed hover:underline font-mono text-xs cursor-pointer transition-colors"
                           >
                             {event.userId.slice(0, 8)}...
                           </button>
