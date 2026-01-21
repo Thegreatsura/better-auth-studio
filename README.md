@@ -10,58 +10,7 @@ A web-based studio interface for managing Better Auth applications. Better Auth 
 ## Preview
 A sneak peek of the studio dashboard and management interface.
 
-<div align="center">
-  <table>
-    <tr>
-      <td width="50%">
-        <img src="https://gk6bju9ndq.ufs.sh/f/M5pOhOFFvHQJI57TKc4BY9GjOlTtSmoRXCZJ2D50IWsLq6vd" alt="Better Auth Studio Preview 0" width="100%" />
-      </td>
-      <td width="50%">
-        <img src="https://gk6bju9ndq.ufs.sh/f/M5pOhOFFvHQJ4L7IilBo7ItO3420CBLpvnPJlA6j5zaFYZbG" alt="Better Auth Studio Preview 4" width="100%" />
-      </td>
-    </tr>
-    <tr>
-      <td width="50%">
-        <img src="https://gk6bju9ndq.ufs.sh/f/M5pOhOFFvHQJdiXpY6GJ15hUVAwrQyozdc6PpIXfSi7GWkeR" alt="Better Auth Studio Preview 2" width="100%" />
-      </td>
-      <td width="50%">
-        <img src="https://gk6bju9ndq.ufs.sh/f/M5pOhOFFvHQJNAk2JU1Cviwfb1ltHVgPJF9BWxzE2m60rQaK" alt="Better Auth Studio Preview 6" width="100%" />
-      </td>
-    </tr>
-    <tr>
-      <td width="50%">
-        <img src="https://gk6bju9ndq.ufs.sh/f/M5pOhOFFvHQJgSyVwl0dZe8UGVJLkR74CQXb9m1wzKIqhTME" alt="Better Auth Studio Preview 11" width="100%" />
-      </td>
-      <td width="50%">
-        <img src="https://gk6bju9ndq.ufs.sh/f/M5pOhOFFvHQJODyqbs8p2EKCNef8H9XqPm4cIwjaQVRUAFg7" alt="Better Auth Studio Preview 8" width="100%" />
-      </td>
-    </tr>
-    <tr>
-      <td width="50%">
-        <img src="https://gk6bju9ndq.ufs.sh/f/M5pOhOFFvHQJ2syhnQSdgJ9w13MfvHiGYPs07AkpWQSXm6Nj" alt="Better Auth Studio Preview 12" width="100%" />
-      </td>
-      <td width="50%">
-        <img src="https://gk6bju9ndq.ufs.sh/f/M5pOhOFFvHQJcW7cwWXSlBtbRHTF15ujAQLPx3VpcKgMOz08" alt="Better Auth Studio Preview 3" width="100%" />
-      </td>
-    </tr>
-    <tr>
-      <td width="50%">
-        <img src="https://gk6bju9ndq.ufs.sh/f/M5pOhOFFvHQJnAGpd3rzcKd2Hu4wkD0jJbApf78rC1VgZORT" alt="Better Auth Studio Preview 10" width="100%" />
-      </td>
-      <td width="50%">
-        <img src="https://gk6bju9ndq.ufs.sh/f/M5pOhOFFvHQJK6lXYfaxUOknshdjxpSgwV6mq7DtH3aMZXWK" alt="Better Auth Studio Preview 13" width="100%" />
-      </td>
-    </tr>
-    <tr>
-      <td width="50%">
-        <img src="https://gk6bju9ndq.ufs.sh/f/M5pOhOFFvHQJhZFdrWmjbSvOe01IQl7r68LUfVKuFcNqAydt" alt="Better Auth Studio Preview 14" width="100%" />
-      </td>
-      <td width="50%">
-        <img src="https://gk6bju9ndq.ufs.sh/f/M5pOhOFFvHQJwnJFq9htT259fPAQY0eIdDmn7O4xVlGaCjZR" alt="Better Auth Studio Preview 5" width="100%" />
-      </td>
-    </tr>
-  </table>
-</div>
+Demo app will be up soon.
 
 ## 🚀 Quick Start
 
