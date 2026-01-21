@@ -9,6 +9,7 @@ import babelPresetTypeScript from '@babel/preset-typescript';
 // @ts-expect-error
 import { hex } from '@better-auth/utils/hex';
 import { scryptAsync } from '@noble/hashes/scrypt.js';
+import { loadConfig } from 'c12';
 import { Router } from 'express';
 import { createJiti } from 'jiti';
 import { createRequire } from 'module';
@@ -18,7 +19,6 @@ import { getAuthData } from './data.js';
 import { initializeGeoService, resolveIPLocation, setGeoDbPath } from './geo-service.js';
 import { detectDatabaseWithDialect } from './utils/database-detection.js';
 import { createStudioSession, decryptSession, encryptSession, isSessionValid, STUDIO_COOKIE_NAME, } from './utils/session.js';
-import { loadConfig } from 'c12';
 const config = {
     N: 16384,
     r: 16,
@@ -1005,7 +1005,6 @@ export function createRoutes(authConfig, configPath, geoDbPath, preloadedAdapter
                     console.warn('Failed to load studio config:', initError?.message || initError);
                 }
             }
-            // Initialize if we have a config and events are enabled
             if (!initialized && configToUse?.events?.enabled) {
                 try {
                     const { initializeEventIngestionAndHooks } = await import('./core/handler.js');
@@ -1015,8 +1014,9 @@ export function createRoutes(authConfig, configPath, geoDbPath, preloadedAdapter
                     console.warn('Failed to initialize event ingestion:', initError?.message || initError);
                 }
             }
-            const isEnabled = (configToUse?.events?.enabled === true) &&
-                (isEventIngestionInitialized() && !!getEventIngestionProvider());
+            const isEnabled = configToUse?.events?.enabled === true &&
+                isEventIngestionInitialized() &&
+                !!getEventIngestionProvider();
             res.json({
                 enabled: isEnabled,
                 initialized: isEventIngestionInitialized(),

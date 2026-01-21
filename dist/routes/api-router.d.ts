@@ -1,5 +1,5 @@
-import type { StudioAccessConfig } from '../utils/html-injector.js';
 import type { StudioConfig } from '../types/handler.js';
+import type { StudioAccessConfig } from '../utils/html-injector.js';
 export type ApiContext = {
     path: string;
     method: string;

@@ -152,7 +152,6 @@ export async function startStudio(options: StudioOptions) {
         dotenv: true,
         jitiOptions,
       });
-      console.log({ config });
       const studioConfig = config?.default || config?.config || (config as any);
       if (studioConfig?.events) {
         const eventsConfig = studioConfig.events;
