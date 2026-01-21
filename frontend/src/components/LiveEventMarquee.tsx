@@ -301,28 +301,58 @@ export function LiveEventMarquee({
       return;
     }
 
+    // Calculate the width of one set of events
+    const calculateSingleSetWidth = () => {
+      if (!container || events.length === 0) return 0;
+      
+      const totalWidth = container.scrollWidth;
+      const setsCount = events.length === 1 ? 6 : 3; // More duplicates for single event
+      const singleSetWidth = totalWidth / setsCount;
+      
+      if (events.length > 0 && container.children.length >= events.length) {
+        const firstSetEnd = container.children[events.length - 1] as HTMLElement;
+        const firstSetStart = container.children[0] as HTMLElement;
+        if (firstSetEnd && firstSetStart) {
+          const measuredWidth = firstSetEnd.offsetLeft + firstSetEnd.offsetWidth - firstSetStart.offsetLeft;
+          // Use measured width if it's reasonable (within 10% of calculated)
+          if (measuredWidth > 0 && measuredWidth > 0 && Math.abs(measuredWidth - singleSetWidth) / singleSetWidth < 0.1) {
+            return measuredWidth;
+          }
+        }
+      }
+      
+      return singleSetWidth;
+    };
+
     if (!isAnimatingRef.current) {
       isAnimatingRef.current = true;
       positionRef.current = 0;
-      singleSetWidthRef.current = container.scrollWidth / 3;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (container) {
+            const width = calculateSingleSetWidth();
+            if (width > 0) {
+              singleSetWidthRef.current = width;
+            }
+          }
+        });
+      });
     } else {
       requestAnimationFrame(() => {
         if (container) {
-          const newWidth = container.scrollWidth / 3;
-          // Adjust position proportionally if width changed to prevent jumps
-          if (singleSetWidthRef.current > 0 && newWidth !== singleSetWidthRef.current) {
+          const newWidth = calculateSingleSetWidth();
+          if (singleSetWidthRef.current > 0 && newWidth !== singleSetWidthRef.current && newWidth > 0) {
             const ratio = newWidth / singleSetWidthRef.current;
             positionRef.current = positionRef.current * ratio;
           }
           singleSetWidthRef.current = newWidth;
         }
       });
-      return; // Don't restart animation
+      return;
     }
 
     const animate = () => {
       if (!container || !isAnimatingRef.current || isPausedRef.current) {
-        // If paused, still request next frame but don't update position
         if (isAnimatingRef.current && !isPausedRef.current) {
           animationRef.current = requestAnimationFrame(animate);
         }
@@ -341,10 +371,18 @@ export function LiveEventMarquee({
 
       positionRef.current -= validSpeed;
 
-      const currentSingleSetWidth = singleSetWidthRef.current || container.scrollWidth / 3;
-
-      if (Math.abs(positionRef.current) >= currentSingleSetWidth) {
-        positionRef.current = 0;
+      let currentSingleSetWidth = singleSetWidthRef.current;
+      if (!currentSingleSetWidth || currentSingleSetWidth <= 0) {
+        currentSingleSetWidth = calculateSingleSetWidth();
+        if (currentSingleSetWidth > 0) {
+          singleSetWidthRef.current = currentSingleSetWidth;
+        }
+      }
+      
+      if (currentSingleSetWidth > 0) {
+        if (Math.abs(positionRef.current) >= currentSingleSetWidth) {
+          positionRef.current = positionRef.current + currentSingleSetWidth;
+        }
       }
 
       container.style.transform = `translate3d(${positionRef.current}px, 0, 0)`;
@@ -372,7 +410,6 @@ export function LiveEventMarquee({
   };
 
   const getEventColors = () => {
-    // Use colors from props if provided
     const colors = propColors || {};
 
     const defaults = {
@@ -461,10 +498,35 @@ export function LiveEventMarquee({
               : 0.5;
           positionRef.current -= validSpeed;
 
+          // Recalculate single set width
+          const calculateSingleSetWidth = () => {
+            if (!containerRef.current || events.length === 0) return 0;
+            const totalWidth = containerRef.current.scrollWidth;
+            const setsCount = events.length === 1 ? 6 : 3; // Match the duplication logic
+            const singleSetWidth = totalWidth / setsCount;
+            
+            // Try to measure the first set directly for accuracy
+            if (containerRef.current.children.length >= events.length) {
+              const firstSetEnd = containerRef.current.children[events.length - 1] as HTMLElement;
+              const firstSetStart = containerRef.current.children[0] as HTMLElement;
+              if (firstSetEnd && firstSetStart) {
+                const measuredWidth = firstSetEnd.offsetLeft + firstSetEnd.offsetWidth - firstSetStart.offsetLeft;
+                if (measuredWidth > 0 && Math.abs(measuredWidth - singleSetWidth) / singleSetWidth < 0.1) {
+                  return measuredWidth;
+                }
+              }
+            }
+            
+            return singleSetWidth;
+          };
+
           const currentSingleSetWidth =
-            singleSetWidthRef.current || containerRef.current.scrollWidth / 3;
-          if (Math.abs(positionRef.current) >= currentSingleSetWidth) {
-            positionRef.current = 0;
+            singleSetWidthRef.current || calculateSingleSetWidth();
+          
+          // When position goes beyond one set width, wrap it back seamlessly
+          if (currentSingleSetWidth > 0 && Math.abs(positionRef.current) >= currentSingleSetWidth) {
+            // Add the width back to create seamless loop (no visible jump)
+            positionRef.current = positionRef.current + currentSingleSetWidth;
           }
 
           containerRef.current.style.transform = `translate3d(${positionRef.current}px, 0, 0)`;
@@ -508,27 +570,35 @@ export function LiveEventMarquee({
               Waiting for events...
             </span>
           ) : (
-            [...events, ...events, ...events].map((event, index) => {
-              const setIndex = Math.floor(index / events.length);
-              const eventIndex = index % events.length;
-              return (
-                <div
-                  key={`set-${setIndex}-event-${event.id}-${eventIndex}`}
-                  className="flex items-center gap-2 flex-shrink-0"
-                >
-                  <span className="text-xs font-mono text-white/30">
-                    {new Date(event.timestamp).toLocaleTimeString()}
-                  </span>
-                  <span
-                    className={`text-xs font-mono ${getSeverityColor(event.display?.severity, event.status).className || ''}`}
-                    style={getSeverityColor(event.display?.severity, event.status).style}
+            // Duplicate events multiple times to ensure smooth continuous scrolling
+            // Use more duplicates for single event to prevent glitches, fewer for multiple events
+            (() => {
+              const duplicatedEvents = events.length === 1 
+                ? [...events, ...events, ...events, ...events, ...events, ...events] // 6 sets for single event
+                : [...events, ...events, ...events]; // 3 sets for multiple events (original behavior)
+              
+              return duplicatedEvents.map((event, index) => {
+                const setIndex = Math.floor(index / events.length);
+                const eventIndex = index % events.length;
+                return (
+                  <div
+                    key={`set-${setIndex}-event-${event.id}-${eventIndex}`}
+                    className="flex items-center gap-2 flex-shrink-0"
                   >
-                    {event.display?.message || event.type}
-                  </span>
-                  <span className="text-white/20">•</span>
-                </div>
-              );
-            })
+                    <span className="text-xs font-mono text-white/30">
+                      {new Date(event.timestamp).toLocaleTimeString()}
+                    </span>
+                    <span
+                      className={`text-xs font-mono ${getSeverityColor(event.display?.severity, event.status).className || ''}`}
+                      style={getSeverityColor(event.display?.severity, event.status).style}
+                    >
+                      {event.display?.message || event.type}
+                    </span>
+                    <span className="text-white/20">•</span>
+                  </div>
+                );
+              });
+            })()
           )}
         </div>
       </div>
