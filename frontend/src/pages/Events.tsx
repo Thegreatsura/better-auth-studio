@@ -987,9 +987,7 @@ export const auth = betterAuth({
                                   </span>
                                   <span className="text-sm text-white font-mono">{total}</span>
                                 </div>
-
                                 <hr className="border-t border-dashed border-white/10" />
-
                                 {data.success > 0 && (
                                   <>
                                     <div className="flex items-center justify-between">

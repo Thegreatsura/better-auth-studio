@@ -41,12 +41,12 @@ export default async function Home() {
         <section>
           <h3 className="text-[10px] font-mono tracking-[0.2em] text-white/40 mb-1">■ CREATED BY</h3>
           <a 
-            href="https://twitter.com/KinfishT" 
+            href="https://kinfish.dev" 
             target="_blank" 
             rel="noopener noreferrer"
             className="text-[11px] font-mono uppercase tracking-widest block hover:text-white transition-colors duration-300 text-white/70"
           >
-            @KinfishT
+            kinfish.dev
           </a>
         </section>
       </div>

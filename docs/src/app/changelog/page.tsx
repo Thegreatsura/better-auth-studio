@@ -136,12 +136,12 @@ export default function Changelog() {
           <section>
             <h3 className="text-[10px] font-mono tracking-[0.2em] text-white/40 mb-1">■ CREATED BY</h3>
             <a 
-              href="https://twitter.com/KinfishT" 
+              href="https://kinfish.dev" 
               target="_blank" 
               rel="noopener noreferrer"
               className="text-[11px] font-mono uppercase tracking-widest block hover:text-white transition-colors duration-300 text-white/70"
             >
-              @KinfishT
+              kinfish.dev
             </a>
           </section>
         </div>
@@ -1246,7 +1246,6 @@ export default function Changelog() {
                   </li>
                 </ul>
               </div>
-
               <div>
                 <h4 className="font-light tracking-tight mb-2 text-white">v2.0.0 - Plugin System</h4>
                 <ul className="list-none space-y-2 text-sm font-light tracking-tight text-white/70 ml-4">
