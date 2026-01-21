@@ -2,6 +2,10 @@ import { createHmac, randomBytes } from 'node:crypto';
 import { existsSync, readFileSync, writeFileSync, } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+// @ts-expect-error - No types available
+import babelPresetReact from '@babel/preset-react';
+// @ts-expect-error - No types available
+import babelPresetTypeScript from '@babel/preset-typescript';
 // @ts-expect-error
 import { hex } from '@better-auth/utils/hex';
 import { scryptAsync } from '@noble/hashes/scrypt.js';
@@ -9,11 +13,12 @@ import { Router } from 'express';
 import { createJiti } from 'jiti';
 import { createRequire } from 'module';
 import { createMockAccount, createMockSession, createMockUser, createMockVerification, getAuthAdapter, } from './auth-adapter.js';
-import { possiblePaths } from './config.js';
+import { getPathAliases, possiblePaths } from './config.js';
 import { getAuthData } from './data.js';
 import { initializeGeoService, resolveIPLocation, setGeoDbPath } from './geo-service.js';
 import { detectDatabaseWithDialect } from './utils/database-detection.js';
 import { createStudioSession, decryptSession, encryptSession, isSessionValid, STUDIO_COOKIE_NAME, } from './utils/session.js';
+import { loadConfig } from 'c12';
 const config = {
     N: 16384,
     r: 16,
@@ -933,7 +938,6 @@ export function createRoutes(authConfig, configPath, geoDbPath, preloadedAdapter
             const { isEventIngestionInitialized, getEventIngestionProvider } = await import('./utils/event-ingestion.js');
             const initialized = isEventIngestionInitialized();
             const provider = getEventIngestionProvider();
-            // If not initialized, try to initialize it
             if (!initialized) {
                 try {
                     const { initializeEventIngestionAndHooks } = await import('./core/handler.js');
@@ -953,7 +957,34 @@ export function createRoutes(authConfig, configPath, geoDbPath, preloadedAdapter
                             break;
                         }
                     }
-                    if (!studioConfigPath && configPath) {
+                    const alias = getPathAliases(process.cwd()) || {};
+                    const jitiOptions = {
+                        debug: false,
+                        transformOptions: {
+                            babel: {
+                                presets: [
+                                    [
+                                        babelPresetTypeScript,
+                                        {
+                                            isTSX: true,
+                                            allExtensions: true,
+                                        },
+                                    ],
+                                    [babelPresetReact, { runtime: 'automatic' }],
+                                ],
+                            },
+                        },
+                        extensions: ['.ts', '.js', '.tsx', '.jsx'],
+                        alias,
+                        interopDefault: true,
+                    };
+                    const { config } = await loadConfig({
+                        configFile: studioConfigPath || undefined,
+                        cwd: process.cwd(),
+                        dotenv: true,
+                        jitiOptions,
+                    });
+                    if (!config) {
                         const configDir = require('node:path').dirname(configPath);
                         for (const file of possibleFiles) {
                             const path = require('node:path').join(configDir, file);
@@ -963,36 +994,9 @@ export function createRoutes(authConfig, configPath, geoDbPath, preloadedAdapter
                             }
                         }
                     }
-                    if (studioConfigPath) {
-                        const { loadConfig } = await import('c12');
-                        const { getPathAliases } = await import('./config.js');
-                        // @ts-expect-error - No types available
-                        const babelPresetTypeScript = (await import('@babel/preset-typescript')).default;
-                        // @ts-expect-error - No types available
-                        const babelPresetReact = (await import('@babel/preset-react')).default;
-                        const alias = getPathAliases(process.cwd()) || {};
-                        const jitiOptions = {
-                            debug: false,
-                            transformOptions: {
-                                babel: {
-                                    presets: [
-                                        [babelPresetTypeScript, { isTSX: true, allExtensions: true }],
-                                        [babelPresetReact, { runtime: 'automatic' }],
-                                    ],
-                                },
-                            },
-                            extensions: ['.ts', '.js', '.tsx', '.jsx'],
-                            alias,
-                            interopDefault: true,
-                        };
-                        const { config } = await loadConfig({
-                            configFile: studioConfigPath,
-                            cwd: process.cwd(),
-                            dotenv: true,
-                            jitiOptions,
-                        });
+                    if (config) {
                         const studioConfig = config?.default || config?.config || config;
-                        if (studioConfig?.events?.enabled) {
+                        if (studioConfig.events?.enabled) {
                             await initializeEventIngestionAndHooks(studioConfig);
                         }
                     }
