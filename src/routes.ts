@@ -2285,13 +2285,12 @@ export function createRoutes(
 
       if (betterAuthConfig) {
         const plugins = betterAuthConfig.plugins || [];
-        const pluginInfo = plugins.map((plugin: any) => ({
+        const pluginInfo = plugins.filter((plugin: any) => plugin.id !== 'better-auth-studio-events').map((plugin: any) => ({
           id: plugin.id,
           name: plugin.name || plugin.id,
           description: plugin.description || `${plugin.id} plugin for Better Auth`,
           enabled: true,
         }));
-
         return res.json({
           plugins: pluginInfo,
           configPath: isSelfHosted ? null : configPath || null,
@@ -2337,13 +2336,12 @@ export function createRoutes(
             });
           }
           const plugins = auth.options?.plugins || [];
-          const pluginInfo = plugins.map((plugin: any) => ({
+          const pluginInfo = plugins.filter((plugin: any) => plugin.id !== 'better-auth-studio-events').map((plugin: any) => ({
             id: plugin.id,
             name: plugin.name || plugin.id,
             description: plugin.description || `${plugin.id} plugin for Better Auth`,
             enabled: true,
           }));
-
           return res.json({
             plugins: pluginInfo,
             configPath: authConfigPath,
@@ -4584,7 +4582,7 @@ export function createRoutes(
       return res.json({
         enabled: !!hasOrganizationPlugin,
         configPath: configPath || null,
-        availablePlugins: plugins.map((p: any) => p.id) || [],
+        availablePlugins: plugins.filter((p: any) => p.id !== 'better-auth-studio-events').map((p: any) => p.id) || [],
         organizationPlugin: hasOrganizationPlugin || null,
       });
     } catch (_error) {
