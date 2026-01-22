@@ -511,8 +511,7 @@ export const auth = betterAuth({
         <div className="bg-black/30 border border-dashed border-white/20 rounded-none p-8">
           <div className="flex flex-col items-center justify-center space-y-6">
             <div className="flex items-center space-x-3">
-              <AlertCircle className="w-8 h-8 text-yellow-400" />
-              <div className="text-center">
+              <div className="text-left">
                 <h2 className="text-xl text-white font-light mb-2">Event Ingestion Not Enabled</h2>
                 <p className="text-gray-400 text-sm font-mono">
                   {!isSelfHosted
