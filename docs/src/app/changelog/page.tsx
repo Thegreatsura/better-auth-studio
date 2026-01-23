@@ -97,22 +97,22 @@ const ChevronIcon = () => (
 );
 
 const versionHistory = [
-  { version: "v1.1.1", date: "2025-01-XX", description: "Database event ingestion support. Better Auth Studio now supports comprehensive event ingestion across multiple database clients including PostgreSQL (pg Pool/Client), SQLite (better-sqlite3), Prisma Client, Drizzle ORM, and ClickHouse. Features automatic table creation and seamless event capture for authentication workflows." },
-  { version: "v1.1.0", date: "2025-01-XX", description: "Comprehensive framework support for self-hosting. Better Auth Studio now supports 10 major web frameworks (Next.js, Express, Hono, Elysia, SvelteKit, SolidStart, TanStack Start, Astro, Remix, Nuxt) with seamless integration for production deployments. Added environment variable support for admin emails and mobile-responsive documentation." },
-  { version: "v1.0.79-beta.66", date: "2025-01-XX", description: "Comprehensive framework support for self-hosting. Better Auth Studio now supports 10 major web frameworks (Next.js, Express, Hono, Elysia, SvelteKit, SolidStart, TanStack Start, Astro, Remix, Nuxt) with seamless integration for production deployments. Added environment variable support for admin emails and mobile-responsive documentation." },
+  { version: "v1.1.1", date: "2025-10-XX", description: "Database event ingestion support. Better Auth Studio now supports comprehensive event ingestion across multiple database clients including PostgreSQL (pg Pool/Client), SQLite (better-sqlite3), Prisma Client, Drizzle ORM, and ClickHouse. Features automatic table creation and seamless event capture for authentication workflows." },
+  { version: "v1.1.0", date: "2025-10-XX", description: "Comprehensive framework support for self-hosting. Better Auth Studio now supports 10 major web frameworks (Next.js, Express, Hono, Elysia, SvelteKit, SolidStart, TanStack Start, Astro, Remix, Nuxt) with seamless integration for production deployments. Added environment variable support for admin emails and mobile-responsive documentation." },
+  { version: "v1.0.79-beta.66", date: "2025-10-XX", description: "Comprehensive framework support for self-hosting. Better Auth Studio now supports 10 major web frameworks (Next.js, Express, Hono, Elysia, SvelteKit, SolidStart, TanStack Start, Astro, Remix, Nuxt) with seamless integration for production deployments. Added environment variable support for admin emails and mobile-responsive documentation." },
   { version: "v1.0.80-beta.1", date: "2025-12-30", description: "Added Hono and Elysia framework support for self-hosting. Better Auth Studio now supports integration with Hono.js and Elysia.js frameworks, expanding framework compatibility beyond Next.js and Express. Includes example projects with Prisma integration for both frameworks." },
   { version: "v1.0.79-beta.19", date: "2025-12-25", description: "Beta release with self-hosting support. Better Auth Studio can now be embedded directly into your application for production use. Full support for Next.js App Router and Express.js integration. Fixed adapter resolution, auth config loading, and database schema loading for all endpoints in production deployments." },
-  { version: "v1.0.31", date: "2025-01-31", description: "Enhanced email editor with code export, field simulator, and alignment icons. Added Password Strength Checker tool with comprehensive validation. Improved navigation with dynamic count badges." },
+  { version: "v1.0.31", date: "2025-10-31", description: "Enhanced email editor with code export, field simulator, and alignment icons. Added Password Strength Checker tool with comprehensive validation. Improved navigation with dynamic count badges." },
   { version: "v1.0.30", date: "2025-11-08", description: "Released the refreshed analytics dashboard, Tools workspace with OAuth testing/migration/database utilities, Geist typography polish, and widespread UI clean-up." },
-  { version: "v1.0.26", date: "2025-01-09", description: "Major release with Shadcn UI components, admin functionality for user banning/unbanning, advanced filtering system with date range picker, and pure black & white theme overhaul." },
-  { version: "v1.0.23", date: "2025-01-30", description: "Release with Database Schema Visualizer - an interactive ReactFlow-powered tool for visualizing Better Auth database schemas with plugin-based configuration." },
-  { version: "v1.0.22", date: "2025-01-29", description: "Release with enhanced session management and improved user interface components." },
-  { version: "v1.0.21", date: "2025-01-28", description: "Major beta release with advanced session management, IP geolocation, Biome integration, and comprehensive CI/CD pipeline." },
-  { version: "v1.0.20-beta.5", date: "2025-01-27", description: "Beta release with CSV export functionality and enhanced user management interface." },
-  { version: "v1.0.16", date: "2025-01-27", description: "Added CSV export functionality and enhanced user management interface with pixel-perfect design." },
-  { version: "v1.0.15", date: "2025-01-25", description: "Enhanced user interface with improved navigation and performance optimizations." },
-  { version: "v1.0.14", date: "2025-01-20", description: "Added comprehensive session management and organization features." },
-  { version: "v1.0.13", date: "2025-01-15", description: "Initial stable release with core authentication management capabilities." }
+  { version: "v1.0.26", date: "2025-10-09", description: "Major release with Shadcn UI components, admin functionality for user banning/unbanning, advanced filtering system with date range picker, and pure black & white theme overhaul." },
+  { version: "v1.0.23", date: "2025-10-30", description: "Release with Database Schema Visualizer - an interactive ReactFlow-powered tool for visualizing Better Auth database schemas with plugin-based configuration." },
+  { version: "v1.0.22", date: "2025-10-29", description: "Release with enhanced session management and improved user interface components." },
+  { version: "v1.0.21", date: "2025-10-28", description: "Major beta release with advanced session management, IP geolocation, Biome integration, and comprehensive CI/CD pipeline." },
+  { version: "v1.0.20-beta.5", date: "2025-10-27", description: "Beta release with CSV export functionality and enhanced user management interface." },
+  { version: "v1.0.16", date: "2025-10-27", description: "Added CSV export functionality and enhanced user management interface with pixel-perfect design." },
+  { version: "v1.0.15", date: "2025-10-25", description: "Enhanced user interface with improved navigation and performance optimizations." },
+  { version: "v1.0.14", date: "2025-10-20", description: "Added comprehensive session management and organization features." },
+  { version: "v1.0.13", date: "2025-10-15", description: "Initial stable release with core authentication management capabilities." }
 ];
 
 export default function Changelog() {
@@ -507,7 +507,7 @@ export default function Changelog() {
                       fill="currentColor"
                     />
                   </svg>
-                  Email Editor & Database Enhancements <span className="text-white/50 ml-2">/ 2025-02-12</span>
+                  Email Editor & Database Enhancements <span className="text-white/50 ml-2">/ 2025-11-12</span>
                 </span>
               </h3>
             </div>
@@ -577,7 +577,7 @@ export default function Changelog() {
                       fill="currentColor"
                     />
                   </svg>
-                  Email Enhancements & Password Tool <span className="text-white/50 ml-2">/ 2025-01-31</span>
+                  Email Enhancements & Password Tool <span className="text-white/50 ml-2">/ 2025-10-31</span>
                 </span>
               </h3>
             </div>
@@ -705,7 +705,7 @@ export default function Changelog() {
                       fill="currentColor"
                     />
                   </svg>
-                  Shadcn UI & Admin Functionality <span className="text-white/50 ml-2">/ 2025-01-09</span>
+                  Shadcn UI & Admin Functionality <span className="text-white/50 ml-2">/ 2025-10-09</span>
                 </span>
               </h3>
             </div>
@@ -773,7 +773,7 @@ export default function Changelog() {
                       fill="currentColor"
                     />
                   </svg>
-                  Advanced Session Management <span className="text-white/50 ml-2">/ 2025-01-28</span>
+                  Advanced Session Management <span className="text-white/50 ml-2">/ 2025-10-28</span>
                 </span>
               </h3>
             </div>
@@ -820,7 +820,7 @@ export default function Changelog() {
                       fill="currentColor"
                     />
                   </svg>
-                  Database Schema Visualizer <span className="text-white/50 ml-2">/ 2025-01-30</span>
+                  Database Schema Visualizer <span className="text-white/50 ml-2">/ 2025-10-30</span>
                 </span>
               </h3>
             </div>
@@ -875,7 +875,7 @@ export default function Changelog() {
                       fill="currentColor"
                     />
                   </svg>
-                  IP Geolocation & MaxMind <span className="text-white/50 ml-2">/ 2025-01-28</span>
+                  IP Geolocation & MaxMind <span className="text-white/50 ml-2">/ 2025-10-28</span>
                 </span>
               </h3>
             </div>
@@ -938,7 +938,7 @@ export default function Changelog() {
                       fill="currentColor"
                     />
                   </svg>
-                  Biome Integration & CI/CD <span className="text-white/50 ml-2">/ 2025-01-28</span>
+                  Biome Integration & CI/CD <span className="text-white/50 ml-2">/ 2025-10-28</span>
                 </span>
               </h3>
             </div>
@@ -1004,7 +1004,7 @@ export default function Changelog() {
                       fill="currentColor"
                     />
                   </svg>
-                  CSV Export Feature <span className="text-white/50 ml-2">/ 2025-01-27</span>
+                  CSV Export Feature <span className="text-white/50 ml-2">/ 2025-10-27</span>
                 </span>
               </h3>
             </div>
@@ -1022,7 +1022,7 @@ export default function Changelog() {
                   </li>
                   <li className="flex items-center">
                     <ChevronIcon />
-                    Automatic timestamped filename generation (e.g., users-export-2025-01-27.csv)
+                    Automatic timestamped filename generation (e.g., users-export-2025-10-27.csv)
                   </li>
                   <li className="flex items-center">
                     <ChevronIcon />
@@ -1067,7 +1067,7 @@ export default function Changelog() {
                       fill="currentColor"
                     />
                   </svg>
-                  API Improvements <span className="text-white/50 ml-2">/ 2025-01-26</span>
+                  API Improvements <span className="text-white/50 ml-2">/ 2025-10-26</span>
                 </span>
               </h3>
             </div>
@@ -1123,7 +1123,7 @@ export default function Changelog() {
                       fill="currentColor"
                     />
                   </svg>
-                  UI/UX Enhancements <span className="text-white/50 ml-2">/ 2025-01-25</span>
+                  UI/UX Enhancements <span className="text-white/50 ml-2">/ 2025-10-25</span>
                 </span>
               </h3>
             </div>
@@ -1175,7 +1175,7 @@ export default function Changelog() {
                       fill="currentColor"
                     />
                   </svg>
-                  Documentation <span className="text-white/50 ml-2">/ 2025-01-24</span>
+                  Documentation <span className="text-white/50 ml-2">/ 2025-10-24</span>
                 </span>
               </h3>
             </div>
