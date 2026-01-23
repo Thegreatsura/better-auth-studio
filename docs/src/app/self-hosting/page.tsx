@@ -105,6 +105,23 @@ export default function SelfHosting() {
             kinfish.dev
           </a>
         </section>
+        <section>
+          <h3 className="text-[10px] font-mono tracking-[0.2em] text-white/40 mb-1">■ CONTACT</h3>
+          <a 
+            href="https://x.com/KinfishT" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-[11px] font-mono lowercase tracking-widest block hover:text-white transition-colors duration-300 text-white/70"
+          >
+            Twitter <span className="tracking-tighter"> [ X ] </span>
+          </a>
+          <a 
+            href="mailto:kinfetare83@gmail.com" 
+            className="text-[11px] font-mono lowercase tracking-widest block hover:text-white transition-colors duration-300 text-white/70"
+          >
+            Email
+          </a>
+        </section>
       </div>
       <div className="space-y-8">
         <section id="beta">

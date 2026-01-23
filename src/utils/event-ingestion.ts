@@ -202,13 +202,11 @@ async function flushEvents(): Promise<void> {
   const eventsToSend = [...eventQueue];
   eventQueue = [];
 
-  // Call onEventIngest callback for each event if provided
   if (config?.onEventIngest) {
     for (const event of eventsToSend) {
       try {
         await config.onEventIngest(event);
       } catch (error) {
-        // Don't block event ingestion if callback fails
         console.error('onEventIngest callback error:', error);
       }
     }
