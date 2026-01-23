@@ -21,10 +21,10 @@ function prepareFrontendConfig(config) {
     };
     const mergedMetadata = {
         ...defaultMetadata,
-        ...(config.metadata || {}),
+        ...config.metadata,
         company: {
             ...defaultMetadata.company,
-            ...(config.metadata?.company || {}),
+            ...config.metadata?.company,
         },
     };
     const eventsConfig = config.events;
