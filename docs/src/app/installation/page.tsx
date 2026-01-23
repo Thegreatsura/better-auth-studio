@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect } from "react";
 import PixelLayout from "@/components/PixelLayout";
 import PixelCard from "@/components/PixelCard";
 import CodeHighlighter from "@/components/SyntaxHighlighter";
@@ -13,7 +16,71 @@ import {
   DataLayersIcon,
   DocumentIcon,
 } from "@/components/icons";
+
 export default function Installation() {
+  const scrollToElement = (sectionId: string, retries = 5) => {
+    let element = document.getElementById(sectionId);
+    
+    if (!element) {
+      element = document.querySelector(`[id="${sectionId}"]`) as HTMLElement;
+    }
+    
+    if (element) {
+      const yOffset = -40;
+      const elementTop = element.getBoundingClientRect().top;
+      const elementScrollTop = elementTop + window.pageYOffset;
+      const targetPosition = elementScrollTop + yOffset;
+      
+      window.scrollTo({ 
+        top: Math.max(0, targetPosition), 
+        behavior: 'smooth' 
+      });
+      return true;
+    } else if (retries > 0) {
+      setTimeout(() => scrollToElement(sectionId, retries - 1), 100);
+      return false;
+    }
+    return false;
+  };
+
+  useEffect(() => {
+    const scrollToHash = () => {
+      const hash = window.location.hash;
+      if (hash) {
+        const sectionId = hash.substring(1);
+        setTimeout(() => {
+          scrollToElement(sectionId);
+        }, 200);
+      }
+    };
+
+    scrollToHash();
+    
+    const handleHashChange = () => {
+      setTimeout(() => {
+        const hash = window.location.hash;
+        if (hash) {
+          scrollToElement(hash.substring(1));
+        }
+      }, 100);
+    };
+    
+    window.addEventListener('hashchange', handleHashChange);
+    
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  const handleSectionClick = (sectionId: string) => {
+    const hash = `#${sectionId}`;
+    window.history.pushState(null, '', hash);
+    
+    // Use requestAnimationFrame for better timing
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        scrollToElement(sectionId);
+      }, 150);
+    });
+  };
   return (
     <PixelLayout
       currentPage="installation"
@@ -44,12 +111,15 @@ export default function Installation() {
         </section>
       </div>
       <div className="space-y-8">
-        <section>
+        <section id="hosted">
           <PixelCard variant="highlight" className="relative">
             <div className="absolute -top-10 left-0">
-              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+              <h3 
+                onClick={() => handleSectionClick('hosted')}
+                className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden cursor-pointer hover:border-white/40 hover:bg-white/15 transition-all duration-200"
+              >
                 <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
-                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                <span className="relative z-10 inline-flex gap-[5px] items-center">
                   <HostedIcon />
                   Hosted Version
                 </span>
@@ -62,12 +132,15 @@ export default function Installation() {
             </div>
           </PixelCard>
         </section>
-        <section>
+        <section id="beta-notice">
           <PixelCard variant="highlight" className="relative">
             <div className="absolute -top-10 left-0">
-              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+              <h3 
+                onClick={() => handleSectionClick('beta-notice')}
+                className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden cursor-pointer hover:border-white/40 hover:bg-white/15 transition-all duration-200"
+              >
                 <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
-                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                <span className="relative z-10 inline-flex gap-[5px] items-center">
                   <BetaIcon />
                   Beta Version Notice
                 </span>
@@ -80,14 +153,17 @@ export default function Installation() {
             </div>
           </PixelCard>
         </section>
-        <section>
+        <section id="beta-version">
           <PixelCard variant="highlight" className="relative">
             <div className="flex items-start">
               <div>
                 <div className="absolute -top-10 left-0">
-                  <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+                  <h3 
+                    onClick={() => handleSectionClick('beta-version')}
+                    className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden cursor-pointer hover:border-white/40 hover:bg-white/15 transition-all duration-200"
+                  >
                     <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
-                    <span className="relative z-10 inline-flex gap-[2px] items-center">
+                    <span className="relative z-10 inline-flex gap-[5px] items-center">
                       <DownloadIcon />
                       Try the Beta Version
                     </span>
@@ -124,14 +200,18 @@ export default function Installation() {
           </PixelCard>
         </section>
 
-        <section>
+        <section id="quick-start">
           <h2 className="text-2xl font-light tracking-tight mb-6 text-white">QUICK START</h2>
 
-          <PixelCard className="mb-6 relative">
+          <div id="installation">
+            <PixelCard className="mb-6 relative">
             <div className="absolute -top-10 left-0">
-              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+              <h3 
+                onClick={() => handleSectionClick('installation')}
+                className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden cursor-pointer hover:border-white/40 hover:bg-white/15 transition-all duration-200"
+              >
                 <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
-                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                <span className="relative z-10 inline-flex gap-[5px] items-center">
                   <InstallIcon />
                   Installation
                 </span>
@@ -167,12 +247,17 @@ export default function Installation() {
             </p>
             <CodeBlock code="pnpx better-auth-studio@beta" />
           </PixelCard>
+          </div>
 
-          <PixelCard className="relative">
+          <div id="basic-usage">
+            <PixelCard className="relative">
             <div className="absolute -top-10 left-0">
-              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+              <h3 
+                onClick={() => handleSectionClick('basic-usage')}
+                className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden cursor-pointer hover:border-white/40 hover:bg-white/15 transition-all duration-200"
+              >
                 <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
-                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                <span className="relative z-10 inline-flex gap-[5px] items-center">
                   <BasicUsageIcon />
                   Basic Usage
                 </span>
@@ -217,15 +302,19 @@ export default function Installation() {
               </div>
             </div>
           </PixelCard>
+          </div>
         </section>
 
-        <section>
+        <section id="prerequisites">
           <h2 className="text-2xl font-light tracking-tight mb-6 text-white">PREREQUISITES</h2>
           <PixelCard className="relative">
             <div className="absolute -top-10 left-0">
-              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+              <h3 
+                onClick={() => handleSectionClick('prerequisites')}
+                className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden cursor-pointer hover:border-white/40 hover:bg-white/15 transition-all duration-200"
+              >
                 <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
-                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                <span className="relative z-10 inline-flex gap-[5px] items-center">
                   <PrerequisitesIcon />
                   Prerequisites
                 </span>
@@ -251,14 +340,18 @@ export default function Installation() {
           </PixelCard>
         </section>
 
-        <section>
+        <section id="configuration">
           <h2 className="text-2xl font-light tracking-tight mb-6 text-white">CONFIGURATION</h2>
 
-          <PixelCard className="mb-6 relative">
+          <div id="database-adapters">
+            <PixelCard className="mb-6 relative">
             <div className="absolute -top-10 left-0">
-              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+              <h3 
+                onClick={() => handleSectionClick('database-adapters')}
+                className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden cursor-pointer hover:border-white/40 hover:bg-white/15 transition-all duration-200"
+              >
                 <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
-                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                <span className="relative z-10 inline-flex gap-[5px] items-center">
                   <DataLayersIcon />
                   Supported Database Adapters
                 </span>
@@ -290,12 +383,17 @@ export default function Installation() {
               </div>
             </div>
           </PixelCard>
+          </div>
 
-          <PixelCard className="relative">
+          <div id="example-config">
+            <PixelCard className="relative">
             <div className="absolute -top-10 left-0">
-              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+              <h3 
+                onClick={() => handleSectionClick('example-config')}
+                className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden cursor-pointer hover:border-white/40 hover:bg-white/15 transition-all duration-200"
+              >
                 <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
-                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                <span className="relative z-10 inline-flex gap-[5px] items-center">
                   <DocumentIcon />
                   Example Configuration Files
                 </span>
@@ -361,16 +459,21 @@ export const auth = betterAuth({
               </PixelCard>
             </div>
           </PixelCard>
+          </div>
         </section>
 
-        <section>
+        <section id="features">
           <h2 className="text-2xl font-light tracking-tight mb-6 text-white">FEATURES</h2>
 
-          <PixelCard className="mb-8 relative">
+          <div id="dashboard">
+            <PixelCard className="mb-8 relative">
             <div className="absolute -top-10 left-0">
-              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+              <h3 
+                onClick={() => handleSectionClick('dashboard')}
+                className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden cursor-pointer hover:border-white/40 hover:bg-white/15 transition-all duration-200"
+              >
                 <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
-                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                <span className="relative z-10 inline-flex gap-[5px] items-center">
                   <svg
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
@@ -393,12 +496,17 @@ export const auth = betterAuth({
               </li>
             </ul>
           </PixelCard>
+          </div>
 
-          <PixelCard className="mb-8 relative">
+          <div id="user-management">
+            <PixelCard className="mb-8 relative">
             <div className="absolute -top-10 left-0">
-              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+              <h3 
+                onClick={() => handleSectionClick('user-management')}
+                className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden cursor-pointer hover:border-white/40 hover:bg-white/15 transition-all duration-200"
+              >
                 <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
-                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                <span className="relative z-10 inline-flex gap-[5px] items-center">
                   <svg
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
@@ -441,12 +549,17 @@ export const auth = betterAuth({
               </li>
             </ul>
           </PixelCard>
+          </div>
 
-          <PixelCard className="mb-8 relative">
+          <div id="organization-management">
+            <PixelCard className="mb-8 relative">
             <div className="absolute -top-10 left-0">
-              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+              <h3 
+                onClick={() => handleSectionClick('organization-management')}
+                className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden cursor-pointer hover:border-white/40 hover:bg-white/15 transition-all duration-200"
+              >
                 <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
-                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                <span className="relative z-10 inline-flex gap-[5px] items-center">
                   <svg
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
@@ -493,12 +606,17 @@ export const auth = betterAuth({
               </li>
             </ul>
           </PixelCard>
+          </div>
 
-          <PixelCard className="relative">
+          <div id="settings">
+            <PixelCard className="relative">
             <div className="absolute -top-10 left-0">
-              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+              <h3 
+                onClick={() => handleSectionClick('settings')}
+                className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden cursor-pointer hover:border-white/40 hover:bg-white/15 transition-all duration-200"
+              >
                 <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
-                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                <span className="relative z-10 inline-flex gap-[5px] items-center">
                   <svg
                     fill="noneTypeScript"
                     xmlns="http://www.w3.org/2000/svg"
@@ -533,15 +651,20 @@ export const auth = betterAuth({
               </li>
             </ul>
           </PixelCard>
+          </div>
         </section>
 
-        <section>
+        <section id="command-line">
           <h2 className="text-2xl font-light tracking-tight mb-6 text-white">COMMAND LINE OPTIONS</h2>
-          <PixelCard className="mb-6 relative">
+          <div id="start-studio">
+            <PixelCard className="mb-6 relative">
             <div className="absolute -top-10 left-0">
-              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+              <h3 
+                onClick={() => handleSectionClick('start-studio')}
+                className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden cursor-pointer hover:border-white/40 hover:bg-white/15 transition-all duration-200"
+              >
                 <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
-                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                <span className="relative z-10 inline-flex gap-[5px] items-center">
                   <svg
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
@@ -631,12 +754,17 @@ export const auth = betterAuth({
               </div>
             </div>
           </PixelCard>
+          </div>
 
-          <PixelCard className="mb-6 relative">
+          <div id="config-option">
+            <PixelCard className="mb-6 relative">
             <div className="absolute -top-10 left-0">
-              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+              <h3 
+                onClick={() => handleSectionClick('config-option')}
+                className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden cursor-pointer hover:border-white/40 hover:bg-white/15 transition-all duration-200"
+              >
                 <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
-                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                <span className="relative z-10 inline-flex gap-[5px] items-center">
                   <svg
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
@@ -673,12 +801,17 @@ export const auth = betterAuth({
               </p>
             </div>
           </PixelCard>
+          </div>
 
-          <PixelCard className="mb-6 relative">
+          <div id="watch-option">
+            <PixelCard className="mb-6 relative">
             <div className="absolute -top-10 left-0">
-              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+              <h3 
+                onClick={() => handleSectionClick('watch-option')}
+                className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden cursor-pointer hover:border-white/40 hover:bg-white/15 transition-all duration-200"
+              >
                 <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
-                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                <span className="relative z-10 inline-flex gap-[5px] items-center">
                   <svg
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
@@ -714,12 +847,17 @@ export const auth = betterAuth({
               </p>
             </div>
           </PixelCard>
+          </div>
 
-          <PixelCard className="relative">
+          <div id="other-commands">
+            <PixelCard className="relative">
             <div className="absolute -top-10 left-0">
-              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+              <h3 
+                onClick={() => handleSectionClick('other-commands')}
+                className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden cursor-pointer hover:border-white/40 hover:bg-white/15 transition-all duration-200"
+              >
                 <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
-                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                <span className="relative z-10 inline-flex gap-[5px] items-center">
                   <svg
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
@@ -751,14 +889,19 @@ export const auth = betterAuth({
               </div>
             </div>
           </PixelCard>
+          </div>
         </section>
 
-        <section>
-          <PixelCard className="mb-6 relative">
+        <section id="source">
+          <div id="running-from-source">
+            <PixelCard className="mb-6 relative">
             <div className="absolute -top-10 left-0">
-              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+              <h3 
+                onClick={() => handleSectionClick('running-from-source')}
+                className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden cursor-pointer hover:border-white/40 hover:bg-white/15 transition-all duration-200"
+              >
                 <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
-                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                <span className="relative z-10 inline-flex gap-[5px] items-center">
                   <svg
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
@@ -805,11 +948,16 @@ export const auth = betterAuth({
               </div>
             </div>
           </PixelCard>
-          <PixelCard className="relative">
+          </div>
+          <div id="contributing">
+            <PixelCard className="relative">
             <div className="absolute -top-10 left-0">
-              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+              <h3 
+                onClick={() => handleSectionClick('contributing')}
+                className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden cursor-pointer hover:border-white/40 hover:bg-white/15 transition-all duration-200"
+              >
                 <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
-                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                <span className="relative z-10 inline-flex gap-[5px] items-center">
                   <svg
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
@@ -848,13 +996,17 @@ export const auth = betterAuth({
               </li>
             </ol>
           </PixelCard>
+          </div>
         </section>
-        <section>
+        <section id="support">
           <PixelCard className="relative">
             <div className="absolute -top-10 left-0">
-              <h3 className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden">
+              <h3 
+                onClick={() => handleSectionClick('support')}
+                className="relative text-[12px] font-light uppercase tracking-tight text-white/90 border border-white/20 bg-[#0a0a0a] px-2 py-[6px] overflow-hidden cursor-pointer hover:border-white/40 hover:bg-white/15 transition-all duration-200"
+              >
                 <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-[2.5%]" />
-                <span className="relative z-10 inline-flex gap-[2px] items-center">
+                <span className="relative z-10 inline-flex gap-[5px] items-center">
                   <svg
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
