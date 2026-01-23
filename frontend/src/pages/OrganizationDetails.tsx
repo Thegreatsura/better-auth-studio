@@ -1843,7 +1843,7 @@ export default function OrganizationDetails() {
       {/* Delete Team Modal */}
       {showDeleteTeamModal && selectedTeam && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-          <div className="bg-black border border-white/15 rounded-none p-6 w-full max-w-lg shadow-2xl">
+          <div className="bg-black border border-white/15 rounded-none p-6 w-full max-w-xl shadow-2xl">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg text-white font-light uppercase font-mono">Delete Team</h3>
               <Button
