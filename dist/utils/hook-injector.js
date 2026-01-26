@@ -872,7 +872,7 @@ function createEventIngestionPlugin(eventsConfig) {
                                     table: capturedConfig.tableName,
                                 });
                                 break;
-                            case "http":
+                            case "https":
                                 provider = createHttpProvider({
                                     url: capturedConfig.client,
                                     headers: capturedConfig.headers || {},

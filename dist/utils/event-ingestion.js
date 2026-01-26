@@ -53,7 +53,7 @@ export function initializeEventIngestion(eventsConfig) {
                     table: eventsConfig.tableName,
                 });
                 break;
-            case "http":
+            case "https":
                 provider = createHttpProvider({
                     url: eventsConfig.client,
                     headers: eventsConfig.headers || {},

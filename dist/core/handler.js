@@ -60,7 +60,7 @@ export async function initializeEventIngestionAndHooks(config) {
                         table: config.events.tableName,
                     });
                     break;
-                case "http":
+                case "https":
                     provider = createHttpProvider({
                         url: config.events.client,
                         headers: config.events.headers || {},

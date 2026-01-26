@@ -68,7 +68,7 @@ export function initializeEventIngestion(eventsConfig: StudioConfig["events"]): 
           table: eventsConfig.tableName,
         });
         break;
-      case "http":
+      case "https":
         provider = createHttpProvider({
           url: eventsConfig.client,
           headers: (eventsConfig as any).headers || {},

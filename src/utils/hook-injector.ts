@@ -1064,7 +1064,7 @@ function createEventIngestionPlugin(eventsConfig: StudioConfig["events"]): any {
                   table: capturedConfig.tableName,
                 });
                 break;
-              case "http":
+              case "https":
                 provider = createHttpProvider({
                   url: capturedConfig.client,
                   headers: (capturedConfig as any).headers || {},

@@ -1032,7 +1032,7 @@ export default config;`}
                     <code className="text-white/70 bg-white/10 px-1 py-0.5">"postgres"</code>,{" "}
                     <code className="text-white/70 bg-white/10 px-1 py-0.5">"sqlite"</code>,{" "}
                     <code className="text-white/70 bg-white/10 px-1 py-0.5">"clickhouse"</code>,{" "}
-                    <code className="text-white/70 bg-white/10 px-1 py-0.5">"http"</code>
+                    <code className="text-white/70 bg-white/10 px-1 py-0.5">"https"</code>
                   </p>
                 </div>
                 <div className="border-b border-white/10 pb-3">

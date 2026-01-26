@@ -75,7 +75,7 @@ export async function initializeEventIngestionAndHooks(config: StudioConfig): Pr
             table: config.events.tableName,
           });
           break;
-        case "http":
+        case "https":
           provider = createHttpProvider({
             url: config.events.client,
             headers: (config.events as any).headers || {},
