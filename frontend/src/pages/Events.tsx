@@ -7,6 +7,7 @@ import {
   Eye,
   Filter,
   Loader,
+  Phone,
   Search,
   X,
 } from "lucide-react";
@@ -164,6 +165,9 @@ const getEventIcon = (eventType: string, severity?: string, status?: string) => 
     eventType.includes("invitation")
   ) {
     return <Building2 className="w-4 h-4" />;
+  }
+  if (eventType.includes("phone_number")) {
+    return <Phone className="w-4 h-4" />;
   }
 
   if (eventType.includes("user")) {
