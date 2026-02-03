@@ -7,7 +7,6 @@ import {
   Eye,
   Filter,
   Loader,
-  Phone,
   Search,
   X,
 } from "lucide-react";
@@ -24,6 +23,7 @@ import {
   Check,
   ErrorInfo,
   Info,
+  PhoneNumber,
   Users,
 } from "../components/PixelIcons";
 import { Button } from "../components/ui/button";
@@ -167,7 +167,7 @@ const getEventIcon = (eventType: string, severity?: string, status?: string) => 
     return <Building2 className="w-4 h-4" />;
   }
   if (eventType.includes("phone_number")) {
-    return <Phone className="w-4 h-4" />;
+    return <PhoneNumber className="w-4 h-4" />;
   }
 
   if (eventType.includes("user")) {

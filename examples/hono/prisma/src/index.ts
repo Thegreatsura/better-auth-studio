@@ -88,9 +88,17 @@ app.get("/test", async (c) => {
 
   //   }
   // })
+  const res = await auth.api.signUpEmail({
+    body: {
+      name: "Test User",
+      email: "phone@test.com",
+      password: "password",
+      phoneNumber: "+16502530002",
+    }
+  })
   const result = await auth.api.sendPhoneNumberOTP({
     body: {
-      phoneNumber: "+16502530001",
+      phoneNumber: "+16502530002",
     },
   });
   // for normal password reset requeset
@@ -104,8 +112,8 @@ app.get("/test", async (c) => {
 app.get("/test/phone", async (c) => {
   const result = await auth.api.verifyPhoneNumber({
     body: {
-      phoneNumber: "+16502530001",
-      code: "031316",
+      phoneNumber: "+16502530002",
+      code: "502313",
     },
   });
   return c.json({ message: "Test", result });
