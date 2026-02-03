@@ -36,7 +36,17 @@ export const Info: React.FC<IconProps> = ({ className = "", size = 24 }) => (
   </svg>
 );
 export const PhoneNumber: React.FC<IconProps> = ({ className = "", size = 24 }) => (
-  <svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className={className} width={size} height={size}> <path d="M6 3h12v18H6V3zm10 16V5h-2v2h-4V5H8v14h8zm-5-4h2v2h-2v-2z" fill="currentColor" /> </svg>
+  <svg
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    className={className}
+    width={size}
+    height={size}
+  >
+    {" "}
+    <path d="M6 3h12v18H6V3zm10 16V5h-2v2h-4V5H8v14h8zm-5-4h2v2h-2v-2z" fill="currentColor" />{" "}
+  </svg>
 );
 export const ErrorInfo: React.FC<IconProps> = ({ className = "", size = 24 }) => (
   <svg

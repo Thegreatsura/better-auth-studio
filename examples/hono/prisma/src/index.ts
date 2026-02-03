@@ -94,8 +94,8 @@ app.get("/test", async (c) => {
       email: "phone@test.com",
       password: "password",
       phoneNumber: "+16502530002",
-    }
-  })
+    },
+  });
   const result = await auth.api.sendPhoneNumberOTP({
     body: {
       phoneNumber: "+16502530002",
