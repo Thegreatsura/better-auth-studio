@@ -1038,7 +1038,7 @@ export const auth = betterAuth({
                                 <span className="text-xs font-mono uppercase text-gray-400">
                                   Success
                                 </span>
-                                <span className="text-xs font-mono text-green-400">
+                                <span className="text-xs font-mono text-white/80">
                                   {selectedCell.success}
                                 </span>
                               </div>
@@ -1048,7 +1048,7 @@ export const auth = betterAuth({
                                 <span className="text-xs font-mono uppercase text-gray-400">
                                   Failed
                                 </span>
-                                <span className="text-xs font-mono text-red-400">
+                                <span className="text-xs font-mono text-white/80">
                                   {selectedCell.failed}
                                 </span>
                               </div>
@@ -1058,7 +1058,7 @@ export const auth = betterAuth({
                                 <span className="text-xs font-mono uppercase text-gray-400">
                                   Warning
                                 </span>
-                                <span className="text-xs font-mono text-yellow-400">
+                                <span className="text-xs font-mono text-white/80">
                                   {selectedCell.warning}
                                 </span>
                               </div>
@@ -1068,7 +1068,7 @@ export const auth = betterAuth({
                                 <span className="text-xs font-mono uppercase text-gray-400">
                                   Info
                                 </span>
-                                <span className="text-xs font-mono text-blue-400">
+                                <span className="text-xs font-mono text-white/80">
                                   {selectedCell.info}
                                 </span>
                               </div>
