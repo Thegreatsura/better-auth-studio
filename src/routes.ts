@@ -403,6 +403,26 @@ export function createRoutes(
 
   initializeGeoService().catch(console.error);
 
+  const getAdapterWithLastSeenAtSchema = async (): Promise<any | null> => {
+    if (!studioConfig?.lastSeenAt?.enabled || !authInstance?.options?.database) return null;
+    try {
+      const opts = authInstance.options;
+      const db = opts.database;
+      if (typeof db !== "function") return null;
+      const freshOpts = {
+        ...opts,
+        plugins: [...(opts.plugins || [])],
+        user: opts.user
+          ? { ...opts.user, additionalFields: { ...opts.user.additionalFields } }
+          : undefined,
+      };
+      const adapter = await db(freshOpts);
+      return adapter && typeof adapter.findMany === "function" ? adapter : null;
+    } catch {
+      return null;
+    }
+  };
+
   // Use preloaded adapter if available (self-hosted), otherwise load from config file (CLI)
   const getAuthAdapterWithConfig = async () => {
     if (preloadedAdapter) {
@@ -1403,7 +1423,11 @@ export function createRoutes(
   router.get("/api/users/:userId", async (req: Request, res: Response) => {
     try {
       const { userId } = req.params;
-      const adapter = await getAuthAdapterWithConfig();
+      let adapter =
+        studioConfig?.lastSeenAt?.enabled && authInstance
+          ? await getAdapterWithLastSeenAtSchema()
+          : null;
+      if (!adapter) adapter = await getAuthAdapterWithConfig();
       if (!adapter || !adapter.findMany) {
         return res.status(500).json({ error: "Auth adapter not available" });
       }
@@ -2159,7 +2183,11 @@ export function createRoutes(
       const limit = parseInt(req.query.limit as string, 10) || 20;
       const search = req.query.search as string;
       try {
-        const adapter = await getAuthAdapterWithConfig();
+        let adapter =
+          studioConfig?.lastSeenAt?.enabled && authInstance
+            ? await getAdapterWithLastSeenAtSchema()
+            : null;
+        if (!adapter) adapter = await getAuthAdapterWithConfig();
         if (adapter && typeof adapter.findMany === "function") {
           const shouldPaginate = limit < 1000;
           const fetchLimit = shouldPaginate ? limit : undefined;
@@ -2186,19 +2214,26 @@ export function createRoutes(
             paginatedUsers = filteredUsers;
           }
 
-          const transformedUsers = paginatedUsers.map((user: any) => ({
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            image: user.image,
-            emailVerified: user.emailVerified,
-            createdAt: user.createdAt,
-            updatedAt: user.updatedAt,
-            role: user.role,
-            banned: user.banned,
-            banReason: user.banReason,
-            banExpires: user.banExpires,
-          }));
+          const lastSeenCol = studioConfig?.lastSeenAt?.columnName || "lastSeenAt";
+          const transformedUsers = paginatedUsers.map((user: any) => {
+            const lastSeenVal = user.lastSeenAt ?? user[lastSeenCol];
+            return {
+              ...user,
+              id: user.id,
+              email: user.email,
+              name: user.name,
+              image: user.image,
+              emailVerified: user.emailVerified,
+              createdAt: user.createdAt,
+              updatedAt: user.updatedAt,
+              role: user.role,
+              banned: user.banned,
+              banReason: user.banReason,
+              banExpires: user.banExpires,
+              lastSeenAt: lastSeenVal,
+              [lastSeenCol]: lastSeenVal,
+            };
+          });
 
           res.json({ users: transformedUsers });
           return;
@@ -2213,20 +2248,26 @@ export function createRoutes(
         preloadedAdapter,
       );
 
-      const transformedUsers = (result.data || []).map((user: any) => ({
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        image: user.image,
-        emailVerified: user.emailVerified,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-        role: user.role,
-        banned: user.banned,
-        banReason: user.banReason,
-        banExpires: user.banExpires,
-        ...user,
-      }));
+      const lastSeenCol = studioConfig?.lastSeenAt?.columnName || "lastSeenAt";
+      const transformedUsers = (result.data || []).map((user: any) => {
+        const lastSeenVal = user.lastSeenAt ?? user[lastSeenCol];
+        return {
+          ...user,
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          image: user.image,
+          emailVerified: user.emailVerified,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+          role: user.role,
+          banned: user.banned,
+          banReason: user.banReason,
+          banExpires: user.banExpires,
+          lastSeenAt: lastSeenVal,
+          [lastSeenCol]: lastSeenVal,
+        };
+      });
 
       res.json({ users: transformedUsers });
     } catch (_error) {
