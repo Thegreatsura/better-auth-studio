@@ -992,7 +992,7 @@ export function createRoutes(
     }
   });
 
-  router.post("/api/geo/resolve", (req: Request, res: Response) => {
+  router.post("/api/geo/resolve", async (req: Request, res: Response) => {
     try {
       const body = req.body || {};
       const { ipAddress } = body;
@@ -1004,7 +1004,7 @@ export function createRoutes(
         });
       }
 
-      const location = resolveIPLocation(ipAddress);
+      const location = await resolveIPLocation(ipAddress);
 
       if (!location) {
         return res.status(404).json({

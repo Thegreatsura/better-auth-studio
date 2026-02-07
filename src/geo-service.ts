@@ -1,7 +1,7 @@
 /**
- * Lightweight IP geolocation using maxmind (GeoLite2-City.mmdb).
- * For accurate lookups: run `pnpm geo:update` to download the latest DB
- * (or place GeoLite2-City.mmdb in ./data/). Fallbacks: data/default-geo.json, then hardcoded ranges.
+ * IP geolocation: primary via iplocation (ipapi.co) for accuracy;
+ * fallback to maxmind (GeoLite2-City.mmdb), then data/default-geo.json, then hardcoded ranges.
+ * Optional: run `pnpm geo:update` to keep GeoLite2-City.mmdb current for fallback.
  */
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -11,7 +11,7 @@ import maxmind, { type CityResponse, type Reader } from "maxmind";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-interface LocationData {
+export interface LocationData {
   country: string;
   countryCode: string;
   city: string;
@@ -46,9 +46,8 @@ function loadDefaultDatabase(): void {
   try {
     const defaultDbPath = join(__dirname, "../data/default-geo.json");
     if (existsSync(defaultDbPath)) {
-      const dbContent = readFileSync(defaultDbPath, "utf-8");
-      defaultDatabase = JSON.parse(dbContent);
-    } else {
+      const defaultDbContent = readFileSync(defaultDbPath, "utf-8");
+      defaultDatabase = JSON.parse(defaultDbContent);
     }
   } catch (_error) {}
 }
@@ -61,9 +60,43 @@ export async function initializeGeoService(): Promise<void> {
     lookup = null;
     loadDefaultDatabase();
   }
+  if (!lookup) {
+    loadDefaultDatabase();
+  }
 }
 
-export function resolveIPLocation(ipAddress: string): LocationData | null {
+/**
+ * Resolve IP to location. Uses iplocation (ipapi.co) first for accuracy;
+ * on failure or reserved IP, falls back to maxmind → default-geo.json → hardcoded ranges.
+ */
+export async function resolveIPLocation(ipAddress: string): Promise<LocationData | null> {
+  if (!ipAddress || typeof ipAddress !== "string") {
+    return null;
+  }
+
+  try {
+    const ipLocation = (await import("iplocation")).default;
+    const result = await ipLocation(ipAddress);
+    if (result && "reserved" in result && result.reserved) {
+      return resolveIPLocationFallback(ipAddress);
+    }
+    if (result && "country" in result && result.country) {
+      return {
+        country: (result as { country: { name: string } }).country.name || "Unknown",
+        countryCode: (result as { country: { code: string } }).country.code || "",
+        city: (result as { city: string }).city || "Unknown",
+        region:
+          (result as { region: { name: string } }).region?.name || "Unknown",
+      };
+    }
+  } catch (_error) {
+    // ipapi.co failed (network, rate limit, etc.) – use fallback
+  }
+
+  return resolveIPLocationFallback(ipAddress);
+}
+
+function resolveIPLocationFallback(ipAddress: string): LocationData | null {
   if (lookup) {
     try {
       const result = lookup.get(ipAddress);
@@ -85,7 +118,6 @@ export function resolveIPLocation(ipAddress: string): LocationData | null {
     }
   }
 
-  // Final fallback to basic IP range detection
   return resolveIPFromRanges(ipAddress);
 }
 
