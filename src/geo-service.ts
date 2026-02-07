@@ -75,6 +75,7 @@ export async function resolveIPLocation(ipAddress: string): Promise<LocationData
   }
 
   try {
+    // @ts-expect-error - iplocation has no type export for default
     const ipLocation = (await import("iplocation")).default;
     const result = await ipLocation(ipAddress);
     if (result && "reserved" in result && result.reserved) {
