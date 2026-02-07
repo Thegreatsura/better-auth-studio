@@ -836,7 +836,7 @@ export function createRoutes(authConfig, configPath, geoDbPath, preloadedAdapter
             });
         }
     });
-    router.post("/api/geo/resolve", (req, res) => {
+    router.post("/api/geo/resolve", async (req, res) => {
         try {
             const body = req.body || {};
             const { ipAddress } = body;
@@ -846,7 +846,7 @@ export function createRoutes(authConfig, configPath, geoDbPath, preloadedAdapter
                     error: "IP address is required",
                 });
             }
-            const location = resolveIPLocation(ipAddress);
+            const location = await resolveIPLocation(ipAddress);
             if (!location) {
                 return res.status(404).json({
                     success: false,
