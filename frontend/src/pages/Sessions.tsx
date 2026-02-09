@@ -92,9 +92,7 @@ export default function Sessions() {
 
   const resolveSessionLocations = useCallback(
     async (sessionsList: Session[]) => {
-      const pending = sessionsList.filter(
-        (s) => s.ipAddress && !sessionLocationsRef.current[s.id],
-      );
+      const pending = sessionsList.filter((s) => s.ipAddress && !sessionLocationsRef.current[s.id]);
       if (pending.length === 0) return;
       const results = await Promise.all(
         pending.map(async (session) => {
@@ -310,17 +308,27 @@ export default function Sessions() {
   };
 
   useEffect(() => {
-    if (!showViewModal || !selectedSession?.ipAddress || sessionLocations[selectedSession.id]) return;
+    if (!showViewModal || !selectedSession?.ipAddress || sessionLocations[selectedSession.id])
+      return;
     let cancelled = false;
     resolveIPLocation(selectedSession.ipAddress).then((location) => {
       if (cancelled || !location) return;
       setSessionLocations((prev) => ({ ...prev, [selectedSession.id]: location }));
-      sessionLocationsRef.current = { ...sessionLocationsRef.current, [selectedSession.id]: location };
+      sessionLocationsRef.current = {
+        ...sessionLocationsRef.current,
+        [selectedSession.id]: location,
+      };
     });
     return () => {
       cancelled = true;
     };
-  }, [showViewModal, selectedSession?.id, selectedSession?.ipAddress, sessionLocations, resolveIPLocation]);
+  }, [
+    showViewModal,
+    selectedSession?.id,
+    selectedSession?.ipAddress,
+    sessionLocations,
+    resolveIPLocation,
+  ]);
 
   const openEditModal = (session: Session) => {
     setSelectedSession(session);
@@ -531,7 +539,9 @@ export default function Sessions() {
                               {sessionLocations[session.id].country}
                             </span>
                             {sessionLocations[session.id].countryCode && (
-                              <span>{getCountryFlag(sessionLocations[session.id].countryCode)}</span>
+                              <span>
+                                {getCountryFlag(sessionLocations[session.id].countryCode)}
+                              </span>
                             )}
                           </div>
                         ) : (

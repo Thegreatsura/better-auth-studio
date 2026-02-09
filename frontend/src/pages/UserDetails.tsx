@@ -1762,7 +1762,6 @@ export default function UserDetails() {
                                   hour12: true,
                                 })}
                               </span>
-                              
                             </div>
                           </div>
                         </div>

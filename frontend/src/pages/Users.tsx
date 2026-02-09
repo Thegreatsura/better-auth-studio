@@ -1785,11 +1785,7 @@ export default function Users() {
                             const lastSeen =
                               selectedUser.lastSeenAt ??
                               (selectedUser as any)[lastSeenAtColumnName];
-                            return lastSeen ? (
-                              formatDateTime(lastSeen)
-                            ) : (
-                              "—"
-                            );
+                            return lastSeen ? formatDateTime(lastSeen) : "—";
                           })(),
                         },
                       ]
