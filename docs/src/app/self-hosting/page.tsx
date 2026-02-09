@@ -1332,7 +1332,7 @@ export default config;`}
                 </span>
               </h3>
             </div>
-            <div className="pt-4 space-y-3">
+            <div className="pt-4 space-y-4">
               <p className="text-sm font-light tracking-tight text-white/70">
                 When enabled, Studio tracks when each user was last active (sign-in or sign-up). The
                 value is shown in the Users list and on the user details page.{" "}
@@ -1340,19 +1340,28 @@ export default config;`}
                 injects the field and updates it automatically.
               </p>
               <p className="text-sm font-light tracking-tight text-white/70">
-                <strong className="text-white/90">Setup:</strong> In your Studio config (e.g.{" "}
-                <code className="bg-white/10 px-1 text-white/90">studio.config.ts</code>), set{" "}
-                <code className="bg-white/10 px-1 text-white/90">
-                  lastSeenAt: &#123; enabled: true &#125;
-                </code>
-                . Add a <code className="bg-white/10 px-1 text-white/90">lastSeenAt</code> column
-                (or your chosen <code className="bg-white/10 px-1 text-white/90">columnName</code>)
-                to your user table as an{" "}
-                <strong className="text-white/90">optional datetime</strong> (nullable timestamp)
-                field, then run your migration (e.g.{" "}
+                <strong className="text-white/90">Enable in config:</strong>
+              </p>
+              <div className="p-3 bg-white/5 border border-white/10 rounded-none">
+                <CodeHighlighter
+                  code={`// studio.config.ts
+lastSeenAt: {
+  enabled: true,
+  // optional: column name on your user table (default "lastSeenAt")
+  columnName: "lastSeenAt", // or "last_seen_at" etc.
+},`}
+                  language="typescript"
+                />
+              </div>
+              <p className="text-sm font-light tracking-tight text-white/70">
+                Add a column to your user table with the same name as{" "}
+                <code className="bg-white/10 px-1 text-white/90">columnName</code> (default{" "}
+                <code className="bg-white/10 px-1 text-white/90">lastSeenAt</code>) as an{" "}
+                <strong className="text-white/90">optional datetime</strong> (nullable timestamp),
+                then run your migration (e.g.{" "}
                 <code className="bg-white/10 px-1 text-white/90">prisma migrate dev</code>,{" "}
-                <code className="bg-white/10 px-1 text-white/90">drizzle-kit push</code>) or with
-                your database client of choice.
+                <code className="bg-white/10 px-1 text-white/90">drizzle-kit push</code>) or
+                update the schema with your database client.
               </p>
             </div>
           </PixelCard>
@@ -1375,7 +1384,7 @@ export default config;`}
               <p className="text-sm font-light tracking-tight text-white/70">
                 To show IP geolocation (city, country) for Events and Sessions, you can use an
                 external API via <code className="bg-white/10 px-1 text-white/90">ipAddress</code>{" "}
-                in your Studio config, or use a local MaxMind GeoLite2 database (no API key).
+                in your <code className="bg-white/10 px-1 text-white/90">studio.config.ts</code>, or use a local MaxMind GeoLite2 database (no API key).
               </p>
 
               <div>
