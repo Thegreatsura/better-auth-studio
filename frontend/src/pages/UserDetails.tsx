@@ -41,7 +41,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../components/ui/select";
-import { formatDistanceToNow } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import { getProviderIcon } from "../lib/icons";
 import { getImageSrc } from "../lib/utils";
 
@@ -279,13 +279,7 @@ export default function UserDetails() {
     if (!value) return "Unknown";
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return "Unknown";
-    return date.toLocaleString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    return format(date, "dd MMM yyyy, HH:mm");
   };
 
   const fetchUserDetails = useCallback(async () => {
@@ -1300,14 +1294,9 @@ export default function UserDetails() {
                         <div className="text-xs uppercase font-mono text-gray-500 mb-1">
                           Member Since
                         </div>
-                        <div className="text-white font-mono text-sm">
-                          {new Date(user.createdAt).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
+                        <div className="flex flex-col font-mono text-xs">
+                          <span className="text-white">{format(new Date(user.createdAt), "dd MMM yyyy, HH:mm")}</span>
+                          <p className="text-gray-500 text-xs mt-0.5">{formatDistanceToNow(new Date(user.createdAt), { addSuffix: true })}</p>
                         </div>
                       </div>
                     </div>
@@ -1757,23 +1746,10 @@ export default function UserDetails() {
                                 })}
                               </span>
                             </div>
-                            <div className="flex items-center space-x-2">
-                              <span className="text-gray-500 font-mono text-xs uppercase">
-                                Created:{" "}
-                              </span>
-                              <span className="text-white font-mono text-xs">
-                                {new Date(session.createdAt).toLocaleDateString("en-US", {
-                                  year: "numeric",
-                                  month: "short",
-                                  day: "numeric",
-                                })}
-                                ,{" "}
-                                {new Date(session.createdAt).toLocaleTimeString("en-US", {
-                                  hour: "numeric",
-                                  minute: "2-digit",
-                                  hour12: true,
-                                })}
-                              </span>
+                            <div className="flex flex-col font-mono text-xs">
+                              <span className="text-gray-500 uppercase">Created</span>
+                              <span className="text-white">{format(new Date(session.createdAt), "dd MMM yyyy, HH:mm")}</span>
+                              <p className="text-gray-500 text-xs mt-0.5">{formatDistanceToNow(new Date(session.createdAt), { addSuffix: true })}</p>
                             </div>
                           </div>
                         </div>

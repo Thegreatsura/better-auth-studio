@@ -1,4 +1,4 @@
-import { format } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import { ArrowUpRight, Edit } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -60,7 +60,7 @@ const formatDateTime = (value?: string) => {
   if (!value) return "—";
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return "—";
-  return format(d, "dd MMM yyyy; HH:mm");
+  return format(d, "dd MMM yyyy, HH:mm");
 };
 
 export default function TeamDetails() {
@@ -401,13 +401,16 @@ export default function TeamDetails() {
                   </div>
                   <div>
                     <label className="text-sm text-gray-400 font-mono uppercase">Created</label>
-                    <p className="text-white font-sans mt-1">{formatDateTime(team.createdAt)}</p>
+                    <div className="flex flex-col font-mono text-xs mt-1">
+                      <span className="text-white">{formatDateTime(team.createdAt)}</span>
+                      <p className="text-gray-500 text-xs mt-0.5">{formatDistanceToNow(new Date(team.createdAt), { addSuffix: true })}</p>
+                    </div>
                   </div>
                   <div>
                     <label className="text-sm text-gray-400 font-mono uppercase">
                       Last Updated
                     </label>
-                    <p className="text-white font-sans mt-1">{formatDateTime(team.updatedAt)}</p>
+                    <p className="text-white font-mono text-xs mt-1">{formatDateTime(team.updatedAt)}</p>
                   </div>
                 </div>
               </div>

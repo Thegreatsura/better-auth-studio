@@ -1,3 +1,4 @@
+import { format, formatDistanceToNow } from "date-fns";
 import { ArrowUpRight, Edit } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -976,13 +977,10 @@ export default function OrganizationDetails() {
                   </div>
                   <div>
                     <label className="text-sm text-gray-400 font-mono uppercase">Created</label>
-                    <p className="text-white font-sans mt-1">
-                      {new Date(organization.createdAt).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}
-                    </p>
+                    <div className="flex flex-col font-mono text-xs mt-1">
+                      <span className="text-white">{format(new Date(organization.createdAt), "dd MMM yyyy, HH:mm")}</span>
+                      <p className="text-gray-500 text-xs mt-0.5">{formatDistanceToNow(new Date(organization.createdAt), { addSuffix: true })}</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1208,7 +1206,10 @@ export default function OrganizationDetails() {
                             </td>
                             <td className="py-4 px-4 text-white">{team.memberCount || 0}</td>
                             <td className="py-4 px-4 text-sm text-gray-400">
-                              {new Date(team.createdAt).toLocaleDateString()}
+                              <div className="flex flex-col uppercase font-mono text-xs">
+                                <span>{format(new Date(team.createdAt), "dd MMM yyyy, HH:mm")}</span>
+                                <p className="text-xs text-gray-500">{formatDistanceToNow(new Date(team.createdAt), { addSuffix: true })}</p>
+                              </div>
                             </td>
                             <td className="py-4 px-4 text-right">
                               <div className="flex items-center justify-end space-x-2">

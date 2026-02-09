@@ -1,3 +1,4 @@
+import { format } from "date-fns";
 import {
   ArrowDown,
   ArrowUp,
@@ -863,15 +864,15 @@ export default function Sessions() {
                   },
                   {
                     label: "Expires",
-                    value: new Date(selectedSession.expiresAt).toLocaleString(),
+                    value: format(new Date(selectedSession.expiresAt), "dd MMM yyyy, HH:mm"),
                   },
                   {
                     label: "Created",
-                    value: new Date(selectedSession.createdAt).toLocaleString(),
+                    value: format(new Date(selectedSession.createdAt), "dd MMM yyyy, HH:mm"),
                   },
                   {
                     label: "Updated",
-                    value: new Date(selectedSession.updatedAt).toLocaleString(),
+                    value: format(new Date(selectedSession.updatedAt), "dd MMM yyyy, HH:mm"),
                   },
                 ].map((item) => (
                   <div

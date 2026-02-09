@@ -1,4 +1,4 @@
-import { format } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import {
   ArrowDown,
   ArrowUp,
@@ -52,7 +52,14 @@ const formatDateTime = (value?: string) => {
   if (!value) return "—";
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return "—";
-  return format(d, "dd MMM yyyy; HH:mm");
+  return format(d, "dd MMM yyyy, HH:mm");
+};
+
+const formatTimeAgo = (value?: string | null): string => {
+  if (!value) return "—";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "—";
+  return formatDistanceToNow(d, { addSuffix: true });
 };
 
 export default function Organizations() {
@@ -866,15 +873,9 @@ export default function Organizations() {
                     </td>
                     <td className="py-4 px-4 text-white">{organization.slug}</td>
                     <td className="py-4 px-4 text-sm text-gray-400">
-                      <div className="flex flex-col">
-                        {new Date(organization.createdAt).toLocaleDateString()}
-                        <p className="text-xs">
-                          {new Date(organization.createdAt).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })}
-                        </p>
+                      <div className="flex flex-col uppercase font-mono text-xs">
+                        <span>{format(new Date(organization.createdAt), "dd MMM yyyy, HH:mm")}</span>
+                        <p className="text-xs text-gray-500">{formatTimeAgo(organization.createdAt)}</p>
                       </div>
                     </td>
                     <td className="py-4 px-4 text-right">
