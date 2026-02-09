@@ -5,13 +5,19 @@ export interface LocationData {
     region: string;
 }
 /** Config passed from studio config ipAddress (avoids importing handler types). */
-export interface IpAddressProviderConfig {
-    provider: "ipinfo" | "ipapi";
+export type IpAddressProviderConfig = {
+    provider: "ipinfo";
     apiToken?: string;
     baseUrl?: string;
-    /** ipinfo only: "lite" | "lookup". Default "lookup". */
     endpoint?: "lite" | "lookup";
-}
+} | {
+    provider: "ipapi";
+    apiToken?: string;
+    baseUrl?: string;
+} | {
+    provider: "static";
+    path: string;
+};
 export declare function setGeoDbPath(path: string | null): void;
 export declare function initializeGeoService(): Promise<void>;
 /**

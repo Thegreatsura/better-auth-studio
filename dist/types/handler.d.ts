@@ -72,16 +72,22 @@ export type StudioLastSeenAtConfig = {
     /** Column/field name (e.g. "lastSeenAt", "last_seen_at"). Default "lastSeenAt". Must exist on your user table. */
     columnName?: string;
 };
-/** IP geolocation provider. When set, Studio uses this for Events and Sessions IP resolution instead of local DB. */
+/** IP geolocation config. When set, Studio uses this for Events and Sessions IP resolution. */
 export type StudioIpAddressConfig = {
-    /** Provider: "ipinfo" (ipinfo.io) or "ipapi" (ipapi.co). */
-    provider: "ipinfo" | "ipapi";
-    /** API token (required for ipinfo; optional for ipapi free tier). */
+    provider: "ipinfo";
     apiToken?: string;
-    /** Optional base URL (e.g. "https://api.ipinfo.io"). Defaults per provider. */
     baseUrl?: string;
-    /** For ipinfo only: "lite" (free, country/continent only) or "lookup" (core/plus, includes city/region). Default "lookup". */
+    /** "lite" (free, country/continent only) or "lookup" (core/plus, city/region). Default "lookup". */
     endpoint?: "lite" | "lookup";
+} | {
+    provider: "ipapi";
+    apiToken?: string;
+    baseUrl?: string;
+} | {
+    /** Use a local MaxMind GeoLite2 (.mmdb) file; path is resolved from your project. */
+    provider: "static";
+    /** Absolute or relative path to the .mmdb file (e.g. "./data/GeoLite2-City.mmdb"). */
+    path: string;
 };
 export type StudioConfig = {
     auth: any;

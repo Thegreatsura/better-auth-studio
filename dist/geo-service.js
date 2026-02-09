@@ -26,6 +26,13 @@ function loadDefaultDatabase() {
     catch (_error) { }
 }
 export async function initializeGeoService() {
+    if (lookup) {
+        try {
+            lookup.close?.();
+        }
+        catch (_e) { }
+        lookup = null;
+    }
     try {
         const dbPath = geoDbPath || "./data/GeoLite2-City.mmdb";
         lookup = await maxmind.open(dbPath);
@@ -53,8 +60,10 @@ function parseIpInfoResponse(data) {
     const flat = data;
     const lite = data;
     if (flat.country != null || lite.country_code != null) {
-        const countryCode = lite.country_code ?? (typeof flat.country === "string" && flat.country.length === 2 ? flat.country : "");
-        const countryName = lite.country ?? (typeof flat.country === "string" && flat.country.length > 2 ? flat.country : "Unknown");
+        const countryCode = lite.country_code ??
+            (typeof flat.country === "string" && flat.country.length === 2 ? flat.country : "");
+        const countryName = lite.country ??
+            (typeof flat.country === "string" && flat.country.length > 2 ? flat.country : "Unknown");
         return {
             country: countryName || "Unknown",
             countryCode: countryCode || "",
@@ -72,13 +81,14 @@ export async function resolveIPLocationAsync(ipAddress, ipConfig) {
     const trimmed = ipAddress.trim();
     if (!trimmed || trimmed === "Unknown")
         return null;
-    console.log({ ipConfig, trimmed });
+    if (ipConfig?.provider === "static") {
+        return resolveIPLocation(trimmed);
+    }
     if (ipConfig?.provider === "ipinfo" && ipConfig.apiToken) {
         try {
             const base = (ipConfig.baseUrl || DEFAULT_IPINFO_BASE).replace(/\/$/, "");
             const path = (ipConfig.endpoint || "lookup") === "lite" ? "lite" : "lookup";
             const url = `${base}/${path}/${encodeURIComponent(trimmed)}?token=${encodeURIComponent(ipConfig.apiToken)}`;
-            console.log({ url });
             const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
             if (!res.ok)
                 throw new Error(`ipinfo ${res.status}`);

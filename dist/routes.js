@@ -318,6 +318,12 @@ export function createRoutes(authConfig, configPath, geoDbPath, preloadedAdapter
     if (geoDbPath) {
         setGeoDbPath(geoDbPath);
     }
+    else if (studioConfig?.ipAddress &&
+        studioConfig.ipAddress.provider === "static" &&
+        "path" in studioConfig.ipAddress &&
+        studioConfig.ipAddress.path) {
+        setGeoDbPath(studioConfig.ipAddress.path);
+    }
     initializeGeoService().catch(console.error);
     const getAdapterWithLastSeenAtSchema = async () => {
         if (!studioConfig?.lastSeenAt?.enabled || !authInstance?.options?.database)
@@ -1053,6 +1059,12 @@ export function createRoutes(authConfig, configPath, geoDbPath, preloadedAdapter
                         });
                         if (config) {
                             configToUse = config?.default || config?.config || config;
+                            if (configToUse?.ipAddress?.provider === "static" &&
+                                "path" in configToUse.ipAddress &&
+                                configToUse.ipAddress.path) {
+                                setGeoDbPath(configToUse.ipAddress.path);
+                                await initializeGeoService();
+                            }
                         }
                     }
                 }
