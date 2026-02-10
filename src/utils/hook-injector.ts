@@ -20,7 +20,7 @@ const INJECTED_HOOKS_MARKER = "__better_auth_studio_events_injected__";
 const LAST_SEEN_INJECTED_MARKER = "__better_auth_studio_last_seen_injected__";
 
 const COLUMN_NAME_DEFAULT = "lastSeenAt";
-// This can be compressed into one internal plugin that will have all this injections
+// TODO: This can be compressed into one internal plugin that will have all this injections
 /**
  * Build plugin schema for lastSeenAt (same shape as phoneNumber plugin: user.fields with returned: true).
  * So the adapter includes this field when fetching users, like phoneNumber / phoneNumberVerified.
@@ -1309,8 +1309,8 @@ function createEventIngestionPlugin(eventsConfig: StudioConfig["events"]): any {
 }
 
 /**
- * Create a Better Auth plugin that updates the last-seen column on sign-up, sign-in, and OAuth callback.
- * Uses internal adapter only. Column name is configurable (e.g. lastSeenAt, last_seen_at).
+ * Create a Better Auth plugin that updates the last-seen column on sign-up, sign-in, OAuth callback,
+ * and on each get-session (so active users get lastSeenAt updated whenever the app checks the session).
  */
 function createLastSeenAtPlugin(columnName: string): any {
   const col = columnName || COLUMN_NAME_DEFAULT;
@@ -1320,23 +1320,28 @@ function createLastSeenAtPlugin(columnName: string): any {
     try {
       const path = (ctx?.path ?? ctx?.context?.path ?? "").replace(/^\/+/, "");
       const returned = ctx?.context?.returned;
-      if (!returned) return;
+      const context = ctx?.context;
+      if (!returned && !context?.session) return;
       let userId: string | undefined;
       if (path === "sign-up" || path === "sign-up/email" || path.includes("sign-up")) {
         userId = returned?.user?.id;
       } else if (path === "sign-in" || path === "sign-in/email" || path.includes("sign-in")) {
-        const user = returned?.user ?? ctx?.context?.returned?.user;
+        const user = returned?.user ?? context?.returned?.user;
         userId = user?.id;
       } else if (path.includes("callback") || path.includes("oauth2/callback")) {
-        const newSession = ctx?.context?.newSession ?? returned?.newSession;
+        const newSession = context?.newSession ?? returned?.newSession;
         const user =
           newSession?.user ??
           returned?.user ??
           returned?.data?.user ??
-          ctx?.context?.user ??
+          context?.user ??
           (returned?.data && typeof returned.data === "object" && "user" in returned.data
             ? (returned.data as { user?: { id?: string } }).user
             : null);
+        userId = user?.id;
+      } else if (path === "get-session" || path.includes("get-session")) {
+        const session = returned?.session ?? returned?.data?.session ?? context?.session ?? context?.returned?.session;
+        const user = session?.user ?? returned?.user ?? returned?.data?.user ?? context?.user;
         userId = user?.id;
       }
       if (!userId) return;
@@ -1379,7 +1384,9 @@ function createLastSeenAtPlugin(columnName: string): any {
               path === "sign-in/email" ||
               path.includes("sign-in") ||
               path.includes("callback") ||
-              path.includes("oauth2/callback")
+              path.includes("oauth2/callback") ||
+              path === "get-session" ||
+              path.includes("get-session")
             );
           },
           handler: lastSeenMiddleware,
