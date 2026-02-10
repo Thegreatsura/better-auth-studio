@@ -1086,6 +1086,7 @@ export function createRoutes(authConfig, configPath, geoDbPath, preloadedAdapter
                 !!getEventIngestionProvider();
             res.json({
                 enabled: isEnabled,
+                configured: configToUse?.events?.enabled === true,
                 initialized: isEventIngestionInitialized(),
                 hasProvider: !!getEventIngestionProvider(),
             });
@@ -1094,6 +1095,7 @@ export function createRoutes(authConfig, configPath, geoDbPath, preloadedAdapter
             console.error("Failed to check events status:", error);
             res.json({
                 enabled: false,
+                configured: false,
                 initialized: false,
                 hasProvider: false,
                 error: error?.message || "Unknown error",

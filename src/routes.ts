@@ -1263,6 +1263,7 @@ export function createRoutes(
 
       res.json({
         enabled: isEnabled,
+        configured: configToUse?.events?.enabled === true,
         initialized: isEventIngestionInitialized(),
         hasProvider: !!getEventIngestionProvider(),
       });
@@ -1270,6 +1271,7 @@ export function createRoutes(
       console.error("Failed to check events status:", error);
       res.json({
         enabled: false,
+        configured: false,
         initialized: false,
         hasProvider: false,
         error: error?.message || "Unknown error",

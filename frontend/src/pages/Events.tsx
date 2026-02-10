@@ -375,9 +375,16 @@ export default function Events() {
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
-          if ((response.status === 503 || errorData.retryable) && isInitial) {
-            await new Promise((r) => setTimeout(r, 800));
-            response = await fetch(`${apiPath}?${params.toString()}`);
+          const shouldRetry = (response.status === 503 || errorData.retryable) && isInitial;
+          if (shouldRetry) {
+            const statusRes = await fetch(buildApiUrl("/api/events/status")).catch(() => null);
+            const statusData = statusRes?.ok ? await statusRes.json().catch(() => ({})) : {};
+            const eventsEnabledOrConfigured =
+              statusData?.enabled === true || statusData?.configured === true;
+            if (eventsEnabledOrConfigured) {
+              await new Promise((r) => setTimeout(r, 800));
+              response = await fetch(`${apiPath}?${params.toString()}`);
+            }
           }
           if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);

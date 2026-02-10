@@ -437,9 +437,7 @@ export default function UserDetails() {
   const fetchUserEvents = useCallback(async () => {
     if (!userId) return;
     setUserEventsLoading(true);
-    const url = buildApiUrl(
-      `/api/events?userId=${encodeURIComponent(userId)}&limit=50&sort=desc`,
-    );
+    const url = buildApiUrl(`/api/events?userId=${encodeURIComponent(userId)}&limit=50&sort=desc`);
     try {
       let response = await fetch(url);
       if (response.ok) {
@@ -448,9 +446,16 @@ export default function UserDetails() {
         return;
       }
       const data = await response.json().catch(() => ({}));
-      if (response.status === 503 || data.retryable) {
-        await new Promise((r) => setTimeout(r, 800));
-        response = await fetch(url);
+      const shouldRetry = response.status === 503 || data.retryable;
+      if (shouldRetry) {
+        const statusRes = await fetch(buildApiUrl("/api/events/status")).catch(() => null);
+        const statusData = statusRes?.ok ? await statusRes.json().catch(() => ({})) : {};
+        const eventsEnabledOrConfigured =
+          statusData?.enabled === true || statusData?.configured === true;
+        if (eventsEnabledOrConfigured) {
+          await new Promise((r) => setTimeout(r, 800));
+          response = await fetch(url);
+        }
       }
       if (response.ok) {
         const retryData = await response.json();
