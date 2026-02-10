@@ -1340,7 +1340,11 @@ function createLastSeenAtPlugin(columnName: string): any {
             : null);
         userId = user?.id;
       } else if (path === "get-session" || path.includes("get-session")) {
-        const session = returned?.session ?? returned?.data?.session ?? context?.session ?? context?.returned?.session;
+        const session =
+          returned?.session ??
+          returned?.data?.session ??
+          context?.session ??
+          context?.returned?.session;
         const user = session?.user ?? returned?.user ?? returned?.data?.user ?? context?.user;
         userId = user?.id;
       }
