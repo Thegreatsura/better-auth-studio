@@ -1,7 +1,11 @@
 import {
+  ArrowDown,
+  ArrowUp,
   ArrowUpRight,
   Clock1,
+  Computer,
   Edit,
+  Eye,
   Link2,
   MoreVertical,
   Shield,
@@ -14,17 +18,22 @@ import { toast } from "sonner";
 import { AnimatedNumber } from "../components/AnimatedNumber";
 import { CopyableId } from "../components/CopyableId";
 import {
+  AlertInfo,
+  AlertTriangle,
+  Analytics,
   Ban,
   Building2,
   Calendar,
   Check,
   Database,
+  ErrorInfo,
   Globe,
   HashIcon,
   Loader,
   Mail,
   Monitor,
   Phone,
+  PhoneNumber,
   User,
   UserMinus,
   Users,
@@ -44,6 +53,7 @@ import {
 import { format, formatDistanceToNow } from "date-fns";
 import { getProviderIcon } from "../lib/icons";
 import { getImageSrc } from "../lib/utils";
+import { buildApiUrl } from "../utils/api";
 
 interface User {
   id: string;
@@ -139,6 +149,78 @@ interface Invitation {
   createdAt: string;
 }
 
+interface AuthEvent {
+  id: string;
+  type: string;
+  timestamp: string | Date;
+  status?: "success" | "failed";
+  userId?: string;
+  sessionId?: string;
+  organizationId?: string;
+  metadata?: Record<string, unknown>;
+  ipAddress?: string;
+  userAgent?: string;
+  source?: "app" | "api";
+  display?: {
+    message: string;
+    severity?: "info" | "success" | "warning" | "failed";
+  };
+}
+
+function getEventSeverityColor(severity?: string, status?: string) {
+  if (status === "failed") return "text-red-400/70 border-white/15 bg-white/5";
+  switch (severity) {
+    case "success":
+      return "text-green-400/70 border-white/15 bg-white/5";
+    case "warning":
+      return "text-yellow-400/70 border-white/15 bg-white/5";
+    case "failed":
+      return "text-red-400/70 border-white/15 bg-white/5";
+    default:
+      return "text-blue-400/70 border-white/15 bg-white/5";
+  }
+}
+
+function getEventIcon(eventType: string, severity?: string, status?: string) {
+  if (
+    eventType.includes("organization") ||
+    eventType.includes("member") ||
+    eventType.includes("team") ||
+    eventType.includes("invitation")
+  ) {
+    return <Building2 className="w-4 h-4" />;
+  }
+  if (eventType.includes("phone_number")) {
+    return <PhoneNumber className="w-4 h-4" />;
+  }
+  if (eventType.includes("user")) {
+    return <Users className="w-4 h-4" />;
+  }
+  if (eventType.includes("session") || eventType.includes("login")) {
+    return <Computer className="w-4 h-4" />;
+  }
+  if (status === "failed" || severity === "failed") {
+    return <AlertTriangle className="w-4 h-4" />;
+  }
+  switch (severity) {
+    case "success":
+      return <Check className="w-4 h-4" />;
+    case "warning":
+      return <AlertInfo className="w-4 h-4" />;
+    case "failed":
+      return <ErrorInfo className="w-4 h-4" />;
+    default:
+      return <ErrorInfo className="w-4 h-4" />;
+  }
+}
+
+function formatEventDateTime(value?: string | Date) {
+  if (!value) return "—";
+  const d = typeof value === "string" ? new Date(value) : value;
+  if (Number.isNaN(d.getTime())) return "—";
+  return format(d, "dd MMM yyyy, HH:mm:ss");
+}
+
 export default function UserDetails() {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
@@ -153,8 +235,13 @@ export default function UserDetails() {
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<
-    "details" | "organizations" | "teams" | "sessions" | "accounts" | "invitations"
+    "details" | "organizations" | "teams" | "sessions" | "accounts" | "invitations" | "events"
   >("details");
+  const [userEvents, setUserEvents] = useState<AuthEvent[]>([]);
+  const [userEventsLoading, setUserEventsLoading] = useState(false);
+  const [showEventViewModal, setShowEventViewModal] = useState(false);
+  const [selectedUserEvent, setSelectedUserEvent] = useState<AuthEvent | null>(null);
+  const [userEventSort, setUserEventSort] = useState<"newest" | "oldest">("newest");
   const [showEditModal, setShowEditModal] = useState(false);
   const [showBanModal, setShowBanModal] = useState(false);
   const [showUnbanModal, setShowUnbanModal] = useState(false);
@@ -345,6 +432,25 @@ export default function UserDetails() {
         setInvitations(data.invitations || []);
       }
     } catch (_error) {}
+  }, [userId]);
+
+  const fetchUserEvents = useCallback(async () => {
+    if (!userId) return;
+    setUserEventsLoading(true);
+    try {
+      const url = buildApiUrl(`/api/events?userId=${encodeURIComponent(userId)}&limit=50&sort=desc`);
+      const response = await fetch(url);
+      if (response.ok) {
+        const data = await response.json();
+        setUserEvents(Array.isArray(data.events) ? data.events : []);
+      } else {
+        setUserEvents([]);
+      }
+    } catch (_error) {
+      setUserEvents([]);
+    } finally {
+      setUserEventsLoading(false);
+    }
   }, [userId]);
 
   const compressImage = (
@@ -818,6 +924,7 @@ export default function UserDetails() {
       fetchUserMemberships();
       fetchUserAccounts();
       fetchUserInvitations();
+      fetchUserEvents();
       checkAdminPlugin();
     }
   }, [
@@ -827,6 +934,7 @@ export default function UserDetails() {
     fetchUserMemberships,
     fetchUserAccounts,
     fetchUserInvitations,
+    fetchUserEvents,
   ]);
 
   const handleSeedSessions = async (count: number = 3) => {
@@ -1213,6 +1321,7 @@ export default function UserDetails() {
                 { id: "accounts", name: "Accounts", icon: Link2, count: accounts.length },
                 { id: "sessions", name: "Sessions", icon: Clock1, count: sessions.length },
                 { id: "invitations", name: "Invitations", icon: Mail, count: invitations.length },
+                { id: "events", name: "Events", icon: Analytics, count: userEvents.length },
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -1966,9 +2075,299 @@ export default function UserDetails() {
                 )}
               </div>
             )}
+
+            {activeTab === "events" && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-lg relative text-white font-light inline-flex items-start">
+                      Events
+                      <sup className="text-xs text-gray-500 ml-1 mt-0">
+                        <span className="mr-1">[</span>
+                        <span className="text-white font-mono text-xs">{userEvents.length}</span>
+                        <span className="ml-1">]</span>
+                      </sup>
+                    </h3>
+                    <p className="text-gray-400 font-light font-mono text-xs uppercase mt-1">
+                      Authentication events for this user. Refresh to load latest.
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => fetchUserEvents()}
+                    disabled={userEventsLoading}
+                    className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase text-xs"
+                  >
+                    {userEventsLoading ? (
+                      <Loader className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                    ) : null}
+                    Refresh
+                  </Button>
+                </div>
+
+                <div className="bg-black/30 border border-dashed border-white/20 rounded-none">
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-dashed border-white/10">
+                          <th className="text-left py-4 px-4 text-white font-mono uppercase text-xs">
+                            Event
+                          </th>
+                          <th className="text-left py-4 px-4 text-white font-mono uppercase text-xs">
+                            Type
+                          </th>
+                          <th className="text-left py-4 px-4 text-white font-mono uppercase text-xs">
+                            Status
+                          </th>
+                          <th className="text-left py-4 px-4 text-white font-mono uppercase text-xs">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setUserEventSort((prev) =>
+                                  prev === "newest" ? "oldest" : "newest",
+                                )
+                              }
+                              className="flex items-center gap-1.5 font-mono uppercase hover:text-white/90 transition-colors"
+                            >
+                              Timestamp
+                              {userEventSort === "newest" ? (
+                                <ArrowDown className="w-3.5 h-3.5 text-white/70" />
+                              ) : (
+                                <ArrowUp className="w-3.5 h-3.5 text-white/70" />
+                              )}
+                            </button>
+                          </th>
+                          <th className="text-right py-4 px-4 text-white font-mono uppercase text-xs">
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {userEventsLoading && userEvents.length === 0 ? (
+                          <tr>
+                            <td colSpan={5} className="py-12 text-center text-gray-400">
+                              Loading events...
+                            </td>
+                          </tr>
+                        ) : userEvents.length === 0 ? (
+                          <tr>
+                            <td colSpan={5} className="py-12 text-center text-gray-400">
+                              No events found. Enable event ingestion in studio config to track
+                              events.
+                            </td>
+                          </tr>
+                        ) : (
+                          [...userEvents]
+                            .sort((a, b) => {
+                              const ta = new Date(a.timestamp).getTime();
+                              const tb = new Date(b.timestamp).getTime();
+                              return userEventSort === "newest" ? tb - ta : ta - tb;
+                            })
+                            .map((event) => {
+                              const severity = event.display?.severity || "info";
+                              const status = event.status || "success";
+                              const ts = new Date(event.timestamp);
+                              return (
+                                <tr
+                                  key={event.id}
+                                  onClick={() => {
+                                    setSelectedUserEvent(event);
+                                    setShowEventViewModal(true);
+                                  }}
+                                  className="border-b border-dashed border-white/5 hover:bg-white/5 transition-all cursor-pointer"
+                                >
+                                  <td className="py-4 px-4">
+                                    <div className="flex items-center space-x-3">
+                                      <div
+                                        className={`w-10 h-10 rounded-none border border-dashed flex items-center justify-center ${getEventSeverityColor(
+                                          severity,
+                                          status,
+                                        )}`}
+                                      >
+                                        {getEventIcon(event.type, severity, status)}
+                                      </div>
+                                      <div>
+                                        <div className="text-white font-light">
+                                          {event.display?.message || event.type}
+                                        </div>
+                                        <CopyableId id={event.id} />
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className="py-4 px-4">
+                                    <span className="text-xs font-mono text-gray-400 uppercase">
+                                      {event.type}
+                                    </span>
+                                  </td>
+                                  <td className="py-4 px-4">
+                                    <div className="flex items-center space-x-2">
+                                      <div
+                                        className={`w-px h-5 rounded-none ${
+                                          status === "success" ? "bg-green-400" : "bg-red-400"
+                                        }`}
+                                      />
+                                      <span className="text-xs font-mono uppercase text-gray-400">
+                                        {status}
+                                      </span>
+                                    </div>
+                                  </td>
+                                  <td className="py-4 px-4 text-xs text-gray-400">
+                                    <div className="flex font-mono uppercase flex-col">
+                                      {ts.toLocaleString()}
+                                      <p className="text-xs">
+                                        {ts.toLocaleString("en-US", {
+                                          month: "short",
+                                          day: "numeric",
+                                          year: "numeric",
+                                          hour: "2-digit",
+                                          minute: "2-digit",
+                                          second: "2-digit",
+                                          hour12: false,
+                                        })}
+                                      </p>
+                                    </div>
+                                  </td>
+                                  <td className="py-4 px-4 text-right">
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="text-gray-400 hover:text-white rounded-none"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSelectedUserEvent(event);
+                                        setShowEventViewModal(true);
+                                      }}
+                                    >
+                                      <Eye className="w-4 h-4" />
+                                    </Button>
+                                  </td>
+                                </tr>
+                              );
+                            })
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
+
+      {showEventViewModal && selectedUserEvent && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-black border border-white/15 rounded-none w-full max-w-2xl p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg text-white font-light font-mono uppercase">
+                Event details
+                <CopyableId id={selectedUserEvent.id} variant="subscript" nonSliced />
+              </h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowEventViewModal(false)}
+                className="text-gray-400 hover:text-white rounded-none"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+            <div className="space-y-4 mt-4">
+              <div className="flex items-center gap-3">
+                <div
+                  className={`w-14 h-14 rounded-none border border-dashed flex items-center justify-center ${getEventSeverityColor(
+                    selectedUserEvent.display?.severity,
+                    selectedUserEvent.status,
+                  )}`}
+                >
+                  {getEventIcon(
+                    selectedUserEvent.type,
+                    selectedUserEvent.display?.severity,
+                    selectedUserEvent.status,
+                  )}
+                </div>
+                <div className="space-y-1">
+                  <div className="text-white font-medium">
+                    {selectedUserEvent.display?.message || selectedUserEvent.type}
+                  </div>
+                  <div className="text-sm text-gray-400 font-mono uppercase">
+                    {selectedUserEvent.type}
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-2 text-sm">
+                {[
+                  { label: "Status", value: (selectedUserEvent.status || "success").toUpperCase() },
+                  {
+                    label: "Severity",
+                    value: (selectedUserEvent.display?.severity || "info").toUpperCase(),
+                  },
+                  {
+                    label: "Timestamp",
+                    value: formatEventDateTime(selectedUserEvent.timestamp),
+                  },
+                  {
+                    label: "Source",
+                    value: (selectedUserEvent.source || "app").toUpperCase(),
+                  },
+                  selectedUserEvent.sessionId && {
+                    label: "Session ID",
+                    value: selectedUserEvent.sessionId,
+                  },
+                  selectedUserEvent.organizationId && {
+                    label: "Organization ID",
+                    value: selectedUserEvent.organizationId,
+                  },
+                  selectedUserEvent.ipAddress && {
+                    label: "IP Address",
+                    value: selectedUserEvent.ipAddress,
+                  },
+                  selectedUserEvent.userAgent && {
+                    label: "User Agent",
+                    value: selectedUserEvent.userAgent,
+                  },
+                ]
+                  .filter((item): item is { label: string; value: string } => Boolean(item))
+                  .map((item) => (
+                    <div
+                      key={item.label}
+                      className="flex items-center justify-between border border-dashed border-white/15 bg-black/90 px-3 py-2 rounded-none"
+                    >
+                      <span className="text-[11px] font-mono uppercase text-gray-400">
+                        {item.label}
+                      </span>
+                      <span className="text-[10px] font-mono text-white text-right break-words max-w-[60%]">
+                        {item.value}
+                      </span>
+                    </div>
+                  ))}
+                {selectedUserEvent.metadata &&
+                  Object.keys(selectedUserEvent.metadata).length > 0 && (
+                    <div className="mt-4">
+                      <div className="text-[11px] font-mono uppercase text-gray-400 mb-2">
+                        Metadata
+                      </div>
+                      <div className="border border-dashed border-white/15 bg-black/90 px-3 py-2 rounded-none">
+                        <pre className="text-[10px] font-mono text-white overflow-x-auto">
+                          {JSON.stringify(selectedUserEvent.metadata, null, 2)}
+                        </pre>
+                      </div>
+                    </div>
+                  )}
+              </div>
+            </div>
+            <div className="flex justify-end mt-6">
+              <Button
+                onClick={() => setShowEventViewModal(false)}
+                className="border border-white/20 bg-white text-black hover:bg-white/90 rounded-none font-mono uppercase text-xs"
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showEditModal && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
