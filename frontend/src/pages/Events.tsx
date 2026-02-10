@@ -371,26 +371,17 @@ export default function Events() {
         });
 
         const apiPath = buildApiUrl("/api/events");
-        const response = await fetch(`${apiPath}?${params.toString()}`);
+        let response = await fetch(`${apiPath}?${params.toString()}`);
 
         if (!response.ok) {
-          if (response.status === 500) {
-            try {
-              const errorData = await response.json();
-              if (
-                errorData.details?.includes("not found in schema") ||
-                errorData.details?.includes("Model")
-              ) {
-                setIsConnected(true);
-                if (isInitial) {
-                  setEvents([]);
-                  setLoading(false);
-                }
-                return;
-              }
-            } catch {}
+          const errorData = await response.json().catch(() => ({}));
+          if ((response.status === 503 || errorData.retryable) && isInitial) {
+            await new Promise((r) => setTimeout(r, 800));
+            response = await fetch(`${apiPath}?${params.toString()}`);
           }
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
         }
 
         const data = await response.json();

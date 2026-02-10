@@ -437,14 +437,24 @@ export default function UserDetails() {
   const fetchUserEvents = useCallback(async () => {
     if (!userId) return;
     setUserEventsLoading(true);
+    const url = buildApiUrl(
+      `/api/events?userId=${encodeURIComponent(userId)}&limit=50&sort=desc`,
+    );
     try {
-      const url = buildApiUrl(
-        `/api/events?userId=${encodeURIComponent(userId)}&limit=50&sort=desc`,
-      );
-      const response = await fetch(url);
+      let response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
         setUserEvents(Array.isArray(data.events) ? data.events : []);
+        return;
+      }
+      const data = await response.json().catch(() => ({}));
+      if (response.status === 503 || data.retryable) {
+        await new Promise((r) => setTimeout(r, 800));
+        response = await fetch(url);
+      }
+      if (response.ok) {
+        const retryData = await response.json();
+        setUserEvents(Array.isArray(retryData.events) ? retryData.events : []);
       } else {
         setUserEvents([]);
       }

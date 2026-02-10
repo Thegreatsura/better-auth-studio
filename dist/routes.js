@@ -1828,16 +1828,15 @@ export function createRoutes(authConfig, configPath, geoDbPath, preloadedAdapter
                     });
                 }
                 catch (providerError) {
-                    // Handle case where table/model doesn't exist yet
-                    if (providerError?.message?.includes("not found in schema") ||
+                    const isSchemaError = providerError?.message?.includes("not found in schema") ||
                         providerError?.message?.includes("Model") ||
                         providerError?.code === "P2025" ||
-                        providerError?.code === "42P01") {
-                        // Table doesn't exist yet - return empty result instead of error
-                        return res.json({
-                            events: [],
-                            hasMore: false,
-                            nextCursor: null,
+                        providerError?.code === "42P01";
+                    if (isSchemaError) {
+                        return res.status(503).json({
+                            error: "Events not ready",
+                            retryable: true,
+                            details: providerError?.message || String(providerError),
                         });
                     }
                     console.error("Event provider query failed:", providerError);
@@ -1872,12 +1871,27 @@ export function createRoutes(authConfig, configPath, geoDbPath, preloadedAdapter
             }
             let events = [];
             if (adapter.findMany) {
-                events = await adapter.findMany({
-                    model: "auth_events",
-                    where,
-                    orderBy: [{ field: "timestamp", direction: sort === "desc" ? "desc" : "asc" }],
-                    limit: limit + 1, // Get one extra to check hasMore
-                });
+                try {
+                    events = await adapter.findMany({
+                        model: "auth_events",
+                        where,
+                        orderBy: [{ field: "timestamp", direction: sort === "desc" ? "desc" : "asc" }],
+                        limit: limit + 1, // Get one extra to check hasMore
+                    });
+                }
+                catch (adapterError) {
+                    if (adapterError?.message?.includes("not found in schema") ||
+                        adapterError?.message?.includes("Model") ||
+                        adapterError?.code === "P2025" ||
+                        adapterError?.code === "42P01") {
+                        return res.status(503).json({
+                            error: "Events not ready",
+                            retryable: true,
+                            details: adapterError?.message || String(adapterError),
+                        });
+                    }
+                    throw adapterError;
+                }
             }
             const hasMore = events.length > limit;
             const paginatedEvents = events.slice(0, limit);
@@ -1930,10 +1944,21 @@ export function createRoutes(authConfig, configPath, geoDbPath, preloadedAdapter
             });
         }
         catch (error) {
+            const msg = error instanceof Error ? error.message : String(error);
+            if (msg?.includes("not found in schema") ||
+                msg?.includes("Model") ||
+                error?.code === "P2025" ||
+                error?.code === "42P01") {
+                return res.status(503).json({
+                    error: "Events not ready",
+                    retryable: true,
+                    details: msg,
+                });
+            }
             console.error("Failed to fetch events:", error);
             res.status(500).json({
                 error: "Failed to fetch events",
-                details: error instanceof Error ? error.message : String(error),
+                details: msg,
             });
         }
     });
@@ -1998,48 +2023,111 @@ export function createRoutes(authConfig, configPath, geoDbPath, preloadedAdapter
                 }
             }
             const eventProvider = getEventIngestionProvider();
+            const isSchemaError = (e) => e?.message?.includes("not found in schema") ||
+                e?.message?.includes("Model") ||
+                e?.code === "P2025" ||
+                e?.code === "42P01";
             if (eventProvider?.getStats) {
-                const stats = await eventProvider.getStats();
-                return res.json(stats);
+                try {
+                    const stats = await eventProvider.getStats();
+                    return res.json(stats);
+                }
+                catch (e) {
+                    if (isSchemaError(e)) {
+                        return res.status(503).json({
+                            error: "Events not ready",
+                            retryable: true,
+                            details: e?.message || String(e),
+                        });
+                    }
+                    throw e;
+                }
             }
             if (eventProvider?.count) {
-                const total = await eventProvider.count();
-                return res.json({ total, success: null, failed: null, warning: null, info: null });
+                try {
+                    const total = await eventProvider.count();
+                    return res.json({ total, success: null, failed: null, warning: null, info: null });
+                }
+                catch (e) {
+                    if (isSchemaError(e)) {
+                        return res.status(503).json({
+                            error: "Events not ready",
+                            retryable: true,
+                            details: e?.message || String(e),
+                        });
+                    }
+                    throw e;
+                }
             }
             if (eventProvider?.query) {
-                const result = await eventProvider.query({ limit: 100000, sort: "desc" });
-                const events = result.events ?? [];
-                const total = events.length;
-                const failed = events.filter((e) => e.status === "failed" || e.display?.severity === "failed").length;
-                const warning = events.filter((e) => e.display?.severity === "warning").length;
-                const info = events.filter((e) => e.display?.severity === "info" || (!e.display?.severity && e.status !== "failed")).length;
-                const success = total - failed - warning - info;
-                return res.json({ total, success, failed, warning, info });
+                try {
+                    const result = await eventProvider.query({ limit: 100000, sort: "desc" });
+                    const events = result.events ?? [];
+                    const total = events.length;
+                    const failed = events.filter((e) => e.status === "failed" || e.display?.severity === "failed").length;
+                    const warning = events.filter((e) => e.display?.severity === "warning").length;
+                    const info = events.filter((e) => e.display?.severity === "info" || (!e.display?.severity && e.status !== "failed")).length;
+                    const success = total - failed - warning - info;
+                    return res.json({ total, success, failed, warning, info });
+                }
+                catch (e) {
+                    if (isSchemaError(e)) {
+                        return res.status(503).json({
+                            error: "Events not ready",
+                            retryable: true,
+                            details: e?.message || String(e),
+                        });
+                    }
+                    throw e;
+                }
             }
             const adapter = await getAuthAdapterWithConfig();
             if (adapter?.findMany) {
-                const events = await adapter.findMany({
-                    model: "auth_events",
-                    limit: 100000,
-                });
-                const list = Array.isArray(events) ? events : [];
-                const total = list.length;
-                const failed = list.filter((e) => e.status === "failed" ||
-                    e.displaySeverity === "failed" ||
-                    e.display_severity === "failed").length;
-                const warning = list.filter((e) => (e.displaySeverity || e.display_severity) === "warning").length;
-                const info = list.filter((e) => (e.displaySeverity || e.display_severity) === "info" ||
-                    (!(e.displaySeverity || e.display_severity) && e.status !== "failed")).length;
-                const success = total - failed - warning - info;
-                return res.json({ total, success, failed, warning, info });
+                try {
+                    const events = await adapter.findMany({
+                        model: "auth_events",
+                        limit: 100000,
+                    });
+                    const list = Array.isArray(events) ? events : [];
+                    const total = list.length;
+                    const failed = list.filter((e) => e.status === "failed" ||
+                        e.displaySeverity === "failed" ||
+                        e.display_severity === "failed").length;
+                    const warning = list.filter((e) => (e.displaySeverity || e.display_severity) === "warning").length;
+                    const info = list.filter((e) => (e.displaySeverity || e.display_severity) === "info" ||
+                        (!(e.displaySeverity || e.display_severity) && e.status !== "failed")).length;
+                    const success = total - failed - warning - info;
+                    return res.json({ total, success, failed, warning, info });
+                }
+                catch (e) {
+                    if (isSchemaError(e)) {
+                        return res.status(503).json({
+                            error: "Events not ready",
+                            retryable: true,
+                            details: e?.message || String(e),
+                        });
+                    }
+                    throw e;
+                }
             }
             return res.json({ total: 0, success: 0, failed: 0, warning: 0, info: 0 });
         }
         catch (error) {
+            const msg = error instanceof Error ? error.message : String(error);
+            if (msg?.includes("not found in schema") ||
+                msg?.includes("Model") ||
+                error?.code === "P2025" ||
+                error?.code === "42P01") {
+                return res.status(503).json({
+                    error: "Events not ready",
+                    retryable: true,
+                    details: msg,
+                });
+            }
             console.error("Failed to get events count:", error);
             res.status(500).json({
                 error: "Failed to get events count",
-                details: error instanceof Error ? error.message : String(error),
+                details: msg,
             });
         }
     });
