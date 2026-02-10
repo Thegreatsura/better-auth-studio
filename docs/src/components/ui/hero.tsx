@@ -386,7 +386,7 @@ export const Hero: React.FC<HeroProps> = ({ title, description, links, version }
             </LineShadowText>
             {version && (
               <Link
-                href="/v/1.1.1"
+                href="/v/1.1.2"
                 className="inline-flex group gap-x-1 text-[10px] md:text-[13px] ml-2 font-mono hover:opacity-100 transition-opacity cursor-pointer"
               >
                 <span className="text-white/50 group-hover:text-white transition-colors">[</span>
