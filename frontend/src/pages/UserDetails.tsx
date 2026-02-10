@@ -438,7 +438,9 @@ export default function UserDetails() {
     if (!userId) return;
     setUserEventsLoading(true);
     try {
-      const url = buildApiUrl(`/api/events?userId=${encodeURIComponent(userId)}&limit=50&sort=desc`);
+      const url = buildApiUrl(
+        `/api/events?userId=${encodeURIComponent(userId)}&limit=50&sort=desc`,
+      );
       const response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
