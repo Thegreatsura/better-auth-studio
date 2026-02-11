@@ -129,7 +129,7 @@ export default function Version112Page() {
   return (
     <div className="bg-transparent text-white h-screen min-h-dvh overflow-hidden overflow-x-hidden font-sans selection:bg-white selection:text-black relative">
       <main className="grid grid-cols-1 lg:grid-cols-2 h-full overflow-hidden overflow-x-hidden">
-        <section className="overflow-x-hidden flex flex-col p-4 sm:p-6 lg:p-10 pt-[max(3rem,env(safe-area-inset-top,0)+2rem)] sm:pt-14 lg:pt-10 border-r-0 lg:border-r border-white/20 h-full relative bg-black/50 backdrop-blur-sm min-h-0">
+        <section className="flex flex-col pt-[max(3rem,env(safe-area-inset-top,0)+2rem)] sm:pt-14 lg:pt-10 pb-4 sm:pb-6 lg:pb-10 border-r-0 lg:border-r border-white/20 h-full relative bg-black/50 backdrop-blur-sm min-h-0">
           <div
             className="absolute inset-0 pointer-events-none opacity-70 md:opacity-100 mix-blend-overlay"
             style={{
@@ -141,18 +141,20 @@ export default function Version112Page() {
           <div className="relative z-10 flex flex-col h-full min-h-0">
             <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden scrollbar-hide">
               <div className="space-y-6 sm:space-y-8">
-                <div>
+                <div className="px-4 sm:px-6 lg:px-10">
                   <h1 className="text-base sm:text-lg lg:text-xl font-light tracking-tighter uppercase font-mono mb-2 sm:mb-3">
                     Release <br />{" "}
                     <span className="bg-white text-black px-1 py-0 rounded-none">
                       Version 1.1.2
                     </span>
                   </h1>
-                  <div className="-mx-4 sm:-mx-6 lg:-mx-10 w-[calc(100%+2rem)] sm:w-[calc(100%+3rem)] lg:w-[calc(100%+5rem)] mb-3 sm:mb-4 lg:mb-4">
-                    <hr className="w-full border-white/10 h-px" />
-                    <div className="relative z-20 h-2 w-full bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-7" />
-                    <hr className="w-full border-white/10 h-px" />
-                  </div>
+                </div>
+                <div className="w-full mb-3 sm:mb-4 lg:mb-4">
+                  <hr className="w-full border-white/10 h-px" />
+                  <div className="relative z-20 h-2 w-full bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-7" />
+                  <hr className="w-full border-white/10 h-px" />
+                </div>
+                <div className="px-4 sm:px-6 lg:px-10">
                   <p className="text-[11px] sm:text-sm lg:text-xs font-light text-white/90 leading-relaxed font-mono uppercase mb-3 sm:mb-4">
                     <span>{"// "}</span> IP-based location for sessions & events, dedicated event
                     log on user details, GitHub-style activity feed, last active / last seen, and
@@ -179,22 +181,24 @@ export default function Version112Page() {
                     </div>
                   </div>
                 </div>
-                <div className="-mx-4 sm:-mx-6 lg:-mx-10 w-[calc(100%+2rem)] sm:w-[calc(100%+3rem)] lg:w-[calc(100%+5rem)] mb-3 sm:mb-4 lg:mb-4">
+                <div className="w-full mb-3 sm:mb-4 lg:mb-4">
                   <hr className="w-full border-white/10 h-px" />
                   <div className="relative z-20 h-2 w-full bg-[repeating-linear-gradient(-45deg,#ffffff,#ffffff_1px,transparent_1px,transparent_6px)] opacity-7" />
                   <hr className="w-full border-white/10 h-px" />
                 </div>
 
-                <div className="space-y-3 sm:space-y-4 mt-3 sm:mt-4">
+                <div className="px-4 sm:px-6 lg:px-10 space-y-3 sm:space-y-4 mt-3 sm:mt-4">
                   <h2 className="text-xs sm:text-sm font-medium font-mono uppercase tracking-wider text-white">
                     What&apos;s New
                   </h2>
                   <div className="w-full mb-3 sm:mb-4 lg:hidden">
                     <hr className="w-full border-white/15 h-px" />
                   </div>
-                  <div className="hidden lg:block -mx-10 w-[calc(100%+5rem)] mb-4">
-                    <hr className="w-full border-white/15 h-px" />
-                  </div>
+                </div>
+                <div className="w-full mb-4 hidden lg:block">
+                  <hr className="w-full border-white/15 h-px" />
+                </div>
+                <div className="px-4 sm:px-6 lg:px-10">
                   <div className="space-y-2 sm:space-y-2.5 font-sans">
                     <div>
                       <p className="text-[11px] sm:text-xs lg:text-sm leading-relaxed text-white/80 font-light mb-2">
@@ -313,7 +317,7 @@ export default function Version112Page() {
                     <div className="w-full mb-3 sm:mb-4 lg:hidden">
                       <hr className="w-full border-white/15 h-px" />
                     </div>
-                    <div className="hidden lg:block -mx-10 w-[calc(100%+5rem)] mb-4">
+                    <div className="w-full mb-4 hidden lg:block">
                       <hr className="w-full border-white/15 h-px" />
                     </div>
                     <div>
@@ -328,7 +332,7 @@ export default function Version112Page() {
                     <div className="w-full mb-3 sm:mb-4 lg:hidden">
                       <hr className="w-full border-white/15 h-px" />
                     </div>
-                    <div className="hidden lg:block -mx-10 w-[calc(100%+5rem)] mb-4">
+                    <div className="w-full mb-4 hidden lg:block">
                       <hr className="w-full border-white/15 h-px" />
                     </div>
                     <div>
@@ -378,7 +382,7 @@ export default function Version112Page() {
                     <div className="w-full mb-3 sm:mb-4 lg:hidden">
                       <hr className="w-full border-white/15 h-px" />
                     </div>
-                    <div className="hidden lg:block -mx-10 w-[calc(100%+5rem)] mb-4">
+                    <div className="w-full mb-4 hidden lg:block">
                       <hr className="w-full border-white/15 h-px" />
                     </div>
                     <div>
@@ -390,14 +394,14 @@ export default function Version112Page() {
                   </div>
                 </div>
 
-                <div className="lg:hidden relative bg-[#0A0A0A] border-t border-white/15 -mx-4 sm:-mx-6 lg:mx-0 mt-4 pb-[env(safe-area-inset-bottom,0)]">
-                  <div className="px-4 sm:px-6 py-3 border-b border-white/15">
+                <div className="lg:hidden relative bg-[#0A0A0A] border-t border-white/15 w-full mt-4 pb-[env(safe-area-inset-bottom,0)]">
+                  <div className="px-4 sm:px-6 lg:px-10 py-3 border-b border-white/15">
                     <p className="text-xs sm:text-sm font-medium leading-tight font-mono uppercase tracking-tight text-white">
                       <span className="text-white/50">{"> "}</span>
                       User activity worldwide
                     </p>
                   </div>
-                  <div className="mt-4 mb-4 sm:mt-6 px-4 sm:px-6 pb-4">
+                  <div className="mt-4 mb-4 sm:mt-6 px-4 sm:px-6 lg:px-10 pb-4">
                     <p className="text-[10px] sm:text-xs font-semibold leading-snug font-mono uppercase text-white">
                       Start using Better Auth{" "}
                       <span className="bg-white text-black px-1 py-0 rounded-none">
@@ -428,7 +432,7 @@ export default function Version112Page() {
               </div>
             </div>
 
-            <div className="shrink-0 hidden lg:block pt-4 border-t border-white/10 mt-4">
+            <div className="shrink-0 hidden lg:block pt-4 border-t border-white/10 mt-4 px-4 sm:px-6 lg:px-10">
               <p className="text-[10px] sm:text-xs lg:text-sm font-semibold leading-snug font-mono uppercase text-white">
                 Start using Better Auth{" "}
                 <span className="bg-white text-black px-1 py-0 rounded-none">Studio</span> today.{" "}
