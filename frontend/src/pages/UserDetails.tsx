@@ -272,6 +272,8 @@ export default function UserDetails() {
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
   const [sessionLocations, setSessionLocations] = useState<Record<string, LocationData>>({});
   const sessionLocationsRef = useRef<Record<string, LocationData>>({});
+  const [selectedEventLocation, setSelectedEventLocation] = useState<LocationData | null>(null);
+  const [selectedEventLocationResolved, setSelectedEventLocationResolved] = useState(false);
   const [acceptingInvitations, setAcceptingInvitations] = useState<Record<string, boolean>>({});
   const [rejectingInvitations, setRejectingInvitations] = useState<Record<string, boolean>>({});
   const [cancellingInvitations, setCancellingInvitations] = useState<Record<string, boolean>>({});
@@ -345,6 +347,26 @@ export default function UserDetails() {
     },
     [resolveIPLocation],
   );
+
+  useEffect(() => {
+    if (!selectedUserEvent?.ipAddress) {
+      setSelectedEventLocation(null);
+      setSelectedEventLocationResolved(true);
+      return;
+    }
+    setSelectedEventLocation(null);
+    setSelectedEventLocationResolved(false);
+    let cancelled = false;
+    resolveIPLocation(selectedUserEvent.ipAddress).then((location) => {
+      if (!cancelled) {
+        setSelectedEventLocation(location);
+        setSelectedEventLocationResolved(true);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedUserEvent?.id, selectedUserEvent?.ipAddress, resolveIPLocation]);
 
   const getCountryFlag = (countryCode: string): string => {
     if (!countryCode) return "🌍";
@@ -2338,7 +2360,13 @@ export default function UserDetails() {
                   },
                   selectedUserEvent.ipAddress && {
                     label: "IP Address",
-                    value: selectedUserEvent.ipAddress,
+                    value:
+                      selectedUserEvent.ipAddress +
+                      (selectedEventLocationResolved
+                        ? selectedEventLocation
+                          ? ` (${selectedEventLocation.country} ${getCountryFlag(selectedEventLocation.countryCode)})`
+                          : " (Country unknown)"
+                        : " (Resolving…)"),
                   },
                   selectedUserEvent.userAgent && {
                     label: "User Agent",
