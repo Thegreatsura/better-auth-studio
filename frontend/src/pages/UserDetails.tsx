@@ -2360,13 +2360,15 @@ export default function UserDetails() {
                   },
                   selectedUserEvent.ipAddress && {
                     label: "IP Address",
-                    value:
-                      selectedUserEvent.ipAddress +
-                      (selectedEventLocationResolved
-                        ? selectedEventLocation
-                          ? ` (${selectedEventLocation.country} ${getCountryFlag(selectedEventLocation.countryCode)})`
-                          : " (Country unknown)"
-                        : " (Resolving…)"),
+                    value: selectedUserEvent.ipAddress,
+                  },
+                  selectedUserEvent.ipAddress && {
+                    label: "Location",
+                    value: selectedEventLocationResolved
+                      ? selectedEventLocation
+                        ? `${getCountryFlag(selectedEventLocation.countryCode)} ${selectedEventLocation.country}`
+                        : "Country unknown"
+                      : "Resolving…",
                   },
                   selectedUserEvent.userAgent && {
                     label: "User Agent",
