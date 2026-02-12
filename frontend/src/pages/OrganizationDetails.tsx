@@ -1688,14 +1688,14 @@ export default function OrganizationDetails() {
                   setSelectedInviterId("");
                 }}
                 disabled={inviting}
-                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase text-xs tracking-tight"
+                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase font-medium text-xs tracking-tight"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleInviteUser}
                 disabled={inviting}
-                className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none disabled:opacity-50 font-mono uppercase text-xs tracking-tight"
+                className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none disabled:opacity-50 font-mono uppercase font-medium text-xs tracking-tight"
               >
                 {inviting ? "Sending..." : "Send Invitation"}
               </Button>
@@ -1751,14 +1751,14 @@ export default function OrganizationDetails() {
                   setTeamFormData({ name: "" });
                 }}
                 disabled={isCreatingTeam}
-                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase text-xs tracking-tight"
+                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase font-medium text-xs tracking-tight"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleCreateTeam}
                 disabled={isCreatingTeam}
-                className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none disabled:opacity-50 font-mono uppercase text-xs tracking-tight"
+                className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none disabled:opacity-50 font-mono uppercase font-medium text-xs tracking-tight"
               >
                 {isCreatingTeam ? "Creating..." : "Create Team"}
               </Button>
@@ -1830,14 +1830,14 @@ export default function OrganizationDetails() {
                   setTeamFormData({ name: "" });
                 }}
                 disabled={isUpdatingTeam}
-                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase text-xs tracking-tight"
+                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase font-medium text-xs tracking-tight"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleUpdateTeam}
                 disabled={isUpdatingTeam}
-                className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none disabled:opacity-50 font-mono uppercase text-xs tracking-tight"
+                className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none disabled:opacity-50 font-mono uppercase font-medium text-xs tracking-tight"
               >
                 {isUpdatingTeam ? "Updating..." : "Update Team"}
               </Button>
@@ -1890,14 +1890,14 @@ export default function OrganizationDetails() {
                 variant="outline"
                 onClick={() => setShowDeleteTeamModal(false)}
                 disabled={isDeletingTeam}
-                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase text-xs tracking-tight"
+                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase font-medium text-xs tracking-tight"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleDeleteTeam}
                 disabled={isDeletingTeam}
-                className="bg-red-600 hover:bg-red-700 text-white border border-red-600 rounded-none disabled:opacity-50 font-mono uppercase text-xs tracking-tight"
+                className="bg-red-600 hover:bg-red-700 text-white border border-red-600 rounded-none disabled:opacity-50 font-mono uppercase font-medium text-xs tracking-tight"
               >
                 {isDeletingTeam ? "Deleting..." : "Delete Team"}
               </Button>
@@ -1975,7 +1975,7 @@ export default function OrganizationDetails() {
                       handleSeedMembers(count);
                     }}
                     disabled={isSeeding}
-                    className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none mt-6 disabled:opacity-50 font-mono uppercase text-xs tracking-tight"
+                    className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none mt-6 disabled:opacity-50 font-mono uppercase font-medium text-xs tracking-tight"
                   >
                     {isSeeding ? (
                       <>
@@ -2010,7 +2010,7 @@ export default function OrganizationDetails() {
                 variant="outline"
                 onClick={() => setShowSeedMembersModal(false)}
                 disabled={isSeeding}
-                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase text-xs tracking-tight"
+                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase font-medium text-xs tracking-tight"
               >
                 Close
               </Button>
@@ -2088,7 +2088,7 @@ export default function OrganizationDetails() {
                       handleSeedTeams(count);
                     }}
                     disabled={isTeamSeeding}
-                    className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none mt-6 disabled:opacity-50 font-mono uppercase text-xs tracking-tight"
+                    className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none mt-6 disabled:opacity-50 font-mono uppercase font-medium text-xs tracking-tight"
                   >
                     {isTeamSeeding ? (
                       <>

@@ -1091,14 +1091,14 @@ export default function Organizations() {
                   setShowCreateModal(false);
                   setCreateFormData({ name: "", slug: "" });
                 }}
-                className="border font-mono uppercase text-xs border-dashed border-white/20 text-white hover:bg-white/10 rounded-none"
+                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase font-medium text-xs tracking-tight"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleCreateOrganization}
                 disabled={isCreating}
-                className="bg-white font-mono uppercase text-xs hover:bg-white/90 text-black border border-white/20 rounded-none disabled:opacity-50"
+                className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none disabled:opacity-50 font-mono uppercase font-medium text-xs tracking-tight"
               >
                 {isCreating ? "Creating..." : "Create"}
               </Button>
@@ -1196,14 +1196,14 @@ export default function Organizations() {
                   setEditFormData({ name: "", slug: "" });
                 }}
                 disabled={isUpdating}
-                className="border font-mono uppercase text-xs border-dashed border-white/20 text-white hover:bg-white/10 rounded-none"
+                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase font-medium text-xs tracking-tight"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleUpdateOrganization}
                 disabled={isUpdating}
-                className="bg-white font-mono uppercase text-xs hover:bg-white/90 text-black border border-white/20 rounded-none disabled:opacity-50"
+                className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none disabled:opacity-50 font-mono uppercase font-medium text-xs tracking-tight"
               >
                 {isUpdating ? "Updating..." : "Update"}
               </Button>
@@ -1257,14 +1257,14 @@ export default function Organizations() {
               <Button
                 variant="outline"
                 onClick={() => setShowDeleteModal(false)}
-                className="border font-mono uppercase text-xs border-dashed border-white/20 text-white hover:bg-white/10 rounded-none"
+                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase font-medium text-xs tracking-tight"
               >
                 Cancel
               </Button>
               <Button
                 disabled={isDeleting}
                 onClick={handleDeleteOrganization}
-                className="bg-red-600 font-mono uppercase text-xs hover:bg-red-700 text-white border border-red-600 rounded-none"
+                className="bg-red-600 hover:bg-red-700 text-white border border-red-600 rounded-none font-mono uppercase font-medium text-xs tracking-tight"
               >
                 {isDeleting ? "Deleting..." : "Delete"}
               </Button>
@@ -1335,7 +1335,7 @@ export default function Organizations() {
             <div className="flex justify-end gap-3 mt-8">
               <Button
                 onClick={() => setShowViewModal(false)}
-                className="border border-white/20 bg-white/5 text-white hover:bg-white/10 rounded-none font-mono uppercase text-xs tracking-tight"
+                className="border border-white/20 bg-white/5 text-white hover:bg-white/10 rounded-none font-mono uppercase font-medium text-xs tracking-tight"
               >
                 Close
               </Button>
@@ -1344,7 +1344,7 @@ export default function Organizations() {
                   setShowViewModal(false);
                   navigate(`/organizations/${selectedOrganization.id}`);
                 }}
-                className="border border-white/20 bg-white text-black hover:bg-white/90 rounded-none font-mono uppercase text-xs tracking-tight"
+                className="border border-white/20 bg-white text-black hover:bg-white/90 rounded-none font-mono uppercase font-medium text-xs tracking-tight"
               >
                 View Details
               </Button>

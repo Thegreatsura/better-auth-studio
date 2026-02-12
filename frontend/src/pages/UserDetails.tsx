@@ -2069,7 +2069,7 @@ export default function UserDetails() {
                                       size="sm"
                                       onClick={() => handleAcceptInvitation(invitation.id)}
                                       disabled={acceptingInvitations[invitation.id]}
-                                      className="border border-dashed border-green-400/20 text-white hover:bg-green-400/10 hover:text-green-400  rounded-none font-mono uppercase text-xs tracking-tight"
+                                      className="border border-dashed border-green-400/20 text-white hover:bg-green-400/10 hover:text-green-400  rounded-none font-mono uppercase font-medium text-xs tracking-tight"
                                     >
                                       <Check className="w-3.5 h-3.5 mr-1" />
                                       Accept
@@ -2079,7 +2079,7 @@ export default function UserDetails() {
                                       size="sm"
                                       onClick={() => handleRejectInvitation(invitation.id)}
                                       disabled={rejectingInvitations[invitation.id]}
-                                      className="border border-dashed border-red-400/20 text-red-400 hover:text-red-400 hover:bg-red-400/10 rounded-none font-mono uppercase text-xs tracking-tight"
+                                      className="border border-dashed border-red-400/20 text-red-400 hover:text-red-400 hover:bg-red-400/10 rounded-none font-mono uppercase font-medium text-xs tracking-tight"
                                     >
                                       <XCircle className="w-3.5 h-3.5 mr-1" />
                                       Reject
@@ -2089,7 +2089,7 @@ export default function UserDetails() {
                                       size="sm"
                                       onClick={() => handleCancelInvitation(invitation.id)}
                                       disabled={cancellingInvitations[invitation.id]}
-                                      className="border border-dashed border-yellow-400/20 text-white hover:text-yellow-400 hover:bg-yellow-400/10 rounded-none font-mono uppercase text-xs tracking-tight"
+                                      className="border border-dashed border-yellow-400/20 text-white hover:text-yellow-400 hover:bg-yellow-400/10 rounded-none font-mono uppercase font-medium text-xs tracking-tight"
                                     >
                                       <X className="w-3.5 h-3.5 mr-1" />
                                       Cancel
@@ -2136,7 +2136,7 @@ export default function UserDetails() {
                     size="sm"
                     onClick={() => fetchUserEvents()}
                     disabled={userEventsLoading}
-                    className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase text-xs"
+                    className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase font-medium text-xs tracking-tight"
                   >
                     {userEventsLoading ? (
                       <Loader className="w-3.5 h-3.5 mr-1.5 animate-spin" />
@@ -2405,7 +2405,7 @@ export default function UserDetails() {
             <div className="flex justify-end mt-6">
               <Button
                 onClick={() => setShowEventViewModal(false)}
-                className="border border-white/20 bg-white text-black hover:bg-white/90 rounded-none font-mono uppercase text-xs"
+                className="border border-white/20 bg-white text-black hover:bg-white/90 rounded-none font-mono uppercase font-medium text-xs tracking-tight"
               >
                 Close
               </Button>
@@ -2547,14 +2547,14 @@ export default function UserDetails() {
                   setSelectedImageFile(null);
                 }}
                 disabled={isUpdating}
-                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase text-xs tracking-tight"
+                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase font-medium text-xs tracking-tight"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleEditUser}
                 disabled={isUpdating}
-                className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none disabled:opacity-50 font-mono uppercase text-xs tracking-tight"
+                className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none disabled:opacity-50 font-mono uppercase font-medium text-xs tracking-tight"
               >
                 {isUpdating ? "Updating..." : "Update"}
               </Button>
@@ -2656,14 +2656,14 @@ export default function UserDetails() {
                   setBanExpiresIn(undefined);
                 }}
                 disabled={isBanning}
-                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase text-xs tracking-tight"
+                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase font-medium text-xs tracking-tight"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleBanUser}
                 disabled={isBanning}
-                className="bg-red-600 hover:bg-red-700 text-white border border-red-600 rounded-none disabled:opacity-50 font-mono uppercase text-xs tracking-tight"
+                className="bg-red-600 hover:bg-red-700 text-white border border-red-600 rounded-none disabled:opacity-50 font-mono uppercase font-medium text-xs tracking-tight"
               >
                 {isBanning ? "Banning..." : "Ban User"}
               </Button>
@@ -2729,14 +2729,14 @@ export default function UserDetails() {
                 variant="outline"
                 onClick={() => setShowUnbanModal(false)}
                 disabled={isUnbanning}
-                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase text-xs tracking-tight"
+                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase font-medium text-xs tracking-tight"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleUnbanUser}
                 disabled={isUnbanning}
-                className="bg-green-400 hover:bg-green-500 text-white border border-green-400 rounded-none disabled:opacity-50 font-mono uppercase text-xs tracking-tight"
+                className="bg-green-400 hover:bg-green-500 text-white border border-green-400 rounded-none disabled:opacity-50 font-mono uppercase font-medium text-xs tracking-tight"
               >
                 {isUnbanning ? "Unbanning..." : "Unban User"}
               </Button>
@@ -2800,14 +2800,14 @@ export default function UserDetails() {
                 variant="outline"
                 onClick={() => setShowDeleteModal(false)}
                 disabled={isDeleting}
-                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase text-xs tracking-tight"
+                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase font-medium text-xs tracking-tight"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleDeleteUser}
                 disabled={isDeleting}
-                className="bg-red-600 hover:bg-red-700 text-white border border-red-600 rounded-none disabled:opacity-50 font-mono uppercase text-xs tracking-tight"
+                className="bg-red-600 hover:bg-red-700 text-white border border-red-600 rounded-none disabled:opacity-50 font-mono uppercase font-medium text-xs tracking-tight"
               >
                 {isDeleting ? "Deleting..." : "Delete"}
               </Button>
@@ -2880,7 +2880,7 @@ export default function UserDetails() {
                 variant="outline"
                 onClick={() => setShowPasswordModal(false)}
                 disabled={isUpdatingPassword}
-                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase text-xs tracking-tight"
+                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase font-medium text-xs tracking-tight"
               >
                 Cancel
               </Button>
@@ -2918,7 +2918,7 @@ export default function UserDetails() {
                   }
                 }}
                 disabled={isUpdatingPassword}
-                className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none disabled:opacity-50 font-mono uppercase text-xs tracking-tight"
+                className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none disabled:opacity-50 font-mono uppercase font-medium text-xs tracking-tight"
               >
                 {isUpdatingPassword ? "Updating..." : "Update Password"}
               </Button>
@@ -3009,7 +3009,7 @@ export default function UserDetails() {
                 variant="outline"
                 onClick={() => setShowSessionSeedModal(false)}
                 disabled={isSeeding}
-                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase text-xs tracking-tight"
+                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase font-medium text-xs tracking-tight"
               >
                 Cancel
               </Button>
@@ -3022,7 +3022,7 @@ export default function UserDetails() {
                   handleSeedSessions(count);
                 }}
                 disabled={isSeeding}
-                className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none disabled:opacity-50 font-mono uppercase text-xs tracking-tight"
+                className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none disabled:opacity-50 font-mono uppercase font-medium text-xs tracking-tight"
               >
                 {isSeeding ? (
                   <>
@@ -3160,7 +3160,7 @@ export default function UserDetails() {
                 variant="outline"
                 onClick={() => setShowAccountSeedModal(false)}
                 disabled={isSeeding}
-                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase text-xs tracking-tight"
+                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase font-medium text-xs tracking-tight"
               >
                 Cancel
               </Button>
@@ -3173,7 +3173,7 @@ export default function UserDetails() {
                   handleSeedAccounts(count, accountSeedProvider);
                 }}
                 disabled={isSeeding}
-                className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none disabled:opacity-50 font-mono uppercase text-xs tracking-tight"
+                className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none disabled:opacity-50 font-mono uppercase font-medium text-xs tracking-tight"
               >
                 {isSeeding ? (
                   <>

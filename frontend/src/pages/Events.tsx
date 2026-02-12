@@ -1855,7 +1855,7 @@ export const auth = betterAuth({
             <div className="flex justify-end mt-8">
               <Button
                 onClick={() => setShowViewModal(false)}
-                className="border border-white/20 bg-white text-black hover:bg-white/90 rounded-none font-mono uppercase text-xs tracking-tight"
+                className="border border-white/20 bg-white text-black hover:bg-white/90 rounded-none font-mono uppercase font-medium text-xs tracking-tight"
               >
                 Close
               </Button>

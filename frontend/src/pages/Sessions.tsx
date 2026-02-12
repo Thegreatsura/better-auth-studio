@@ -425,7 +425,7 @@ export default function Sessions() {
         </div>
         <div className="flex items-center space-x-3">
           <Button
-            className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none"
+            className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase font-medium text-xs tracking-tight"
             onClick={() => setShowSeedModal(true)}
           >
             <Database className="w-4 h-4 mr-2" />
@@ -648,7 +648,7 @@ export default function Sessions() {
                       handleSeedSessions(count);
                     }}
                     disabled={isSeeding}
-                    className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none mt-6 disabled:opacity-50"
+                    className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none mt-6 disabled:opacity-50 font-mono uppercase font-medium text-xs tracking-tight"
                   >
                     {isSeeding ? (
                       <>
@@ -695,7 +695,7 @@ export default function Sessions() {
                       handleSeedAccounts(count);
                     }}
                     disabled={isSeeding}
-                    className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none mt-6 disabled:opacity-50"
+                    className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none mt-6 disabled:opacity-50 font-mono uppercase font-medium text-xs tracking-tight"
                   >
                     {isSeeding ? (
                       <>
@@ -729,7 +729,7 @@ export default function Sessions() {
               <Button
                 variant="outline"
                 onClick={() => setShowSeedModal(false)}
-                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none"
+                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase font-medium text-xs tracking-tight"
               >
                 Close
               </Button>
@@ -791,14 +791,14 @@ export default function Sessions() {
               <Button
                 variant="outline"
                 onClick={() => setShowCreateModal(false)}
-                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none"
+                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase font-medium text-xs tracking-tight"
               >
                 Cancel
               </Button>
               <Button
                 onClick={() => handleCreateSession({})}
                 disabled={isCreating}
-                className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none disabled:opacity-50"
+                className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none disabled:opacity-50 font-mono uppercase font-medium text-xs tracking-tight"
               >
                 {isCreating ? "Creating..." : "Create"}
               </Button>
@@ -860,14 +860,14 @@ export default function Sessions() {
               <Button
                 variant="outline"
                 onClick={() => setShowEditModal(false)}
-                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none"
+                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase font-medium text-xs tracking-tight"
               >
                 Cancel
               </Button>
               <Button
                 onClick={() => handleUpdateSession({})}
                 disabled={isUpdating}
-                className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none disabled:opacity-50"
+                className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none disabled:opacity-50 font-mono uppercase font-medium text-xs tracking-tight"
               >
                 {isUpdating ? "Updating..." : "Update"}
               </Button>
@@ -918,13 +918,13 @@ export default function Sessions() {
               <Button
                 variant="outline"
                 onClick={() => setShowDeleteModal(false)}
-                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none"
+                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase font-medium text-xs tracking-tight"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleDeleteSession}
-                className="bg-red-600 hover:bg-red-700 text-white border border-red-600 rounded-none"
+                className="bg-red-600 hover:bg-red-700 text-white border border-red-600 rounded-none font-mono uppercase font-medium text-xs tracking-tight"
               >
                 Delete
               </Button>
@@ -1026,7 +1026,7 @@ export default function Sessions() {
             <div className="flex justify-end mt-8">
               <Button
                 onClick={() => setShowViewModal(false)}
-                className="border border-white/20 bg-white text-black hover:bg-white/90 rounded-none font-mono uppercase text-xs tracking-tight"
+                className="border border-white/20 bg-white text-black hover:bg-white/90 rounded-none font-mono uppercase font-medium text-xs tracking-tight"
               >
                 Close
               </Button>

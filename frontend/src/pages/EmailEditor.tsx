@@ -891,7 +891,7 @@ export const auth = betterAuth({
               <Button
                 onClick={handleApplyToAuth}
                 disabled={isApplying}
-                className="bg-white text-black hover:bg-white/90 rounded-none font-mono uppercase text-xs px-6 py-2"
+                className="bg-white text-black hover:bg-white/90 rounded-none font-mono uppercase font-medium text-xs tracking-tight px-6 py-2"
               >
                 {isApplying ? "Applying..." : "Apply to auth config"}
               </Button>
@@ -982,14 +982,14 @@ export const auth = betterAuth({
               <Button
                 variant="ghost"
                 onClick={() => setShowResendModal(false)}
-                className="text-gray-400 hover:text-white rounded-none font-mono uppercase text-xs px-6 py-2"
+                className="text-gray-400 hover:text-white rounded-none font-mono uppercase font-medium text-xs tracking-tight px-6 py-2"
               >
                 Cancel
               </Button>
               <Button
                 onClick={() => confirmApplyToAuth(selectedTemplate)}
                 disabled={isApplying}
-                className="bg-white text-black hover:bg-white/90 rounded-none font-mono uppercase text-xs px-6 py-2"
+                className="bg-white text-black hover:bg-white/90 rounded-none font-mono uppercase font-medium text-xs tracking-tight px-6 py-2"
               >
                 {isApplying ? "Applying..." : "Continue"}
               </Button>
@@ -1168,7 +1168,7 @@ export const auth = betterAuth({
               <Button
                 variant="ghost"
                 onClick={() => setShowTestEmailModal(false)}
-                className="text-gray-400 hover:text-white rounded-none font-mono uppercase text-xs px-6 py-2"
+                className="text-gray-400 hover:text-white rounded-none font-mono uppercase font-medium text-xs tracking-tight px-6 py-2"
               >
                 Cancel
               </Button>
@@ -1181,7 +1181,7 @@ export const auth = betterAuth({
                   !fromEmail ||
                   !testSubject
                 }
-                className="bg-white text-black hover:bg-white/90 rounded-none font-mono uppercase text-xs px-6 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-white text-black hover:bg-white/90 rounded-none font-mono uppercase font-medium text-xs tracking-tight px-6 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSendingTestEmail ? "Sending..." : "Send Test Email"}
               </Button>

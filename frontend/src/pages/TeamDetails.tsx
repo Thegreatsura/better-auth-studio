@@ -687,14 +687,14 @@ export default function TeamDetails() {
                   setSelectedUsers([]);
                   setSearchTerm("");
                 }}
-                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none"
+                className="border border-dashed font-mono uppercase font-medium text-xs tracking-tight border-white/20 text-white hover:bg-white/10 rounded-none"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleAddMembers}
                 disabled={selectedUsers.length === 0 || addingMembers}
-                className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none disabled:opacity-50"
+                className="bg-white font-mono uppercase font-medium text-xs tracking-tight hover:bg-white/90 text-black border border-white/20 rounded-none disabled:opacity-50"
               >
                 <UserPlus className="w-4 h-4 mr-2" />
                 {addingMembers
@@ -756,14 +756,14 @@ export default function TeamDetails() {
               <Button
                 variant="outline"
                 onClick={() => setShowEditTeamModal(false)}
-                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none"
+                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase font-medium text-xs tracking-tight"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleUpdateTeam}
                 disabled={teamFormData.name === team.name || isUpdatingTeam}
-                className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none"
+                className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none disabled:opacity-50 font-mono uppercase font-medium text-xs tracking-tight"
               >
                 {isUpdatingTeam ? "Updating..." : "Update Team"}
               </Button>

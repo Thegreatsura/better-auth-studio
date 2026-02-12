@@ -1362,7 +1362,7 @@ export default function Users() {
                       handleSeedUsers(count, seedRole || undefined);
                     }}
                     disabled={isSeeding}
-                    className="bg-transparent hover:bg-white/90 bg-white text-black border border-white/20 rounded-none mt-6 disabled:opacity-50"
+                    className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none mt-6 disabled:opacity-50 font-mono uppercase font-medium text-xs tracking-tight"
                   >
                     {isSeeding ? (
                       <>
@@ -1491,14 +1491,14 @@ export default function Users() {
                   setShowCreateModal(false);
                   setCreateRole("");
                 }}
-                className="border border-dashed border-white/20 font-mono uppercase text-white hover:bg-white/10 rounded-none"
+                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase font-medium text-xs tracking-tight"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleCreateUser}
                 disabled={isCreating}
-                className="bg-white font-mono uppercase hover:bg-white/90 text-black border border-white/20 rounded-none disabled:opacity-50"
+                className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none disabled:opacity-50 font-mono uppercase font-medium text-xs tracking-tight"
               >
                 {isCreating ? "Creating..." : "Create"}
               </Button>
@@ -1642,14 +1642,14 @@ export default function Users() {
                   setSelectedImageFile(null);
                 }}
                 disabled={isUpdating}
-                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase text-xs tracking-tight"
+                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase font-medium text-xs tracking-tight"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleUpdateUser}
                 disabled={isUpdating}
-                className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none disabled:opacity-50 font-mono uppercase text-xs tracking-tight"
+                className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none disabled:opacity-50 font-mono uppercase font-medium text-xs tracking-tight"
               >
                 {isUpdating ? "Updating..." : "Update"}
               </Button>
@@ -1709,14 +1709,14 @@ export default function Users() {
                 variant="outline"
                 onClick={() => setShowDeleteModal(false)}
                 disabled={isDeleting}
-                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase text-xs tracking-tight"
+                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase font-medium text-xs tracking-tight"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleDeleteUser}
                 disabled={isDeleting}
-                className="bg-red-600 hover:bg-red-700 text-white border border-red-600 rounded-none disabled:opacity-50 font-mono uppercase text-xs tracking-tight"
+                className="bg-red-600 hover:bg-red-700 text-white border border-red-600 rounded-none disabled:opacity-50 font-mono uppercase font-medium text-xs tracking-tight"
               >
                 {isDeleting ? "Deleting..." : "Delete"}
               </Button>
@@ -1809,7 +1809,7 @@ export default function Users() {
             <div className="flex justify-end gap-3 mt-8">
               <Button
                 onClick={() => setShowViewModal(false)}
-                className="border border-white/20 bg-white/5 text-white hover:bg-white/10 rounded-none font-mono uppercase text-xs tracking-tight"
+                className="border border-white/20 bg-white/5 text-white hover:bg-white/10 rounded-none font-mono uppercase font-medium text-xs tracking-tight"
               >
                 Close
               </Button>
@@ -1818,7 +1818,7 @@ export default function Users() {
                   setShowViewModal(false);
                   navigate(`/users/${selectedUser.id}`);
                 }}
-                className="border border-white/20 bg-white text-black hover:bg-white/90 rounded-none font-mono uppercase text-xs tracking-tight"
+                className="border border-white/20 bg-white text-black hover:bg-white/90 rounded-none font-mono uppercase font-medium text-xs tracking-tight"
               >
                 View Details
               </Button>
@@ -1920,14 +1920,14 @@ export default function Users() {
                   setSelectedUser(null);
                 }}
                 disabled={isBanning}
-                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase text-xs tracking-tight"
+                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase font-medium text-xs tracking-tight"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleBanUser}
                 disabled={isBanning}
-                className="bg-red-600 hover:bg-red-700 text-white border border-red-600 rounded-none disabled:opacity-50 font-mono uppercase text-xs tracking-tight"
+                className="bg-red-600 hover:bg-red-700 text-white border border-red-600 rounded-none disabled:opacity-50 font-mono uppercase font-medium text-xs tracking-tight"
               >
                 {isBanning ? "Banning..." : "Ban User"}
               </Button>
@@ -1997,14 +1997,14 @@ export default function Users() {
                   setSelectedUser(null);
                 }}
                 disabled={isUnbanning}
-                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase text-xs tracking-tight"
+                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none font-mono uppercase font-medium text-xs tracking-tight"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleUnbanUser}
                 disabled={isUnbanning}
-                className="bg-green-400 hover:bg-green-500 text-white border border-green-400 rounded-none disabled:opacity-50 font-mono uppercase text-xs tracking-tight"
+                className="bg-green-400 hover:bg-green-500 text-white border border-green-400 rounded-none disabled:opacity-50 font-mono uppercase font-medium text-xs tracking-tight"
               >
                 {isUnbanning ? "Unbanning..." : "Unban User"}
               </Button>
