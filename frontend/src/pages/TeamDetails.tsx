@@ -170,7 +170,7 @@ export default function TeamDetails() {
       toast.error("Please select at least one user");
       return;
     }
-
+    setAddingMembers(true);
     const toastId = toast.loading(`Adding ${selectedUsers.length} members...`);
 
     try {
@@ -193,6 +193,8 @@ export default function TeamDetails() {
       }
     } catch (_error) {
       toast.error("Error adding members", { id: toastId });
+    } finally {
+      setAddingMembers(false);
     }
   };
 
@@ -691,11 +693,13 @@ export default function TeamDetails() {
               </Button>
               <Button
                 onClick={handleAddMembers}
-                disabled={selectedUsers.length === 0}
+                disabled={selectedUsers.length === 0 || addingMembers}
                 className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none disabled:opacity-50"
               >
                 <UserPlus className="w-4 h-4 mr-2" />
-                Add {selectedUsers.length} Member{selectedUsers.length !== 1 ? "s" : ""}
+                {addingMembers
+                  ? "Adding..."
+                  : `Add ${selectedUsers.length} Member${selectedUsers.length !== 1 ? "s" : ""}`}
               </Button>
             </div>
           </div>
