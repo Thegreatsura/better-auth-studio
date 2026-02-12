@@ -73,7 +73,7 @@ export default function TeamDetails() {
   const [isUpdatingTeam, setIsUpdatingTeam] = useState(false);
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
   const [showEditTeamModal, setShowEditTeamModal] = useState(false);
-
+  const [addingMembers, setAddingMembers] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [availableUsers, setAvailableUsers] = useState<User[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
