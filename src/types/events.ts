@@ -161,14 +161,16 @@ export const EVENT_TEMPLATES: Record<AuthEventType, (event: AuthEvent) => string
   "member.removed": (event) => {
     const memberName = event.metadata?.removedByName || event.metadata?.removedByEmail || "Member";
     const orgName = event.metadata?.organizationName || "organization";
-    if (event.status === "failed") return `Failed to remove member "${memberName}" from "${orgName}"`;
+    if (event.status === "failed")
+      return `Failed to remove member "${memberName}" from "${orgName}"`;
     return `${memberName} removed from ${orgName}`;
   },
   "member.role_changed": (event) => {
     const memberName = event.metadata?.changedByName || event.metadata?.changedByEmail || "Member";
     const oldRole = event.metadata?.oldRole || "member";
     const newRole = event.metadata?.newRole || "member";
-    if (event.status === "failed") return `Failed to change role of "${memberName}" from "${oldRole}" to "${newRole}"`;
+    if (event.status === "failed")
+      return `Failed to change role of "${memberName}" from "${oldRole}" to "${newRole}"`;
     return `${memberName} role changed from ${oldRole} to ${newRole}`;
   },
   "session.created": (event) => {
@@ -197,7 +199,8 @@ export const EVENT_TEMPLATES: Record<AuthEventType, (event: AuthEvent) => string
   },
   "password.reset_completed_otp": (event) => {
     const name = event.metadata?.name || event.metadata?.email || "Someone";
-    if (event.status === "failed") return `Failed to complete password reset via email OTP for "${name}"`;
+    if (event.status === "failed")
+      return `Failed to complete password reset via email OTP for "${name}"`;
     return `${name} reset their password via email OTP`;
   },
   "oauth.linked": (event) => {
@@ -237,38 +240,44 @@ export const EVENT_TEMPLATES: Record<AuthEventType, (event: AuthEvent) => string
   "team.member.added": (event) => {
     const memberName = event.metadata?.addedName || event.metadata?.addedEmail || "Member";
     const teamName = event.metadata?.teamName || "team";
-    if (event.status === "failed") return `Failed to add member "${memberName}" to team "${teamName}"`;
+    if (event.status === "failed")
+      return `Failed to add member "${memberName}" to team "${teamName}"`;
     return `${memberName} added to team "${teamName}"`;
   },
   "team.member.removed": (event) => {
     const memberName = event.metadata?.removedName || event.metadata?.removedEmail || "Member";
     const teamName = event.metadata?.teamName || "team";
-    if (event.status === "failed") return `Failed to remove member "${memberName}" from team "${teamName}"`;
+    if (event.status === "failed")
+      return `Failed to remove member "${memberName}" from team "${teamName}"`;
     return `${memberName} removed from team "${teamName}"`;
   },
   "invitation.created": (event) => {
     const email = event.metadata?.email || "user";
     const orgName = event.metadata?.organizationName || "organization";
     const role = event.metadata?.role || "member";
-    if (event.status === "failed") return `Failed to create invitation for "${email}" to join "${orgName}"`;
+    if (event.status === "failed")
+      return `Failed to create invitation for "${email}" to join "${orgName}"`;
     return `Invitation sent to ${email} to join ${orgName} as ${role}`;
   },
   "invitation.accepted": (event) => {
     const email = event.metadata?.email || "user";
     const orgName = event.metadata?.organizationName || "organization";
-    if (event.status === "failed") return `Failed to accept invitation for "${email}" to join "${orgName}"`;
+    if (event.status === "failed")
+      return `Failed to accept invitation for "${email}" to join "${orgName}"`;
     return `${email} accepted invitation to join ${orgName}`;
   },
   "invitation.rejected": (event) => {
     const email = event.metadata?.email || "user";
     const orgName = event.metadata?.organizationName || "organization";
-    if (event.status === "failed") return `Failed to reject invitation for "${email}" to join "${orgName}"`;
+    if (event.status === "failed")
+      return `Failed to reject invitation for "${email}" to join "${orgName}"`;
     return `${email} rejected invitation to join ${orgName}`;
   },
   "invitation.cancelled": (event) => {
     const email = event.metadata?.email || "user";
     const orgName = event.metadata?.organizationName || "organization";
-    if (event.status === "failed") return `Failed to cancel invitation for "${email}" to join "${orgName}"`;
+    if (event.status === "failed")
+      return `Failed to cancel invitation for "${email}" to join "${orgName}"`;
     return `Invitation cancelled for ${email} to join ${orgName}`;
   },
   "phone_number.otp_requested": (event) => {
