@@ -459,7 +459,9 @@ function createEventIngestionPlugin(eventsConfig: StudioConfig["events"]): any {
               {
                 status: "failed",
                 metadata: {
-                  reason: reasonToMessage(returned.body?.code || returned.body?.message || "unknown"),
+                  reason: reasonToMessage(
+                    returned.body?.code || returned.body?.message || "unknown",
+                  ),
                 },
                 request: {
                   headers: headersObj,
@@ -496,7 +498,9 @@ function createEventIngestionPlugin(eventsConfig: StudioConfig["events"]): any {
               {
                 status: "failed",
                 metadata: {
-                  reason: reasonToMessage(returned.body?.code || returned.body?.message || "unknown"),
+                  reason: reasonToMessage(
+                    returned.body?.code || returned.body?.message || "unknown",
+                  ),
                 },
                 request: {
                   headers: headersObj,
@@ -1035,7 +1039,9 @@ function createEventIngestionPlugin(eventsConfig: StudioConfig["events"]): any {
                 status: "failed",
                 metadata: {
                   phoneNumber,
-                  reason: reasonToMessage(returned?.body?.message || returned?.body?.code || "unknown"),
+                  reason: reasonToMessage(
+                    returned?.body?.message || returned?.body?.code || "unknown",
+                  ),
                 },
                 request: {
                   headers: headersObj,
@@ -1076,7 +1082,9 @@ function createEventIngestionPlugin(eventsConfig: StudioConfig["events"]): any {
                 status: "failed",
                 metadata: {
                   phoneNumber,
-                  reason: reasonToMessage(returned?.body?.message || returned?.body?.code || "invalid_otp"),
+                  reason: reasonToMessage(
+                    returned?.body?.message || returned?.body?.code || "invalid_otp",
+                  ),
                 },
                 request: {
                   headers: headersObj,
