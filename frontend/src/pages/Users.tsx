@@ -1022,7 +1022,7 @@ export default function Users() {
                             </TooltipTrigger>
                             <TooltipContent
                               side="top"
-                              className="max-w-xs lowercase border border-white/20 bg-black/95 text-white text-xs font-normal shadow-xl rounded-none px-3 py-2"
+                              className="max-w-xs text-left lowercase border border-white/20 bg-black/95 text-white text-xs font-normal shadow-xl rounded-none px-3 py-2"
                             >
                               Last seen is last time the user was active.
                             </TooltipContent>
