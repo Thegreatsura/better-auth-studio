@@ -14,6 +14,7 @@ import {
   initializeEventIngestion,
   isEventIngestionInitialized,
 } from "./event-ingestion.js";
+import { reasonToMessage } from "./reason-messages.js";
 import { wrapOrganizationPluginHooks } from "./org-hooks-injector.js";
 
 const INJECTED_HOOKS_MARKER = "__better_auth_studio_events_injected__";
@@ -142,12 +143,13 @@ function createEventIngestionPlugin(eventsConfig: StudioConfig["events"]): any {
                 metadata: {
                   email: body.email,
                   name: body.name,
-                  reason:
+                  reason: reasonToMessage(
                     returned.statusCode === 400
                       ? "validation_failed"
                       : returned.statusCode === 409
                         ? "user_already_exists"
                         : returned.body?.code || returned.body?.message || "unknown",
+                  ),
                 },
                 request: {
                   headers: headersObj,
@@ -210,10 +212,11 @@ function createEventIngestionPlugin(eventsConfig: StudioConfig["events"]): any {
                 status: "failed",
                 metadata: {
                   email: body.email,
-                  reason:
+                  reason: reasonToMessage(
                     returned.statusCode === 401
                       ? "invalid_credentials"
                       : returned.body?.code || "unknown",
+                  ),
                 },
                 request: {
                   headers: headersObj,
@@ -286,10 +289,11 @@ function createEventIngestionPlugin(eventsConfig: StudioConfig["events"]): any {
                 status: "failed",
                 metadata: {
                   provider: body.providerId || body.provider,
-                  reason:
+                  reason: reasonToMessage(
                     returned.statusCode === 400
                       ? "invalid_request"
                       : returned.body?.code || returned.body?.message || "unknown",
+                  ),
                 },
                 request: {
                   headers: headersObj,
@@ -398,10 +402,11 @@ function createEventIngestionPlugin(eventsConfig: StudioConfig["events"]): any {
                         {
                           status: "failed",
                           metadata: {
-                            reason:
+                            reason: reasonToMessage(
                               returned.statusCode === 401
                                 ? "authentication_failed"
                                 : returned.body?.code || "unknown",
+                            ),
                             provider: path.includes("/callback/")
                               ? path.split("/callback/")[1]?.split("/")[0]
                               : undefined,
@@ -454,7 +459,7 @@ function createEventIngestionPlugin(eventsConfig: StudioConfig["events"]): any {
               {
                 status: "failed",
                 metadata: {
-                  reason: returned.body?.code || returned.body?.message || "unknown",
+                  reason: reasonToMessage(returned.body?.code || returned.body?.message || "unknown"),
                 },
                 request: {
                   headers: headersObj,
@@ -491,7 +496,7 @@ function createEventIngestionPlugin(eventsConfig: StudioConfig["events"]): any {
               {
                 status: "failed",
                 metadata: {
-                  reason: returned.body?.code || returned.body?.message || "unknown",
+                  reason: reasonToMessage(returned.body?.code || returned.body?.message || "unknown"),
                 },
                 request: {
                   headers: headersObj,
@@ -551,7 +556,7 @@ function createEventIngestionPlugin(eventsConfig: StudioConfig["events"]): any {
               {
                 status: "failed",
                 metadata: {
-                  reason:
+                  reason: reasonToMessage(
                     returned.statusCode === 400
                       ? "validation_failed"
                       : returned.statusCode === 401
@@ -559,6 +564,7 @@ function createEventIngestionPlugin(eventsConfig: StudioConfig["events"]): any {
                         : returned.statusCode === 403
                           ? "forbidden"
                           : returned.body?.code || returned.body?.message || "unknown",
+                  ),
                 },
                 request: {
                   headers: headersObj,
@@ -584,7 +590,7 @@ function createEventIngestionPlugin(eventsConfig: StudioConfig["events"]): any {
                 userId: session?.user?.id,
                 metadata: {
                   organizationName: body.name || organization?.name || "Unknown",
-                  reason: returned.body?.message || returned.body.code,
+                  reason: reasonToMessage(returned.body?.message || returned.body?.code),
                 },
                 request: {
                   headers: headersObj,
@@ -612,7 +618,7 @@ function createEventIngestionPlugin(eventsConfig: StudioConfig["events"]): any {
                 userId: session?.user?.id,
                 metadata: {
                   organizationName: body.name || organization?.name || "Unknown",
-                  reason: returned.body?.message || returned.body.code,
+                  reason: reasonToMessage(returned.body?.message || returned.body?.code),
                 },
                 request: {
                   headers: headersObj,
@@ -640,7 +646,7 @@ function createEventIngestionPlugin(eventsConfig: StudioConfig["events"]): any {
                 userId: session?.user?.id,
                 metadata: {
                   organizationName: organization?.name || "Unknown",
-                  reason: returned.body?.message || returned.body.code,
+                  reason: reasonToMessage(returned.body?.message || returned.body?.code),
                 },
                 request: {
                   headers: headersObj,
@@ -667,7 +673,7 @@ function createEventIngestionPlugin(eventsConfig: StudioConfig["events"]): any {
                 organizationId: body.organizationId,
                 userId: body.userId || member?.userId,
                 metadata: {
-                  reason: returned.body?.message || returned.body.code,
+                  reason: reasonToMessage(returned.body?.message || returned.body?.code),
                 },
                 request: {
                   headers: headersObj,
@@ -692,10 +698,11 @@ function createEventIngestionPlugin(eventsConfig: StudioConfig["events"]): any {
                 organizationId: body.organizationId,
                 userId: body.userId,
                 metadata: {
-                  reason:
+                  reason: reasonToMessage(
                     returned.statusCode === 404
                       ? "member_not_found"
                       : returned.body?.code || returned.body?.message || "unknown",
+                  ),
                 },
                 request: {
                   headers: headersObj,
@@ -724,10 +731,11 @@ function createEventIngestionPlugin(eventsConfig: StudioConfig["events"]): any {
                 metadata: {
                   oldRole: body.oldRole,
                   newRole: body.role || body.newRole,
-                  reason:
+                  reason: reasonToMessage(
                     returned.statusCode === 404
                       ? "member_not_found"
                       : returned.body?.code || returned.body?.message || "unknown",
+                  ),
                 },
                 request: {
                   headers: headersObj,
@@ -756,10 +764,11 @@ function createEventIngestionPlugin(eventsConfig: StudioConfig["events"]): any {
                 userId: session?.user?.id,
                 metadata: {
                   teamName: body.name || "Unknown",
-                  reason:
+                  reason: reasonToMessage(
                     returned.statusCode === 400
                       ? "validation_failed"
                       : returned.body?.code || returned.body?.message || "unknown",
+                  ),
                 },
                 request: {
                   headers: headersObj,
@@ -788,7 +797,7 @@ function createEventIngestionPlugin(eventsConfig: StudioConfig["events"]): any {
                 metadata: {
                   teamId: body.id || body.teamId,
                   teamName: body.name || team?.name || "Unknown",
-                  reason: returned.body?.message || returned.body.code,
+                  reason: reasonToMessage(returned.body?.message || returned.body?.code),
                 },
                 request: {
                   headers: headersObj,
@@ -815,7 +824,7 @@ function createEventIngestionPlugin(eventsConfig: StudioConfig["events"]): any {
                 userId: session?.user?.id,
                 metadata: {
                   teamId: body.id || body.teamId,
-                  reason: returned.body?.message || returned.body.code,
+                  reason: reasonToMessage(returned.body?.message || returned.body?.code),
                 },
                 request: {
                   headers: headersObj,
@@ -843,7 +852,7 @@ function createEventIngestionPlugin(eventsConfig: StudioConfig["events"]): any {
                 userId: body.userId || teamMember?.userId,
                 metadata: {
                   teamId: body.teamId,
-                  reason: returned.body?.message || returned.body.code,
+                  reason: reasonToMessage(returned.body?.message || returned.body?.code),
                 },
                 request: {
                   headers: headersObj,
@@ -870,7 +879,7 @@ function createEventIngestionPlugin(eventsConfig: StudioConfig["events"]): any {
                 userId: body.userId,
                 metadata: {
                   teamId: body.teamId,
-                  reason: returned.body?.message || returned.body.code,
+                  reason: reasonToMessage(returned.body?.message || returned.body?.code),
                 },
                 request: {
                   headers: headersObj,
@@ -899,7 +908,7 @@ function createEventIngestionPlugin(eventsConfig: StudioConfig["events"]): any {
                 metadata: {
                   email: body.email || "Unknown",
                   role: body.role || "member",
-                  reason: returned.body?.message || returned.body.code,
+                  reason: reasonToMessage(returned.body?.message || returned.body?.code),
                 },
                 request: {
                   headers: headersObj,
@@ -928,7 +937,7 @@ function createEventIngestionPlugin(eventsConfig: StudioConfig["events"]): any {
                 metadata: {
                   invitationId: body.id || body.invitationId,
                   email: invitation?.email || body.email || "Unknown",
-                  reason: returned.body?.message || returned.body.code,
+                  reason: reasonToMessage(returned.body?.message || returned.body?.code),
                 },
                 request: {
                   headers: headersObj,
@@ -957,7 +966,7 @@ function createEventIngestionPlugin(eventsConfig: StudioConfig["events"]): any {
                 metadata: {
                   invitationId: body.id || body.invitationId,
                   email: invitation?.email || body.email || "Unknown",
-                  reason: returned.body?.message || returned.body.code,
+                  reason: reasonToMessage(returned.body?.message || returned.body?.code),
                 },
                 request: {
                   headers: headersObj,
@@ -986,7 +995,7 @@ function createEventIngestionPlugin(eventsConfig: StudioConfig["events"]): any {
                 metadata: {
                   invitationId: body.id || body.invitationId,
                   email: invitation?.email || body.email || "Unknown",
-                  reason: returned.body?.message || returned.body.code,
+                  reason: reasonToMessage(returned.body?.message || returned.body?.code),
                 },
                 request: {
                   headers: headersObj,
@@ -1026,7 +1035,7 @@ function createEventIngestionPlugin(eventsConfig: StudioConfig["events"]): any {
                 status: "failed",
                 metadata: {
                   phoneNumber,
-                  reason: returned?.body?.message || returned?.body?.code || "unknown",
+                  reason: reasonToMessage(returned?.body?.message || returned?.body?.code || "unknown"),
                 },
                 request: {
                   headers: headersObj,
@@ -1067,7 +1076,7 @@ function createEventIngestionPlugin(eventsConfig: StudioConfig["events"]): any {
                 status: "failed",
                 metadata: {
                   phoneNumber,
-                  reason: returned?.body?.message || returned?.body?.code || "invalid_otp",
+                  reason: reasonToMessage(returned?.body?.message || returned?.body?.code || "invalid_otp"),
                 },
                 request: {
                   headers: headersObj,

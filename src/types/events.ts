@@ -92,8 +92,8 @@ export const EVENT_TEMPLATES: Record<AuthEventType, (event: AuthEvent) => string
   "user.joined": (event) => {
     const name = event.metadata?.name || event.metadata?.email || "User";
     if (event.status === "failed") {
-      const reason = event.metadata?.reason || "unknown error";
-      return `${name} failed to join`;
+      const reason = event.metadata?.reason || "Unknown error";
+      return `${name} failed to join: ${reason}`;
     }
     return `${name} joined!`;
   },
@@ -104,48 +104,48 @@ export const EVENT_TEMPLATES: Record<AuthEventType, (event: AuthEvent) => string
   "user.logged_in": (event) => {
     const name = event.metadata?.name || event.metadata?.email || "User";
     if (event.status === "failed") {
-      const reason = event.metadata?.reason || "invalid credentials";
-      return `${name} failed to login`;
+      const reason = event.metadata?.reason || "Invalid email or password";
+      return `${name} failed to login: ${reason}`;
     }
     return `${name} logged in`;
   },
   "user.logged_out": (event) => {
     const name = event.metadata?.name || event.metadata?.email || "User";
     if (event.status === "failed") {
-      const reason = event.metadata?.reason || "invalid credentials";
-      return `${name} failed to logout`;
+      const reason = event.metadata?.reason || "Unknown error";
+      return `${name} failed to logout: ${reason}`;
     }
     return `${name} logged out`;
   },
   "user.password_changed": (event) => {
     const name = event.metadata?.name || event.metadata?.email || "User";
     if (event.status === "failed") {
-      const reason = event.metadata?.reason || "invalid credentials";
-      return `${name} failed to change password`;
+      const reason = event.metadata?.reason || "Unknown error";
+      return `${name} failed to change password: ${reason}`;
     }
     return `${name} changed password`;
   },
   "user.email_verified": (event) => {
     const name = event.metadata?.name || event.metadata?.email || "User";
     if (event.status === "failed") {
-      const reason = event.metadata?.reason || "invalid credentials";
-      return `${name} failed to verify email`;
+      const reason = event.metadata?.reason || "Unknown error";
+      return `${name} failed to verify email: ${reason}`;
     }
     return `${name} verified email`;
   },
   "user.banned": (event) => {
     const name = event.metadata?.name || event.metadata?.email || "User";
     if (event.status === "failed") {
-      const reason = event.metadata?.reason || "invalid credentials";
-      return `${name} failed to ban`;
+      const reason = event.metadata?.reason || "Unknown error";
+      return `${name} failed to ban: ${reason}`;
     }
     return `${name} was banned`;
   },
   "user.unbanned": (event) => {
     const name = event.metadata?.name || event.metadata?.email || "User";
     if (event.status === "failed") {
-      const reason = event.metadata?.reason || "invalid credentials";
-      return `${name} failed to unban`;
+      const reason = event.metadata?.reason || "Unknown error";
+      return `${name} failed to unban: ${reason}`;
     }
     return `${name} was unbanned`;
   },
@@ -156,32 +156,32 @@ export const EVENT_TEMPLATES: Record<AuthEventType, (event: AuthEvent) => string
   "user.delete_verification_requested": (event) => {
     const name = event.metadata?.name || event.metadata?.email || "User";
     if (event.status === "failed") {
-      const reason = event.metadata?.reason || "unknown error";
-      return `Failed to send delete verification for "${name}"`;
+      const reason = event.metadata?.reason || "Unknown error";
+      return `Failed to send delete verification for "${name}": ${reason}`;
     }
     return `Delete verification requested for ${name}`;
   },
   "organization.created": (event) => {
     const orgName = event.metadata?.organizationName || "Organization";
     if (event.status === "failed") {
-      const reason = event.metadata?.reason || "invalid credentials";
-      return `Failed to create organization "${orgName}"`;
+      const reason = event.metadata?.reason || "Unknown error";
+      return `Failed to create organization "${orgName}": ${reason}`;
     }
-    return `New organization "${orgName}" created by ${event.metadata?.name.split(" ")[0]}`;
+    return `New organization "${orgName}" created by ${event.metadata?.name?.split(" ")[0]}`;
   },
   "organization.deleted": (event) => {
     const orgName = event.metadata?.organizationName || "Organization";
     if (event.status === "failed") {
-      const reason = event.metadata?.reason || "invalid credentials";
-      return `Failed to delete organization "${orgName}"`;
+      const reason = event.metadata?.reason || "Unknown error";
+      return `Failed to delete organization "${orgName}": ${reason}`;
     }
     return `Organization "${orgName}" deleted`;
   },
   "organization.updated": (event) => {
     const orgName = event.metadata?.organizationName || "Organization";
     if (event.status === "failed") {
-      const reason = event.metadata?.reason || "invalid credentials";
-      return `Failed to update organization "${orgName}"`;
+      const reason = event.metadata?.reason || "Unknown error";
+      return `Failed to update organization "${orgName}": ${reason}`;
     }
     return `Organization "${orgName}" updated`;
   },
@@ -189,8 +189,8 @@ export const EVENT_TEMPLATES: Record<AuthEventType, (event: AuthEvent) => string
     const memberName = event.metadata?.addedByName || event.metadata?.addedByEmail || "Member";
     const orgName = event.metadata?.organizationName || "organization";
     if (event.status === "failed") {
-      const reason = event.metadata?.reason || "invalid credentials";
-      return `Failed to add member "${memberName}" to "${orgName}"`;
+      const reason = event.metadata?.reason || "Unknown error";
+      return `Failed to add member "${memberName}" to "${orgName}": ${reason}`;
     }
     return `${memberName} added to ${orgName}`;
   },
@@ -198,8 +198,8 @@ export const EVENT_TEMPLATES: Record<AuthEventType, (event: AuthEvent) => string
     const memberName = event.metadata?.removedByName || event.metadata?.removedByEmail || "Member";
     const orgName = event.metadata?.organizationName || "organization";
     if (event.status === "failed") {
-      const reason = event.metadata?.reason || "invalid credentials";
-      return `Failed to remove member "${memberName}" from "${orgName}"`;
+      const reason = event.metadata?.reason || "Unknown error";
+      return `Failed to remove member "${memberName}" from "${orgName}": ${reason}`;
     }
     return `${memberName} removed from ${orgName}`;
   },
@@ -208,68 +208,69 @@ export const EVENT_TEMPLATES: Record<AuthEventType, (event: AuthEvent) => string
     const oldRole = event.metadata?.oldRole || "member";
     const newRole = event.metadata?.newRole || "member";
     if (event.status === "failed") {
-      const reason = event.metadata?.reason || "invalid credentials";
-      return `Failed to change role of "${memberName}" from "${oldRole}" to "${newRole}"`;
+      const reason = event.metadata?.reason || "Unknown error";
+      return `Failed to change role of "${memberName}" from "${oldRole}" to "${newRole}": ${reason}`;
     }
     return `${memberName} role changed from ${oldRole} to ${newRole}`;
   },
   "session.created": (event) => {
     const name = event.metadata?.name || event.metadata?.email || "User";
     if (event.status === "failed") {
-      const reason = event.metadata?.reason || "invalid credentials";
-      return `Failed to create session for "${name}"`;
+      const reason = event.metadata?.reason || "Unknown error";
+      return `Failed to create session for "${name}": ${reason}`;
     }
     return `New session created for ${name}`;
   },
   "login.failed": (event) => {
     const email = event.metadata?.email || "User";
-    return `Failed login attempt for ${email}`;
+    const reason = event.metadata?.reason || "Invalid email or password";
+    return `Failed login attempt for ${email}: ${reason}`;
   },
   "password.reset_requested": (event) => {
     const email = event.metadata?.email || "User";
     if (event.status === "failed") {
-      const reason = event.metadata?.reason || "invalid credentials";
-      return `Failed to request password reset for "${email}"`;
+      const reason = event.metadata?.reason || "Unknown error";
+      return `Failed to request password reset for "${email}": ${reason}`;
     }
     return `Password reset requested for ${email}`;
   },
   "password.reset_completed": (event) => {
     const name = event.metadata?.name || event.metadata?.email || "Someone";
     if (event.status === "failed") {
-      const reason = event.metadata?.reason || "invalid credentials";
-      return `Failed to complete password reset for "${name}"`;
+      const reason = event.metadata?.reason || "Unknown error";
+      return `Failed to complete password reset for "${name}": ${reason}`;
     }
     return `${name} reset their password`;
   },
   "password.reset_requested_otp": (event) => {
     const email = event.metadata?.email || "User";
     if (event.status === "failed") {
-      const reason = event.metadata?.reason || "unknown error";
-      return `Failed to request password reset OTP for "${email}"`;
+      const reason = event.metadata?.reason || "Unknown error";
+      return `Failed to request password reset OTP for "${email}": ${reason}`;
     }
     return `Password reset OTP requested for ${email}`;
   },
   "password.reset_completed_otp": (event) => {
     const name = event.metadata?.name || event.metadata?.email || "Someone";
     if (event.status === "failed") {
-      const reason = event.metadata?.reason || "invalid credentials";
-      return `Failed to complete password reset via email OTP for "${name}"`;
+      const reason = event.metadata?.reason || "Unknown error";
+      return `Failed to complete password reset via email OTP for "${name}": ${reason}`;
     }
     return `${name} reset their password via email OTP`;
   },
   "oauth.linked": (event) => {
     const provider = event.metadata?.provider || "OAuth";
     if (event.status === "failed") {
-      const reason = event.metadata?.reason || "invalid credentials";
-      return `Failed to link OAuth account "${provider}"`;
+      const reason = event.metadata?.reason || "Unknown error";
+      return `Failed to link OAuth account "${provider}": ${reason}`;
     }
     return `OAuth account linked: ${provider}`;
   },
   "oauth.unlinked": (event) => {
     const provider = event.metadata?.provider || "OAuth";
     if (event.status === "failed") {
-      const reason = event.metadata?.reason || "invalid credentials";
-      return `Failed to unlink OAuth account "${provider}"`;
+      const reason = event.metadata?.reason || "Unknown error";
+      return `Failed to unlink OAuth account "${provider}": ${reason}`;
     }
     return `OAuth account unlinked: ${provider}`;
   },
@@ -277,8 +278,8 @@ export const EVENT_TEMPLATES: Record<AuthEventType, (event: AuthEvent) => string
     const provider = event.metadata?.provider || event.metadata?.providerId || "OAuth";
     const name = event.metadata?.name || event.metadata?.userEmail || "User";
     if (event.status === "failed") {
-      const reason = event.metadata?.reason || "invalid credentials";
-      return `Failed to sign in via ${provider} for "${name}"`;
+      const reason = event.metadata?.reason || "Unknown error";
+      return `Failed to sign in via ${provider} for "${name}": ${reason}`;
     }
     return `${name} signed in via ${provider}`;
   },
@@ -286,8 +287,8 @@ export const EVENT_TEMPLATES: Record<AuthEventType, (event: AuthEvent) => string
     const teamName = event.metadata?.teamName || "Team";
     const orgName = event.metadata?.organizationName || "organization";
     if (event.status === "failed") {
-      const reason = event.metadata?.reason || "unknown error";
-      return `Failed to create team "${teamName}" in "${orgName}"`;
+      const reason = event.metadata?.reason || "Unknown error";
+      return `Failed to create team "${teamName}" in "${orgName}": ${reason}`;
     }
     return `Team "${teamName}" created in ${orgName}`;
   },
@@ -295,8 +296,8 @@ export const EVENT_TEMPLATES: Record<AuthEventType, (event: AuthEvent) => string
     const teamName = event.metadata?.teamName || "Team";
     const orgName = event.metadata?.organizationName || "organization";
     if (event.status === "failed") {
-      const reason = event.metadata?.reason || "unknown error";
-      return `Failed to update team "${teamName}" in "${orgName}"`;
+      const reason = event.metadata?.reason || "Unknown error";
+      return `Failed to update team "${teamName}" in "${orgName}": ${reason}`;
     }
     return `Team "${teamName}" updated in ${orgName}`;
   },
@@ -304,8 +305,8 @@ export const EVENT_TEMPLATES: Record<AuthEventType, (event: AuthEvent) => string
     const teamName = event.metadata?.teamName || "Team";
     const orgName = event.metadata?.organizationName || "organization";
     if (event.status === "failed") {
-      const reason = event.metadata?.reason || "unknown error";
-      return `Failed to delete team "${teamName}" from "${orgName}"`;
+      const reason = event.metadata?.reason || "Unknown error";
+      return `Failed to delete team "${teamName}" from "${orgName}": ${reason}`;
     }
     return `Team "${teamName}" deleted from ${orgName}`;
   },
@@ -313,8 +314,8 @@ export const EVENT_TEMPLATES: Record<AuthEventType, (event: AuthEvent) => string
     const memberName = event.metadata?.addedName || event.metadata?.addedEmail || "Member";
     const teamName = event.metadata?.teamName || "team";
     if (event.status === "failed") {
-      const reason = event.metadata?.reason || "unknown error";
-      return `Failed to add member "${memberName}" to team "${teamName}"`;
+      const reason = event.metadata?.reason || "Unknown error";
+      return `Failed to add member "${memberName}" to team "${teamName}": ${reason}`;
     }
     return `${memberName} added to team "${teamName}"`;
   },
@@ -322,8 +323,8 @@ export const EVENT_TEMPLATES: Record<AuthEventType, (event: AuthEvent) => string
     const memberName = event.metadata?.removedName || event.metadata?.removedEmail || "Member";
     const teamName = event.metadata?.teamName || "team";
     if (event.status === "failed") {
-      const reason = event.metadata?.reason || "unknown error";
-      return `Failed to remove member "${memberName}" from team "${teamName}"`;
+      const reason = event.metadata?.reason || "Unknown error";
+      return `Failed to remove member "${memberName}" from team "${teamName}": ${reason}`;
     }
     return `${memberName} removed from team "${teamName}"`;
   },
@@ -332,8 +333,8 @@ export const EVENT_TEMPLATES: Record<AuthEventType, (event: AuthEvent) => string
     const orgName = event.metadata?.organizationName || "organization";
     const role = event.metadata?.role || "member";
     if (event.status === "failed") {
-      const reason = event.metadata?.reason || "unknown error";
-      return `Failed to create invitation for "${email}" to join "${orgName}"`;
+      const reason = event.metadata?.reason || "Unknown error";
+      return `Failed to create invitation for "${email}" to join "${orgName}": ${reason}`;
     }
     return `Invitation sent to ${email} to join ${orgName} as ${role}`;
   },
@@ -341,8 +342,8 @@ export const EVENT_TEMPLATES: Record<AuthEventType, (event: AuthEvent) => string
     const email = event.metadata?.email || "user";
     const orgName = event.metadata?.organizationName || "organization";
     if (event.status === "failed") {
-      const reason = event.metadata?.reason || "unknown error";
-      return `Failed to accept invitation for "${email}" to join "${orgName}"`;
+      const reason = event.metadata?.reason || "Unknown error";
+      return `Failed to accept invitation for "${email}" to join "${orgName}": ${reason}`;
     }
     return `${email} accepted invitation to join ${orgName}`;
   },
@@ -350,8 +351,8 @@ export const EVENT_TEMPLATES: Record<AuthEventType, (event: AuthEvent) => string
     const email = event.metadata?.email || "user";
     const orgName = event.metadata?.organizationName || "organization";
     if (event.status === "failed") {
-      const reason = event.metadata?.reason || "unknown error";
-      return `Failed to reject invitation for "${email}" to join "${orgName}"`;
+      const reason = event.metadata?.reason || "Unknown error";
+      return `Failed to reject invitation for "${email}" to join "${orgName}": ${reason}`;
     }
     return `${email} rejected invitation to join ${orgName}`;
   },
@@ -359,8 +360,8 @@ export const EVENT_TEMPLATES: Record<AuthEventType, (event: AuthEvent) => string
     const email = event.metadata?.email || "user";
     const orgName = event.metadata?.organizationName || "organization";
     if (event.status === "failed") {
-      const reason = event.metadata?.reason || "unknown error";
-      return `Failed to cancel invitation for "${email}" to join "${orgName}"`;
+      const reason = event.metadata?.reason || "Unknown error";
+      return `Failed to cancel invitation for "${email}" to join "${orgName}": ${reason}`;
     }
     return `Invitation cancelled for ${email} to join ${orgName}`;
   },
@@ -368,7 +369,8 @@ export const EVENT_TEMPLATES: Record<AuthEventType, (event: AuthEvent) => string
     const phoneNumber = event.metadata?.phoneNumber || "phone number";
     const name = event.metadata?.name || event.metadata?.email || event.userId || "User";
     if (event.status === "failed") {
-      return `Failed to send OTP to ${phoneNumber}`;
+      const reason = event.metadata?.reason || "Unknown error";
+      return `Failed to send OTP to ${phoneNumber}: ${reason}`;
     }
     return `Phone number OTP requested for ${phoneNumber}`;
   },
@@ -376,7 +378,8 @@ export const EVENT_TEMPLATES: Record<AuthEventType, (event: AuthEvent) => string
     const phoneNumber = event.metadata?.phoneNumber || "phone number";
     const name = event.metadata?.name || event.metadata?.email || event.userId || "User";
     if (event.status === "failed") {
-      return `Phone number verification failed for ${phoneNumber}`;
+      const reason = event.metadata?.reason || "Unknown error";
+      return `Phone number verification failed for ${phoneNumber}: ${reason}`;
     }
     if (event.status === "success" && !name) {
       return `Phone number verification succeeded for ${phoneNumber}`;
