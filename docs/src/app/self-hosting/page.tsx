@@ -876,6 +876,55 @@ ADMIN_EMAIL_3=admin3@example.com`}
                   </p>
                 </div>
                 <div className="border-b border-white/10 pb-3">
+                  <code className="text-white/90 text-sm">tools.exclude</code>
+                  <span className="text-white/50 text-xs ml-2">(optional)</span>
+                  <p className="text-sm font-light tracking-tight text-white/50 mt-1">
+                    Array of tool ids to hide from the Tools page. By default all tools are shown.
+                    Useful in production to hide testing or sensitive tools (e.g. OAuth tests, health
+                    check). The option is type-safe: only valid tool ids are accepted.
+                  </p>
+                  <div className="mt-3 p-3 bg-white/5 border border-white/10 rounded-none">
+                    <p className="text-xs font-light tracking-tight text-white/60 mb-2">
+                      <strong className="font-bold text-white/80">Available tool ids:</strong>{" "}
+                      <code className="text-white/70 bg-white/10 px-1 py-0.5">test-oauth</code>,{" "}
+                      <code className="text-white/70 bg-white/10 px-1 py-0.5">hash-password</code>,{" "}
+                      <code className="text-white/70 bg-white/10 px-1 py-0.5">run-migration</code>,{" "}
+                      <code className="text-white/70 bg-white/10 px-1 py-0.5">test-db</code>,{" "}
+                      <code className="text-white/70 bg-white/10 px-1 py-0.5">validate-config</code>,{" "}
+                      <code className="text-white/70 bg-white/10 px-1 py-0.5">health-check</code>,{" "}
+                      <code className="text-white/70 bg-white/10 px-1 py-0.5">export-data</code>,{" "}
+                      <code className="text-white/70 bg-white/10 px-1 py-0.5">jwt-decoder</code>,{" "}
+                      <code className="text-white/70 bg-white/10 px-1 py-0.5">token-generator</code>,{" "}
+                      <code className="text-white/70 bg-white/10 px-1 py-0.5">plugin-generator</code>,{" "}
+                      <code className="text-white/70 bg-white/10 px-1 py-0.5">uuid-generator</code>,{" "}
+                      <code className="text-white/70 bg-white/10 px-1 py-0.5">password-strength</code>,{" "}
+                      <code className="text-white/70 bg-white/10 px-1 py-0.5">oauth-credentials</code>,{" "}
+                      <code className="text-white/70 bg-white/10 px-1 py-0.5">secret-generator</code>
+                    </p>
+                    <CodeHighlighter
+                      code={`// studio.config.ts — hide testing/sensitive tools in production
+import type { StudioConfig } from "better-auth-studio";
+import { auth } from "./lib/auth";
+
+const config: StudioConfig = {
+  auth,
+  basePath: "/api/studio",
+  tools: {
+    exclude: [
+      "test-oauth",        // OAuth provider tests
+      "health-check",      // System health check
+      "oauth-credentials", // View OAuth credentials
+      // add any other tool ids from the list above
+    ],
+  },
+};
+
+export default config;`}
+                      language="typescript"
+                    />
+                  </div>
+                </div>
+                <div className="border-b border-white/10 pb-3">
                   <code className="text-white/90 text-sm">ipAddress</code>
                   <span className="text-white/50 text-xs ml-2">(optional)</span>
                   <p className="text-sm font-light tracking-tight text-white/50 mt-1">
