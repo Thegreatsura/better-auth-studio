@@ -460,38 +460,15 @@ export default function UserDetails() {
     } catch (_error) {}
   }, [userId]);
 
-  const fetchUserEventCount = useCallback(
-    async (retryAttempt = 0): Promise<void> => {
-      if (!userId) return;
-      const maxRetries = 3;
-      try {
-        const url = buildApiUrl(`/api/events/count?userId=${encodeURIComponent(userId)}`);
-        const response = await fetch(url);
-        if (response.ok) {
-          const data = await response.json();
-          if (data.retryable && retryAttempt < maxRetries) {
-            await new Promise((r) => setTimeout(r, 800 * (retryAttempt + 1)));
-            return fetchUserEventCount(retryAttempt + 1);
-          }
-          if (typeof data.total === "number") {
-            setUserEventsTotalCount(data.total);
-          }
-          return;
-        }
-        const data = await response.json().catch(() => ({}));
-        if ((response.status === 503 || data.retryable) && retryAttempt < maxRetries) {
-          await new Promise((r) => setTimeout(r, 800 * (retryAttempt + 1)));
-          return fetchUserEventCount(retryAttempt + 1);
-        }
-      } catch {
-        if (retryAttempt < maxRetries) {
-          await new Promise((r) => setTimeout(r, 800 * (retryAttempt + 1)));
-          return fetchUserEventCount(retryAttempt + 1);
-        }
-      }
-    },
-    [userId],
-  );
+  const applyEventResponseData = useCallback((data: any) => {
+    const list = Array.isArray(data.events) ? data.events : [];
+    setUserEvents(list);
+    setUserEventsNextOffset(list.length);
+    setUserEventsHasMore(Boolean(data.hasMore));
+    if (typeof data.total === "number") {
+      setUserEventsTotalCount(data.total);
+    }
+  }, []);
 
   const fetchUserEvents = useCallback(async () => {
     if (!userId) return;
@@ -499,114 +476,89 @@ export default function UserDetails() {
     const url = buildApiUrl(
       `/api/events?userId=${encodeURIComponent(userId)}&limit=50&sort=desc&offset=0`,
     );
+    const maxRetries = 8;
     try {
-      let response = await fetch(url);
-      if (response.ok) {
-        const data = await response.json();
-        if (data.retryable) {
-          await new Promise((r) => setTimeout(r, 800));
-          response = await fetch(url);
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+          const response = await fetch(url);
           if (response.ok) {
-            const retryData = await response.json();
-            const list = Array.isArray(retryData.events) ? retryData.events : [];
-            setUserEvents(list);
-            setUserEventsNextOffset(list.length);
-            setUserEventsHasMore(Boolean(retryData.hasMore));
-            fetchUserEventCount();
+            const data = await response.json();
+            if (data.retryable && attempt < maxRetries) {
+              await new Promise((r) => setTimeout(r, Math.min(1000 * (attempt + 1), 4000)));
+              continue;
+            }
+            applyEventResponseData(data);
             return;
           }
-        } else {
-          const list = Array.isArray(data.events) ? data.events : [];
-          setUserEvents(list);
-          setUserEventsNextOffset(list.length);
-          setUserEventsHasMore(Boolean(data.hasMore));
-          fetchUserEventCount();
+          const errData = await response.json().catch(() => ({}));
+          const shouldRetry = response.status === 503 || errData.retryable;
+          if (shouldRetry && attempt < maxRetries) {
+            await new Promise((r) => setTimeout(r, Math.min(1000 * (attempt + 1), 4000)));
+            continue;
+          }
+          setUserEvents([]);
+          setUserEventsHasMore(false);
+          return;
+        } catch {
+          if (attempt < maxRetries) {
+            await new Promise((r) => setTimeout(r, Math.min(1000 * (attempt + 1), 4000)));
+            continue;
+          }
+          setUserEvents([]);
+          setUserEventsHasMore(false);
           return;
         }
       }
-      const data = await response.json().catch(() => ({}));
-      const shouldRetry = response.status === 503 || data.retryable;
-      if (shouldRetry) {
-        const statusRes = await fetch(buildApiUrl("/api/events/status")).catch(() => null);
-        const statusData = statusRes?.ok ? await statusRes.json().catch(() => ({})) : {};
-        const eventsEnabledOrConfigured =
-          statusData?.enabled === true || statusData?.configured === true;
-        if (eventsEnabledOrConfigured) {
-          await new Promise((r) => setTimeout(r, 800));
-          response = await fetch(url);
-        }
-      }
-      if (response.ok) {
-        const retryData = await response.json();
-        if (retryData.retryable) {
-          await new Promise((r) => setTimeout(r, 800));
-          const retryResponse = await fetch(url);
-          if (retryResponse.ok) {
-            const finalData = await retryResponse.json();
-            const list = Array.isArray(finalData.events) ? finalData.events : [];
-            setUserEvents(list);
-            setUserEventsNextOffset(list.length);
-            setUserEventsHasMore(Boolean(finalData.hasMore));
-            fetchUserEventCount();
-            return;
-          }
-        }
-        const list = Array.isArray(retryData.events) ? retryData.events : [];
-        setUserEvents(list);
-        setUserEventsNextOffset(list.length);
-        setUserEventsHasMore(Boolean(retryData.hasMore));
-        fetchUserEventCount();
-      } else {
-        setUserEvents([]);
-        setUserEventsHasMore(false);
-      }
-    } catch (_error) {
-      setUserEvents([]);
-      setUserEventsHasMore(false);
     } finally {
       setUserEventsLoading(false);
     }
-  }, [userId, fetchUserEventCount]);
+  }, [userId, applyEventResponseData]);
 
   const loadMoreUserEvents = useCallback(async () => {
     if (!userId || userEventsLoadingMore || !userEventsHasMore) return;
     setUserEventsLoadingMore(true);
     const offset = userEventsNextOffset;
+    const url = buildApiUrl(
+      `/api/events?userId=${encodeURIComponent(userId)}&limit=50&sort=desc&offset=${offset}`,
+    );
+    const maxRetries = 8;
     try {
-      const url = buildApiUrl(
-        `/api/events?userId=${encodeURIComponent(userId)}&limit=50&sort=desc&offset=${offset}`,
-      );
-      let response = await fetch(url);
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        if (response.status === 503 || errData.retryable) {
-          await new Promise((r) => setTimeout(r, 800));
-          response = await fetch(url);
-          if (!response.ok) {
-            setUserEventsLoadingMore(false);
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+          const response = await fetch(url);
+          if (response.ok) {
+            const data = await response.json();
+            if (data.retryable && attempt < maxRetries) {
+              await new Promise((r) => setTimeout(r, Math.min(1000 * (attempt + 1), 4000)));
+              continue;
+            }
+            const list = Array.isArray(data.events) ? data.events : [];
+            if (typeof data.total === "number") {
+              setUserEventsTotalCount(data.total);
+            }
+            setUserEvents((prev) => {
+              const existingIds = new Set(prev.map((e) => e.id));
+              const appended = list.filter((e: AuthEvent) => !existingIds.has(e.id));
+              return appended.length > 0 ? [...prev, ...appended] : prev;
+            });
+            setUserEventsNextOffset(offset + list.length);
+            setUserEventsHasMore(Boolean(data.hasMore));
             return;
           }
-        } else {
-          setUserEventsLoadingMore(false);
+          const errData = await response.json().catch(() => ({}));
+          if ((response.status === 503 || errData.retryable) && attempt < maxRetries) {
+            await new Promise((r) => setTimeout(r, Math.min(1000 * (attempt + 1), 4000)));
+            continue;
+          }
+          return;
+        } catch {
+          if (attempt < maxRetries) {
+            await new Promise((r) => setTimeout(r, Math.min(1000 * (attempt + 1), 4000)));
+            continue;
+          }
           return;
         }
       }
-      let data = await response.json();
-      if (data.retryable) {
-        await new Promise((r) => setTimeout(r, 800));
-        const retryResp = await fetch(url);
-        if (retryResp.ok) {
-          data = await retryResp.json();
-        }
-      }
-      const list = Array.isArray(data.events) ? data.events : [];
-      setUserEvents((prev) => {
-        const existingIds = new Set(prev.map((e) => e.id));
-        const appended = list.filter((e: AuthEvent) => !existingIds.has(e.id));
-        return appended.length > 0 ? [...prev, ...appended] : prev;
-      });
-      setUserEventsNextOffset(offset + list.length);
-      setUserEventsHasMore(Boolean(data.hasMore));
     } catch {
       // Silently fail
     } finally {

@@ -330,82 +330,86 @@ export default function Events() {
 
   const eventStats = serverEventStats ?? eventStatsFromLoaded;
 
-  const fetchEventCount = useCallback(async (retryAttempt = 0): Promise<void> => {
-    const maxRetries = 3;
-    try {
-      const apiPath = buildApiUrl("/api/events/count");
-      const response = await fetch(apiPath);
-      if (response.ok) {
-        const data = await response.json();
-        if (data.retryable && retryAttempt < maxRetries) {
-          await new Promise((r) => setTimeout(r, 800 * (retryAttempt + 1)));
-          return fetchEventCount(retryAttempt + 1);
+  const fetchEventCount = useCallback(async (): Promise<void> => {
+    const maxRetries = 8;
+    const apiPath = buildApiUrl("/api/events/count");
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        const response = await fetch(apiPath);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.retryable && attempt < maxRetries) {
+            await new Promise((r) => setTimeout(r, Math.min(1000 * (attempt + 1), 4000)));
+            continue;
+          }
+          setTotalEventCount(typeof data.total === "number" ? data.total : null);
+          if (
+            typeof data.success === "number" &&
+            typeof data.failed === "number" &&
+            typeof data.warning === "number" &&
+            typeof data.info === "number"
+          ) {
+            setServerEventStats({
+              success: data.success,
+              failed: data.failed,
+              warning: data.warning,
+              info: data.info,
+            });
+          } else {
+            setServerEventStats(null);
+          }
+          return;
         }
-        setTotalEventCount(typeof data.total === "number" ? data.total : null);
-        if (
-          typeof data.success === "number" &&
-          typeof data.failed === "number" &&
-          typeof data.warning === "number" &&
-          typeof data.info === "number"
-        ) {
-          setServerEventStats({
-            success: data.success,
-            failed: data.failed,
-            warning: data.warning,
-            info: data.info,
-          });
-        } else {
-          setServerEventStats(null);
+        const errData = await response.json().catch(() => ({}));
+        if ((response.status === 503 || errData.retryable) && attempt < maxRetries) {
+          await new Promise((r) => setTimeout(r, Math.min(1000 * (attempt + 1), 4000)));
+          continue;
         }
+        setTotalEventCount(null);
+        setServerEventStats(null);
         return;
+      } catch {
+        if (attempt >= maxRetries) {
+          setTotalEventCount(null);
+          setServerEventStats(null);
+          return;
+        }
+        await new Promise((r) => setTimeout(r, Math.min(1000 * (attempt + 1), 4000)));
       }
-      const errData = await response.json().catch(() => ({}));
-      if ((response.status === 503 || errData.retryable) && retryAttempt < maxRetries) {
-        await new Promise((r) => setTimeout(r, 800 * (retryAttempt + 1)));
-        return fetchEventCount(retryAttempt + 1);
-      }
-      setTotalEventCount(null);
-      setServerEventStats(null);
-    } catch {
-      if (retryAttempt < maxRetries) {
-        await new Promise((r) => setTimeout(r, 800 * (retryAttempt + 1)));
-        return fetchEventCount(retryAttempt + 1);
-      }
-      setTotalEventCount(null);
-      setServerEventStats(null);
     }
   }, []);
 
-  const fetchAllEventsForActivity = useCallback(async (retryAttempt = 0): Promise<void> => {
-    const maxRetries = 3;
-    try {
-      const params = new URLSearchParams({
-        limit: "10000",
-        sort: "desc",
-        offset: "0",
-      });
-      const apiPath = buildApiUrl("/api/events");
-      const response = await fetch(`${apiPath}?${params.toString()}`);
-      if (!response.ok) {
+  const fetchAllEventsForActivity = useCallback(async (): Promise<void> => {
+    const maxRetries = 8;
+    const params = new URLSearchParams({
+      limit: "10000",
+      sort: "desc",
+      offset: "0",
+    });
+    const fetchUrl = `${buildApiUrl("/api/events")}?${params.toString()}`;
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        const response = await fetch(fetchUrl);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.retryable && attempt < maxRetries) {
+            await new Promise((r) => setTimeout(r, Math.min(1000 * (attempt + 1), 4000)));
+            continue;
+          }
+          if (data.events && Array.isArray(data.events)) {
+            setAllEventsForActivity(data.events);
+          }
+          return;
+        }
         const errData = await response.json().catch(() => ({}));
-        if ((response.status === 503 || errData.retryable) && retryAttempt < maxRetries) {
-          await new Promise((r) => setTimeout(r, 800 * (retryAttempt + 1)));
-          return fetchAllEventsForActivity(retryAttempt + 1);
+        if ((response.status === 503 || errData.retryable) && attempt < maxRetries) {
+          await new Promise((r) => setTimeout(r, Math.min(1000 * (attempt + 1), 4000)));
+          continue;
         }
         return;
-      }
-      const data = await response.json();
-      if (data.retryable && retryAttempt < maxRetries) {
-        await new Promise((r) => setTimeout(r, 800 * (retryAttempt + 1)));
-        return fetchAllEventsForActivity(retryAttempt + 1);
-      }
-      if (data.events && Array.isArray(data.events)) {
-        setAllEventsForActivity(data.events);
-      }
-    } catch {
-      if (retryAttempt < maxRetries) {
-        await new Promise((r) => setTimeout(r, 800 * (retryAttempt + 1)));
-        return fetchAllEventsForActivity(retryAttempt + 1);
+      } catch {
+        if (attempt >= maxRetries) return;
+        await new Promise((r) => setTimeout(r, Math.min(1000 * (attempt + 1), 4000)));
       }
     }
   }, []);
@@ -423,33 +427,43 @@ export default function Events() {
         });
 
         const apiPath = buildApiUrl("/api/events");
-        let response = await fetch(`${apiPath}?${params.toString()}`);
+        const fetchUrl = `${apiPath}?${params.toString()}`;
+        let data: any = null;
 
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          const shouldRetry = (response.status === 503 || errorData.retryable) && isInitial;
-          if (shouldRetry) {
-            const statusRes = await fetch(buildApiUrl("/api/events/status")).catch(() => null);
-            const statusData = statusRes?.ok ? await statusRes.json().catch(() => ({})) : {};
-            const eventsEnabledOrConfigured =
-              statusData?.enabled === true || statusData?.configured === true;
-            if (eventsEnabledOrConfigured) {
-              await new Promise((r) => setTimeout(r, 800));
-              response = await fetch(`${apiPath}?${params.toString()}`);
+        if (isInitial) {
+          const maxRetries = 8;
+          for (let attempt = 0; attempt <= maxRetries; attempt++) {
+            try {
+              const response = await fetch(fetchUrl);
+              if (response.ok) {
+                data = await response.json();
+                if (data.retryable && attempt < maxRetries) {
+                  await new Promise((r) => setTimeout(r, Math.min(1000 * (attempt + 1), 4000)));
+                  continue;
+                }
+                break;
+              }
+              const errData = await response.json().catch(() => ({}));
+              if ((response.status === 503 || errData.retryable) && attempt < maxRetries) {
+                await new Promise((r) => setTimeout(r, Math.min(1000 * (attempt + 1), 4000)));
+                continue;
+              }
+              throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            } catch (retryErr) {
+              if (attempt >= maxRetries) throw retryErr;
+              await new Promise((r) => setTimeout(r, Math.min(1000 * (attempt + 1), 4000)));
             }
           }
+        } else {
+          const response = await fetch(fetchUrl);
           if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
           }
+          data = await response.json();
         }
 
-        let data = await response.json();
-        if (data.retryable && isInitial) {
-          await new Promise((r) => setTimeout(r, 800));
-          const retryResp = await fetch(`${apiPath}?${params.toString()}`);
-          if (retryResp.ok) {
-            data = await retryResp.json();
-          }
+        if (!data) {
+          throw new Error("No data received");
         }
         setIsConnected(true);
 
@@ -457,9 +471,13 @@ export default function Events() {
           const list = data.events;
           const hasMoreFromApi = Boolean(data.hasMore);
 
+          if (typeof data.total === "number") {
+            setTotalEventCount(data.total);
+          }
+
           if (list.length === 0 && isInitial) {
             setEvents([]);
-            setTotalEventCount(0);
+            if (typeof data.total !== "number") setTotalEventCount(0);
             setNextOffset(0);
             setHasMore(false);
             setLoading(false);

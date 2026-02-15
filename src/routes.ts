@@ -2067,10 +2067,33 @@ export function createRoutes(
             return event;
           });
 
+          // Fetch total count for this query (unfiltered by pagination)
+          let total: number | null = null;
+          try {
+            if (userId || type) {
+              const countResult = await eventProvider.query({
+                limit: 100000,
+                sort: "desc",
+                userId,
+                type,
+                since,
+              });
+              total = countResult.events?.length ?? null;
+            } else if (eventProvider.count) {
+              total = await eventProvider.count();
+            } else if (eventProvider.getStats) {
+              const stats = await eventProvider.getStats();
+              total = stats.total;
+            }
+          } catch {
+            // Count is best-effort, don't fail the main request
+          }
+
           return res.json({
             events: transformedEvents,
             hasMore: result.hasMore,
             nextCursor: result.nextCursor,
+            total,
           });
         } catch (providerError: any) {
           const isSchemaError =
@@ -2202,10 +2225,29 @@ export function createRoutes(
         };
       });
 
+      // Fetch total count for the adapter path
+      let total: number | null = null;
+      try {
+        if (adapter.findMany) {
+          const countWhere: any[] = [];
+          if (type) countWhere.push({ field: "type", value: type });
+          if (userId) countWhere.push({ field: "userId", value: userId });
+          const allForCount = await adapter.findMany({
+            model: "auth_events",
+            where: countWhere.length > 0 ? countWhere : undefined,
+            limit: 100000,
+          });
+          total = Array.isArray(allForCount) ? allForCount.length : null;
+        }
+      } catch {
+        // Count is best-effort
+      }
+
       res.json({
         events: transformedEvents,
         hasMore,
         nextCursor: hasMore ? transformedEvents[transformedEvents.length - 1].id : null,
+        total,
       });
     } catch (error: any) {
       const msg = error instanceof Error ? error.message : String(error);

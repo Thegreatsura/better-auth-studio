@@ -1823,10 +1823,35 @@ export function createRoutes(authConfig, configPath, geoDbPath, preloadedAdapter
                         }
                         return event;
                     });
+                    // Fetch total count for this query (unfiltered by pagination)
+                    let total = null;
+                    try {
+                        if (userId || type) {
+                            const countResult = await eventProvider.query({
+                                limit: 100000,
+                                sort: "desc",
+                                userId,
+                                type,
+                                since,
+                            });
+                            total = countResult.events?.length ?? null;
+                        }
+                        else if (eventProvider.count) {
+                            total = await eventProvider.count();
+                        }
+                        else if (eventProvider.getStats) {
+                            const stats = await eventProvider.getStats();
+                            total = stats.total;
+                        }
+                    }
+                    catch {
+                        // Count is best-effort, don't fail the main request
+                    }
                     return res.json({
                         events: transformedEvents,
                         hasMore: result.hasMore,
                         nextCursor: result.nextCursor,
+                        total,
                     });
                 }
                 catch (providerError) {
@@ -1943,10 +1968,31 @@ export function createRoutes(authConfig, configPath, geoDbPath, preloadedAdapter
                     },
                 };
             });
+            // Fetch total count for the adapter path
+            let total = null;
+            try {
+                if (adapter.findMany) {
+                    const countWhere = [];
+                    if (type)
+                        countWhere.push({ field: "type", value: type });
+                    if (userId)
+                        countWhere.push({ field: "userId", value: userId });
+                    const allForCount = await adapter.findMany({
+                        model: "auth_events",
+                        where: countWhere.length > 0 ? countWhere : undefined,
+                        limit: 100000,
+                    });
+                    total = Array.isArray(allForCount) ? allForCount.length : null;
+                }
+            }
+            catch {
+                // Count is best-effort
+            }
             res.json({
                 events: transformedEvents,
                 hasMore,
                 nextCursor: hasMore ? transformedEvents[transformedEvents.length - 1].id : null,
+                total,
             });
         }
         catch (error) {
@@ -2053,9 +2099,7 @@ export function createRoutes(authConfig, configPath, geoDbPath, preloadedAdapter
                     }
                     catch (e) {
                         if (isSchemaError(e)) {
-                            return res
-                                .status(503)
-                                .json({
+                            return res.status(503).json({
                                 error: "Events not ready",
                                 retryable: true,
                                 details: e?.message || String(e),
@@ -2078,9 +2122,7 @@ export function createRoutes(authConfig, configPath, geoDbPath, preloadedAdapter
                     }
                     catch (e) {
                         if (isSchemaError(e)) {
-                            return res
-                                .status(503)
-                                .json({
+                            return res.status(503).json({
                                 error: "Events not ready",
                                 retryable: true,
                                 details: e?.message || String(e),
