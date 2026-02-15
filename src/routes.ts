@@ -2304,7 +2304,11 @@ export function createRoutes(
       if (userIdFilter) {
         if (eventProvider?.query) {
           try {
-            const result = await eventProvider.query({ limit: 100000, sort: "desc", userId: userIdFilter });
+            const result = await eventProvider.query({
+              limit: 100000,
+              sort: "desc",
+              userId: userIdFilter,
+            });
             const events = result.events ?? [];
             const total = events.length;
             const failed = events.filter(
@@ -2319,7 +2323,13 @@ export function createRoutes(
             return res.json({ total, success, failed, warning, info });
           } catch (e: any) {
             if (isSchemaError(e)) {
-              return res.status(503).json({ error: "Events not ready", retryable: true, details: e?.message || String(e) });
+              return res
+                .status(503)
+                .json({
+                  error: "Events not ready",
+                  retryable: true,
+                  details: e?.message || String(e),
+                });
             }
             throw e;
           }
@@ -2337,7 +2347,13 @@ export function createRoutes(
             return res.json({ total, success: null, failed: null, warning: null, info: null });
           } catch (e: any) {
             if (isSchemaError(e)) {
-              return res.status(503).json({ error: "Events not ready", retryable: true, details: e?.message || String(e) });
+              return res
+                .status(503)
+                .json({
+                  error: "Events not ready",
+                  retryable: true,
+                  details: e?.message || String(e),
+                });
             }
             throw e;
           }

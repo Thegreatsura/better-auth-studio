@@ -479,7 +479,9 @@ export default function UserDetails() {
   const fetchUserEvents = useCallback(async () => {
     if (!userId) return;
     setUserEventsLoading(true);
-    const url = buildApiUrl(`/api/events?userId=${encodeURIComponent(userId)}&limit=50&sort=desc&offset=0`);
+    const url = buildApiUrl(
+      `/api/events?userId=${encodeURIComponent(userId)}&limit=50&sort=desc&offset=0`,
+    );
     try {
       let response = await fetch(url);
       if (response.ok) {
@@ -527,7 +529,9 @@ export default function UserDetails() {
     setUserEventsLoadingMore(true);
     const offset = userEventsNextOffset;
     try {
-      const url = buildApiUrl(`/api/events?userId=${encodeURIComponent(userId)}&limit=50&sort=desc&offset=${offset}`);
+      const url = buildApiUrl(
+        `/api/events?userId=${encodeURIComponent(userId)}&limit=50&sort=desc&offset=${offset}`,
+      );
       const response = await fetch(url);
       if (!response.ok) {
         setUserEventsLoadingMore(false);
@@ -1417,7 +1421,12 @@ export default function UserDetails() {
                 { id: "accounts", name: "Accounts", icon: Link2, count: accounts.length },
                 { id: "sessions", name: "Sessions", icon: Clock1, count: sessions.length },
                 { id: "invitations", name: "Invitations", icon: Mail, count: invitations.length },
-                { id: "events", name: "Events", icon: Analytics, count: userEventsTotalCount ?? userEvents.length },
+                {
+                  id: "events",
+                  name: "Events",
+                  icon: Analytics,
+                  count: userEventsTotalCount ?? userEvents.length,
+                },
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -2180,7 +2189,9 @@ export default function UserDetails() {
                       Events
                       <sup className="text-xs text-gray-500 ml-1 mt-0">
                         <span className="mr-1">[</span>
-                        <span className="text-white font-mono text-xs">{userEventsTotalCount ?? userEvents.length}</span>
+                        <span className="text-white font-mono text-xs">
+                          {userEventsTotalCount ?? userEvents.length}
+                        </span>
                         <span className="ml-1">]</span>
                       </sup>
                     </h3>
