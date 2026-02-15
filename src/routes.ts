@@ -2229,8 +2229,10 @@ export function createRoutes(
     }
   });
 
-  router.get("/api/events/count", async (_req: Request, res: Response) => {
+  router.get("/api/events/count", async (req: Request, res: Response) => {
     try {
+      const userIdFilter = req.query.userId as string | undefined;
+
       const { getEventIngestionProvider, isEventIngestionInitialized } =
         await import("./utils/event-ingestion.js");
 
@@ -2297,6 +2299,51 @@ export function createRoutes(
         e?.message?.includes("Model") ||
         e?.code === "P2025" ||
         e?.code === "42P01";
+
+      // When filtering by userId, use query() to get filtered count
+      if (userIdFilter) {
+        if (eventProvider?.query) {
+          try {
+            const result = await eventProvider.query({ limit: 100000, sort: "desc", userId: userIdFilter });
+            const events = result.events ?? [];
+            const total = events.length;
+            const failed = events.filter(
+              (e: any) => e.status === "failed" || e.display?.severity === "failed",
+            ).length;
+            const warning = events.filter((e: any) => e.display?.severity === "warning").length;
+            const info = events.filter(
+              (e: any) =>
+                e.display?.severity === "info" || (!e.display?.severity && e.status !== "failed"),
+            ).length;
+            const success = total - failed - warning - info;
+            return res.json({ total, success, failed, warning, info });
+          } catch (e: any) {
+            if (isSchemaError(e)) {
+              return res.status(503).json({ error: "Events not ready", retryable: true, details: e?.message || String(e) });
+            }
+            throw e;
+          }
+        }
+        const adapter = await getAuthAdapterWithConfig();
+        if (adapter?.findMany) {
+          try {
+            const events = await adapter.findMany({
+              model: "auth_events",
+              where: [{ field: "userId", value: userIdFilter }],
+              limit: 100000,
+            });
+            const list = Array.isArray(events) ? events : [];
+            const total = list.length;
+            return res.json({ total, success: null, failed: null, warning: null, info: null });
+          } catch (e: any) {
+            if (isSchemaError(e)) {
+              return res.status(503).json({ error: "Events not ready", retryable: true, details: e?.message || String(e) });
+            }
+            throw e;
+          }
+        }
+        return res.json({ total: 0, success: 0, failed: 0, warning: 0, info: 0 });
+      }
 
       if (eventProvider?.getStats) {
         try {

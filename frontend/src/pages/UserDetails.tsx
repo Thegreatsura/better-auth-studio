@@ -239,6 +239,10 @@ export default function UserDetails() {
   >("details");
   const [userEvents, setUserEvents] = useState<AuthEvent[]>([]);
   const [userEventsLoading, setUserEventsLoading] = useState(false);
+  const [userEventsLoadingMore, setUserEventsLoadingMore] = useState(false);
+  const [userEventsHasMore, setUserEventsHasMore] = useState(false);
+  const [userEventsNextOffset, setUserEventsNextOffset] = useState(0);
+  const [userEventsTotalCount, setUserEventsTotalCount] = useState<number | null>(null);
   const [showEventViewModal, setShowEventViewModal] = useState(false);
   const [selectedUserEvent, setSelectedUserEvent] = useState<AuthEvent | null>(null);
   const [userEventSort, setUserEventSort] = useState<"newest" | "oldest">("newest");
@@ -456,15 +460,35 @@ export default function UserDetails() {
     } catch (_error) {}
   }, [userId]);
 
+  const fetchUserEventCount = useCallback(async () => {
+    if (!userId) return;
+    try {
+      const url = buildApiUrl(`/api/events/count?userId=${encodeURIComponent(userId)}`);
+      const response = await fetch(url);
+      if (response.ok) {
+        const data = await response.json();
+        if (typeof data.total === "number") {
+          setUserEventsTotalCount(data.total);
+        }
+      }
+    } catch {
+      // Silently fail - count will fall back to loaded events length
+    }
+  }, [userId]);
+
   const fetchUserEvents = useCallback(async () => {
     if (!userId) return;
     setUserEventsLoading(true);
-    const url = buildApiUrl(`/api/events?userId=${encodeURIComponent(userId)}&limit=50&sort=desc`);
+    const url = buildApiUrl(`/api/events?userId=${encodeURIComponent(userId)}&limit=50&sort=desc&offset=0`);
     try {
       let response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
-        setUserEvents(Array.isArray(data.events) ? data.events : []);
+        const list = Array.isArray(data.events) ? data.events : [];
+        setUserEvents(list);
+        setUserEventsNextOffset(list.length);
+        setUserEventsHasMore(list.length >= 50 && Boolean(data.hasMore));
+        fetchUserEventCount();
         return;
       }
       const data = await response.json().catch(() => ({}));
@@ -481,16 +505,49 @@ export default function UserDetails() {
       }
       if (response.ok) {
         const retryData = await response.json();
-        setUserEvents(Array.isArray(retryData.events) ? retryData.events : []);
+        const list = Array.isArray(retryData.events) ? retryData.events : [];
+        setUserEvents(list);
+        setUserEventsNextOffset(list.length);
+        setUserEventsHasMore(list.length >= 50 && Boolean(retryData.hasMore));
+        fetchUserEventCount();
       } else {
         setUserEvents([]);
+        setUserEventsHasMore(false);
       }
     } catch (_error) {
       setUserEvents([]);
+      setUserEventsHasMore(false);
     } finally {
       setUserEventsLoading(false);
     }
-  }, [userId]);
+  }, [userId, fetchUserEventCount]);
+
+  const loadMoreUserEvents = useCallback(async () => {
+    if (!userId || userEventsLoadingMore || !userEventsHasMore) return;
+    setUserEventsLoadingMore(true);
+    const offset = userEventsNextOffset;
+    try {
+      const url = buildApiUrl(`/api/events?userId=${encodeURIComponent(userId)}&limit=50&sort=desc&offset=${offset}`);
+      const response = await fetch(url);
+      if (!response.ok) {
+        setUserEventsLoadingMore(false);
+        return;
+      }
+      const data = await response.json();
+      const list = Array.isArray(data.events) ? data.events : [];
+      setUserEvents((prev) => {
+        const existingIds = new Set(prev.map((e) => e.id));
+        const appended = list.filter((e: AuthEvent) => !existingIds.has(e.id));
+        return appended.length > 0 ? [...prev, ...appended] : prev;
+      });
+      setUserEventsNextOffset(offset + list.length);
+      setUserEventsHasMore(list.length >= 50 && Boolean(data.hasMore));
+    } catch {
+      // Silently fail
+    } finally {
+      setUserEventsLoadingMore(false);
+    }
+  }, [userId, userEventsLoadingMore, userEventsHasMore, userEventsNextOffset]);
 
   const compressImage = (
     file: File,
@@ -1360,7 +1417,7 @@ export default function UserDetails() {
                 { id: "accounts", name: "Accounts", icon: Link2, count: accounts.length },
                 { id: "sessions", name: "Sessions", icon: Clock1, count: sessions.length },
                 { id: "invitations", name: "Invitations", icon: Mail, count: invitations.length },
-                { id: "events", name: "Events", icon: Analytics, count: userEvents.length },
+                { id: "events", name: "Events", icon: Analytics, count: userEventsTotalCount ?? userEvents.length },
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -2123,7 +2180,7 @@ export default function UserDetails() {
                       Events
                       <sup className="text-xs text-gray-500 ml-1 mt-0">
                         <span className="mr-1">[</span>
-                        <span className="text-white font-mono text-xs">{userEvents.length}</span>
+                        <span className="text-white font-mono text-xs">{userEventsTotalCount ?? userEvents.length}</span>
                         <span className="ml-1">]</span>
                       </sup>
                     </h3>
@@ -2287,6 +2344,33 @@ export default function UserDetails() {
                         )}
                       </tbody>
                     </table>
+                    {userEventsHasMore ? (
+                      <div className="flex justify-center py-6 border-t border-dashed border-white/10">
+                        <button
+                          type="button"
+                          onClick={loadMoreUserEvents}
+                          disabled={userEventsLoadingMore}
+                          className="inline-flex items-center justify-center gap-2 px-6 py-2.5 font-mono text-sm uppercase border border-dashed border-white/20 text-white/90 hover:bg-white/10 hover:border-white/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-w-[10rem]"
+                        >
+                          {userEventsLoadingMore ? (
+                            <>
+                              <Loader className="w-4 h-4 animate-spin shrink-0" />
+                              Loading more
+                            </>
+                          ) : (
+                            "Load more"
+                          )}
+                        </button>
+                      </div>
+                    ) : (
+                      userEvents.length > 0 && (
+                        <div className="flex justify-center py-6 border-t border-dashed border-white/10">
+                          <p className="text-gray-500 font-mono text-sm uppercase">
+                            You&apos;ve reached the end
+                          </p>
+                        </div>
+                      )
+                    )}
                   </div>
                 </div>
               </div>
