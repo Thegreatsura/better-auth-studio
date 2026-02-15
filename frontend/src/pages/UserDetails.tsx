@@ -470,13 +470,23 @@ export default function UserDetails() {
     }
   }, []);
 
+  const initializeEvents = useCallback(async () => {
+    try {
+      await fetch(buildApiUrl("/api/events/status"));
+    } catch {
+    }
+  }, []);
+
   const fetchUserEvents = useCallback(async () => {
     if (!userId) return;
     setUserEventsLoading(true);
+
+    await initializeEvents();
+
     const url = buildApiUrl(
       `/api/events?userId=${encodeURIComponent(userId)}&limit=50&sort=desc&offset=0`,
     );
-    const maxRetries = 8;
+    const maxRetries = 5;
     try {
       for (let attempt = 0; attempt <= maxRetries; attempt++) {
         try {
@@ -512,7 +522,7 @@ export default function UserDetails() {
     } finally {
       setUserEventsLoading(false);
     }
-  }, [userId, applyEventResponseData]);
+  }, [userId, applyEventResponseData, initializeEvents]);
 
   const loadMoreUserEvents = useCallback(async () => {
     if (!userId || userEventsLoadingMore || !userEventsHasMore) return;
