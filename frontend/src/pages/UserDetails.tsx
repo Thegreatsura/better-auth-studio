@@ -460,35 +460,38 @@ export default function UserDetails() {
     } catch (_error) {}
   }, [userId]);
 
-  const fetchUserEventCount = useCallback(async (retryAttempt = 0): Promise<void> => {
-    if (!userId) return;
-    const maxRetries = 3;
-    try {
-      const url = buildApiUrl(`/api/events/count?userId=${encodeURIComponent(userId)}`);
-      const response = await fetch(url);
-      if (response.ok) {
-        const data = await response.json();
-        if (data.retryable && retryAttempt < maxRetries) {
+  const fetchUserEventCount = useCallback(
+    async (retryAttempt = 0): Promise<void> => {
+      if (!userId) return;
+      const maxRetries = 3;
+      try {
+        const url = buildApiUrl(`/api/events/count?userId=${encodeURIComponent(userId)}`);
+        const response = await fetch(url);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.retryable && retryAttempt < maxRetries) {
+            await new Promise((r) => setTimeout(r, 800 * (retryAttempt + 1)));
+            return fetchUserEventCount(retryAttempt + 1);
+          }
+          if (typeof data.total === "number") {
+            setUserEventsTotalCount(data.total);
+          }
+          return;
+        }
+        const data = await response.json().catch(() => ({}));
+        if ((response.status === 503 || data.retryable) && retryAttempt < maxRetries) {
           await new Promise((r) => setTimeout(r, 800 * (retryAttempt + 1)));
           return fetchUserEventCount(retryAttempt + 1);
         }
-        if (typeof data.total === "number") {
-          setUserEventsTotalCount(data.total);
+      } catch {
+        if (retryAttempt < maxRetries) {
+          await new Promise((r) => setTimeout(r, 800 * (retryAttempt + 1)));
+          return fetchUserEventCount(retryAttempt + 1);
         }
-        return;
       }
-      const data = await response.json().catch(() => ({}));
-      if ((response.status === 503 || data.retryable) && retryAttempt < maxRetries) {
-        await new Promise((r) => setTimeout(r, 800 * (retryAttempt + 1)));
-        return fetchUserEventCount(retryAttempt + 1);
-      }
-    } catch {
-      if (retryAttempt < maxRetries) {
-        await new Promise((r) => setTimeout(r, 800 * (retryAttempt + 1)));
-        return fetchUserEventCount(retryAttempt + 1);
-      }
-    }
-  }, [userId]);
+    },
+    [userId],
+  );
 
   const fetchUserEvents = useCallback(async () => {
     if (!userId) return;
