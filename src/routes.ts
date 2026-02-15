@@ -2104,8 +2104,8 @@ export function createRoutes(
 
       const where: any[] = [];
 
-      // Cursor-based pagination
-      if (after) {
+      // Use cursor-based pagination only when offset is not provided
+      if (offset == null && after) {
         if (sort === "desc") {
           where.push({ field: "id", operator: "<", value: after });
         } else {
@@ -2123,12 +2123,16 @@ export function createRoutes(
       let events: any[] = [];
       if (adapter.findMany) {
         try {
-          events = await adapter.findMany({
+          const findManyOptions: any = {
             model: "auth_events",
             where,
             orderBy: [{ field: "timestamp", direction: sort === "desc" ? "desc" : "asc" }],
-            limit: limit + 1, // Get one extra to check hasMore
-          });
+            limit: limit + 1,
+          };
+          if (offset != null && offset > 0) {
+            findManyOptions.offset = offset;
+          }
+          events = await adapter.findMany(findManyOptions);
         } catch (adapterError: any) {
           if (
             adapterError?.message?.includes("not found in schema") ||

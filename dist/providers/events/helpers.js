@@ -376,7 +376,7 @@ export function createPostgresProvider(options) {
             }
         },
         async query(options) {
-            const { limit = 20, after, sort = "desc", type, userId, since } = options;
+            const { limit = 20, offset, after, sort = "desc", type, userId, since } = options;
             let queryFn;
             if (client.$executeRaw) {
                 // Prisma client
@@ -448,8 +448,8 @@ export function createPostgresProvider(options) {
             const whereClauses = [];
             const params = [];
             let paramIndex = 1;
-            // Cursor-based pagination
-            if (after) {
+            // Use cursor-based pagination only when offset is not provided
+            if (offset == null && after) {
                 if (sort === "desc") {
                     whereClauses.push(`id < $${paramIndex++}`);
                     params.push(after);
@@ -473,15 +473,29 @@ export function createPostgresProvider(options) {
             }
             const whereClause = whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : "";
             const orderDirection = sort === "desc" ? "DESC" : "ASC";
-            const query = `
-        SELECT id, type, timestamp, status, user_id, session_id, organization_id, 
-               metadata, ip_address, user_agent, source, display_message, display_severity
-        FROM ${schema}.${tableName}
-        ${whereClause}
-        ORDER BY timestamp ${orderDirection}, id ${orderDirection}
-        LIMIT $${paramIndex++}
-      `;
-            params.push(limit + 1); // Get one extra to check hasMore
+            let query;
+            if (offset != null && offset > 0) {
+                query = `
+          SELECT id, type, timestamp, status, user_id, session_id, organization_id, 
+                 metadata, ip_address, user_agent, source, display_message, display_severity
+          FROM ${schema}.${tableName}
+          ${whereClause}
+          ORDER BY timestamp ${orderDirection}, id ${orderDirection}
+          LIMIT $${paramIndex++} OFFSET $${paramIndex++}
+        `;
+                params.push(limit + 1, offset);
+            }
+            else {
+                query = `
+          SELECT id, type, timestamp, status, user_id, session_id, organization_id, 
+                 metadata, ip_address, user_agent, source, display_message, display_severity
+          FROM ${schema}.${tableName}
+          ${whereClause}
+          ORDER BY timestamp ${orderDirection}, id ${orderDirection}
+          LIMIT $${paramIndex++}
+        `;
+                params.push(limit + 1);
+            }
             try {
                 const result = await queryFn(query, params);
                 const rows = result.rows || result || [];
@@ -698,7 +712,7 @@ export function createSqliteProvider(options) {
             }
         },
         async query(options) {
-            const { limit = 20, after, sort = "desc", type, userId, since } = options;
+            const { limit = 20, offset, after, sort = "desc", type, userId, since } = options;
             await ensureTableSync();
             try {
                 let query = `SELECT * FROM ${tableName} WHERE 1=1`;
@@ -715,13 +729,20 @@ export function createSqliteProvider(options) {
                     query += ` AND timestamp >= ?`;
                     params.push(since instanceof Date ? since.toISOString() : since);
                 }
-                if (after) {
-                    query += sort === "desc" ? ` AND id < ?` : ` AND id > ?`;
-                    params.push(after);
+                if (offset != null && offset > 0) {
+                    query += ` ORDER BY timestamp ${sort === "desc" ? "DESC" : "ASC"}`;
+                    query += ` LIMIT ? OFFSET ?`;
+                    params.push(limit + 1, offset);
                 }
-                query += ` ORDER BY timestamp ${sort === "desc" ? "DESC" : "ASC"}`;
-                query += ` LIMIT ?`;
-                params.push(limit + 1); // Fetch one extra to check if there are more
+                else {
+                    if (after) {
+                        query += sort === "desc" ? ` AND id < ?` : ` AND id > ?`;
+                        params.push(after);
+                    }
+                    query += ` ORDER BY timestamp ${sort === "desc" ? "DESC" : "ASC"}`;
+                    query += ` LIMIT ?`;
+                    params.push(limit + 1);
+                }
                 const stmt = actualClient.prepare(query);
                 const rows = stmt.all(...params);
                 const hasMore = rows.length > limit;
@@ -1154,7 +1175,7 @@ export function createClickHouseProvider(options) {
             await ingestBatchFn(events);
         },
         async query(options) {
-            const { limit = 20, after, sort = "desc", type, userId, since } = options;
+            const { limit = 20, offset, after, sort = "desc", type, userId, since } = options;
             const tableFullName = database ? `${database}.${table}` : table;
             try {
                 const checkTableQuery = `EXISTS TABLE ${tableFullName}`;
@@ -1269,7 +1290,7 @@ export function createClickHouseProvider(options) {
                 }
             }
             const whereClauses = [];
-            if (after) {
+            if (offset == null && after) {
                 if (sort === "desc") {
                     whereClauses.push(`id < '${String(after).replace(/'/g, "''")}'`);
                 }
@@ -1285,13 +1306,12 @@ export function createClickHouseProvider(options) {
             }
             if (since) {
                 const sinceDate = since instanceof Date ? since : new Date(since);
-                // ClickHouse requires DateTime type, so we need to cast the string to DateTime
-                // Format: 'YYYY-MM-DD HH:MM:SS' or use toDateTime() function
                 const isoString = sinceDate.toISOString().replace("T", " ").slice(0, 19);
                 whereClauses.push(`timestamp >= toDateTime('${isoString.replace(/'/g, "''")}')`);
             }
             const whereClause = whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : "";
             const orderDirection = sort === "desc" ? "DESC" : "ASC";
+            const offsetClause = offset != null && offset > 0 ? `OFFSET ${offset}` : "";
             let query = `
         SELECT id, type, timestamp, status, user_id, session_id, organization_id, 
                metadata, ip_address, user_agent, source, display_message, display_severity
@@ -1299,6 +1319,7 @@ export function createClickHouseProvider(options) {
         ${whereClause}
         ORDER BY timestamp ${orderDirection}, id ${orderDirection}
         LIMIT ${limit + 1}
+        ${offsetClause}
       `;
             let result;
             let hasStatusColumn = true;
@@ -1564,14 +1585,14 @@ export function createStorageProvider(options) {
             }
         },
         async query(options) {
-            const { limit = 20, after, sort = "desc", type, userId, since } = options;
+            const { limit = 20, offset, after, sort = "desc", type, userId, since } = options;
             // Ensure table exists before querying
             await ensureTable();
             // First, try findMany (normal path)
             if (adapter && adapter.findMany) {
                 try {
                     const where = [];
-                    if (after) {
+                    if (offset == null && after) {
                         if (sort === "desc") {
                             where.push({ field: "id", operator: "<", value: after });
                         }
@@ -1589,12 +1610,16 @@ export function createStorageProvider(options) {
                         const sinceDate = since instanceof Date ? since : new Date(since);
                         where.push({ field: "timestamp", operator: ">=", value: sinceDate });
                     }
-                    const events = await adapter.findMany({
+                    const findManyOptions = {
                         model: tableName,
                         where,
                         orderBy: [{ field: "timestamp", direction: sort === "desc" ? "desc" : "asc" }],
-                        limit: limit + 1, // Get one extra to check hasMore
-                    });
+                        limit: limit + 1,
+                    };
+                    if (offset != null && offset > 0) {
+                        findManyOptions.offset = offset;
+                    }
+                    const events = await adapter.findMany(findManyOptions);
                     const hasMore = events.length > limit;
                     const paginatedEvents = events.slice(0, limit).map((event) => ({
                         id: event.id,
@@ -1657,7 +1682,7 @@ export function createStorageProvider(options) {
                     const whereConditions = [];
                     const params = [];
                     let paramIndex = 1;
-                    if (after) {
+                    if (offset == null && after) {
                         if (sort === "desc") {
                             whereConditions.push(`id < $${paramIndex}`);
                         }
@@ -1683,12 +1708,13 @@ export function createStorageProvider(options) {
                         paramIndex++;
                     }
                     const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(" AND ")}` : "";
+                    const offsetSql = offset != null && offset > 0 ? ` OFFSET ${offset}` : "";
                     const orderDirection = sort === "desc" ? "DESC" : "ASC";
                     // Use appropriate raw SQL method
                     let queryFn;
                     if (sqlAdapter.$queryRawUnsafe || adapter.$queryRawUnsafe) {
                         // Prisma - build query with parameters embedded
-                        let query = `SELECT * FROM ${tableName} ${whereClause} ORDER BY timestamp ${orderDirection}, id ${orderDirection} LIMIT ${limit + 1}`;
+                        let query = `SELECT * FROM ${tableName} ${whereClause} ORDER BY timestamp ${orderDirection}, id ${orderDirection} LIMIT ${limit + 1}${offsetSql}`;
                         // Replace $1, $2, etc. with actual values for Prisma
                         params.forEach((param, index) => {
                             const placeholder = `$${index + 1}`;
@@ -1732,7 +1758,7 @@ export function createStorageProvider(options) {
                     }
                     else {
                         // Other adapters - use parameterized query
-                        const query = `SELECT * FROM ${tableName} ${whereClause} ORDER BY timestamp ${orderDirection}, id ${orderDirection} LIMIT $${paramIndex}`;
+                        const query = `SELECT * FROM ${tableName} ${whereClause} ORDER BY timestamp ${orderDirection}, id ${orderDirection} LIMIT $${paramIndex}${offsetSql}`;
                         params.push(limit + 1);
                         if (sqlAdapter.$queryRaw || adapter.$queryRaw) {
                             const queryMethod = sqlAdapter.$queryRaw || adapter.$queryRaw;

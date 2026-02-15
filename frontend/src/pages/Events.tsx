@@ -245,6 +245,7 @@ export default function Events() {
   const [loadingMore, setLoadingMore] = useState(false);
   const eventsLengthRef = useRef(0);
   eventsLengthRef.current = events.length;
+  const [allEventsForActivity, setAllEventsForActivity] = useState<AuthEvent[]>([]);
 
   interface FilterConfig {
     type: string;
@@ -355,6 +356,25 @@ export default function Events() {
     } catch {
       setTotalEventCount(null);
       setServerEventStats(null);
+    }
+  }, []);
+
+  const fetchAllEventsForActivity = useCallback(async () => {
+    try {
+      const params = new URLSearchParams({
+        limit: "10000",
+        sort: "desc",
+        offset: "0",
+      });
+      const apiPath = buildApiUrl("/api/events");
+      const response = await fetch(`${apiPath}?${params.toString()}`);
+      if (!response.ok) return;
+      const data = await response.json();
+      if (data.events && Array.isArray(data.events)) {
+        setAllEventsForActivity(data.events);
+      }
+    } catch {
+      // Silently fail - heatmap will use whatever events are loaded
     }
   }, []);
 
@@ -511,6 +531,7 @@ export default function Events() {
     }
 
     fetchEvents(true);
+    fetchAllEventsForActivity();
 
     const startPolling = () => {
       if (pollTimeoutRef.current) {
@@ -529,7 +550,7 @@ export default function Events() {
         clearInterval(pollTimeoutRef.current);
       }
     };
-  }, [eventsEnabled, isSelfHosted, checkingEvents, fetchEvents]);
+  }, [eventsEnabled, isSelfHosted, checkingEvents, fetchEvents, fetchAllEventsForActivity]);
 
   useEffect(() => {
     if (!selectedActivityDateKey || events.length === 0) {
@@ -952,7 +973,8 @@ export const auth = betterAuth({
             }
           }
 
-          events.forEach((event) => {
+          const activitySource = allEventsForActivity.length > 0 ? allEventsForActivity : events;
+          activitySource.forEach((event) => {
             const eventDate = new Date(event.timestamp);
             eventDate.setHours(0, 0, 0, 0);
             const key = format(eventDate, "yyyy-MM-dd");
@@ -1000,7 +1022,7 @@ export const auth = betterAuth({
           const gridWidth = WEEKS * cellSize + (WEEKS - 1) * cellGap;
 
           const eventsForDate = selectedActivityDateKey
-            ? events.filter((e) => {
+            ? activitySource.filter((e) => {
                 const d = new Date(e.timestamp);
                 d.setHours(0, 0, 0, 0);
                 return format(d, "yyyy-MM-dd") === selectedActivityDateKey;
