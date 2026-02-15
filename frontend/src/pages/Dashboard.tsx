@@ -138,6 +138,7 @@ export default function Dashboard() {
     teams: [],
     sessions: [],
   });
+  const [loginsUniqueUsers, setLoginsUniqueUsers] = useState<number[]>([]);
   const [activityLabels, setActivityLabels] = useState<string[]>([]);
   const [activityLoading, setActivityLoading] = useState(false);
 
@@ -501,6 +502,9 @@ export default function Dashboard() {
           teams: teamsMetrics?.data || [],
           sessions: sessionsMetrics?.data || [],
         });
+
+        // Store unique users per bucket for login tooltip
+        setLoginsUniqueUsers(logins?.uniqueUsers || []);
 
         setActivityLabels(
           signups?.labels ||
@@ -1530,22 +1534,41 @@ export default function Dashboard() {
                   >
                     <div className="bg-black border border-white/20 rounded-sm px-3 py-2 shadow-lg min-w-[180px]">
                       <div className="text-xs text-gray-400 mb-2 font-mono uppercase">
-                        {resolvedActivityLabels[hoveredAreaIndex] ||
-                          `Bucket ${hoveredAreaIndex + 1}`}
+                        {(() => {
+                          const rawLabel =
+                            resolvedActivityLabels[hoveredAreaIndex] ||
+                            `Bucket ${hoveredAreaIndex + 1}`;
+                          if (activityPeriod === "1D" && rawLabel.endsWith("h")) {
+                            const hour = parseInt(rawLabel.replace("h", ""), 10);
+                            if (hour === 0) return "12:00 AM";
+                            if (hour < 12) return `${hour}:00 AM`;
+                            if (hour === 12) return "12:00 PM";
+                            return `${hour - 12}:00 PM`;
+                          }
+                          return rawLabel;
+                        })()}
                       </div>
                       <div className="space-y-1">
                         {ACTIVITY_STREAMS.map((stream) => (
-                          <div
-                            key={stream.id}
-                            className="flex items-center justify-between text-sm"
-                          >
-                            <div className="flex items-center gap-2 text-gray-300">
-                              <span className={`w-2 h-2 rounded-sm ${stream.dotClass}`} />
-                              {stream.label}
+                          <div key={stream.id}>
+                            <div className="flex items-center justify-between text-sm">
+                              <div className="flex items-center gap-2 text-gray-300">
+                                <span className={`w-2 h-2 rounded-sm ${stream.dotClass}`} />
+                                {stream.label}
+                              </div>
+                              <span className="text-white font-medium">
+                                {activitySeries[stream.id]?.[hoveredAreaIndex] ?? 0}
+                              </span>
                             </div>
-                            <span className="text-white font-medium">
-                              {activitySeries[stream.id]?.[hoveredAreaIndex] ?? 0}
-                            </span>
+                            {stream.id === "logins" &&
+                              loginsUniqueUsers[hoveredAreaIndex] !== undefined && (
+                                <div className="flex items-center justify-between text-[11px] ml-4 mt-0.5">
+                                  <span className="text-gray-500">Unique users</span>
+                                  <span className="text-gray-400 font-medium">
+                                    {loginsUniqueUsers[hoveredAreaIndex]}
+                                  </span>
+                                </div>
+                              )}
                           </div>
                         ))}
                       </div>
@@ -1553,13 +1576,36 @@ export default function Dashboard() {
                   </div>
                 )}
                 <div
-                  className={`flex justify-between ${activityPeriod === "1M" ? "text-[10px]" : "text-xs"} text-gray-500 font-mono`}
+                  className={`flex justify-between ${activityPeriod === "1M" || activityPeriod === "1D" ? "text-[10px]" : "text-xs"} text-gray-500 font-mono`}
                 >
-                  {resolvedActivityLabels.map((label, i) => (
-                    <span key={i} className="flex-1 text-center truncate">
-                      {label}
-                    </span>
-                  ))}
+                  {resolvedActivityLabels.map((label, i) => {
+                    // For daily (1D), only show every 4th label with AM/PM format
+                    if (activityPeriod === "1D") {
+                      if (i % 4 !== 0) {
+                        return (
+                          <span key={i} className="flex-1 text-center truncate">
+                            &nbsp;
+                          </span>
+                        );
+                      }
+                      const hour = parseInt(label.replace("h", ""), 10);
+                      let formatted = "";
+                      if (hour === 0) formatted = "12am";
+                      else if (hour < 12) formatted = `${hour}am`;
+                      else if (hour === 12) formatted = "12pm";
+                      else formatted = `${hour - 12}pm`;
+                      return (
+                        <span key={i} className="flex-1 text-center truncate">
+                          {formatted}
+                        </span>
+                      );
+                    }
+                    return (
+                      <span key={i} className="flex-1 text-center truncate">
+                        {label}
+                      </span>
+                    );
+                  })}
                 </div>
                 <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mt-4 pt-4 border-t border-white/10">
                   {ACTIVITY_STREAMS.map((stream) => (

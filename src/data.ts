@@ -578,7 +578,7 @@ async function getRealAnalytics(
       data = buckets.map((bucket) => {
         return users.filter((user: any) => {
           const createdAt = new Date(user.createdAt);
-          return createdAt >= bucket.start && createdAt < bucket.end;
+          return createdAt >= bucket.start && createdAt <= bucket.end;
         }).length;
       });
     } else if (type === "newUsers") {
@@ -586,29 +586,31 @@ async function getRealAnalytics(
       data = buckets.map((bucket) => {
         return users.filter((user: any) => {
           const createdAt = new Date(user.createdAt);
-          return createdAt >= bucket.start && createdAt < bucket.end;
+          return createdAt >= bucket.start && createdAt <= bucket.end;
         }).length;
       });
     } else if (type === "activeUsers") {
-      // Active users = users with active sessions in that period
+      // Logins = count of sessions (login events) created in each bucket
       data = buckets.map((bucket) => {
-        const activeSessions = sessions.filter((session: any) => {
+        return sessions.filter((session: any) => {
           const sessionCreated = new Date(session.createdAt);
-          const sessionExpires = new Date(session.expiresAt || session.expires);
-          return (
-            sessionCreated >= bucket.start &&
-            sessionCreated < bucket.end &&
-            sessionExpires > bucket.start
-          );
-        });
-        return new Set(activeSessions.map((s: any) => s.userId)).size;
+          return sessionCreated >= bucket.start && sessionCreated <= bucket.end;
+        }).length;
+      });
+    } else if (type === "sessions") {
+      // Sessions = count of sessions created in each bucket
+      data = buckets.map((bucket) => {
+        return sessions.filter((session: any) => {
+          const sessionCreated = new Date(session.createdAt);
+          return sessionCreated >= bucket.start && sessionCreated <= bucket.end;
+        }).length;
       });
     } else if (type === "organizations") {
       // For organizations, count orgs created within each bucket (non-cumulative)
       data = buckets.map((bucket) => {
         return organizations.filter((org: any) => {
           const createdAt = new Date(org.createdAt);
-          return createdAt >= bucket.start && createdAt < bucket.end;
+          return createdAt >= bucket.start && createdAt <= bucket.end;
         }).length;
       });
     } else if (type === "teams") {
@@ -616,33 +618,83 @@ async function getRealAnalytics(
       data = buckets.map((bucket) => {
         return teams.filter((team: any) => {
           const createdAt = new Date(team.createdAt);
-          return createdAt >= bucket.start && createdAt < bucket.end;
+          return createdAt >= bucket.start && createdAt <= bucket.end;
         }).length;
       });
     }
 
-    // Calculate percentage change
+    // Calculate total
     const total = data.reduce((sum, val) => sum + val, 0);
     const average = total / data.length;
+
+    // For activeUsers (logins), also compute unique users per bucket for tooltips
+    let uniqueUsers: number[] | undefined;
+    if (type === "activeUsers") {
+      uniqueUsers = buckets.map((bucket) => {
+        const bucketSessions = sessions.filter((session: any) => {
+          const sessionCreated = new Date(session.createdAt);
+          return sessionCreated >= bucket.start && sessionCreated <= bucket.end;
+        });
+        return new Set(bucketSessions.map((s: any) => s.userId)).size;
+      });
+    }
     const lastValue = data[data.length - 1] || 0;
     const previousValue = data[data.length - 2] || average;
     const percentageChange =
       previousValue > 0 ? ((lastValue - previousValue) / previousValue) * 100 : 0;
 
+    // Calculate previous period total for comparison
+    let previousTotal = 0;
+    const getPreviousPeriodTotal = (prevStart: Date, prevEnd: Date) => {
+      if (type === "users" || type === "newUsers") {
+        return users.filter((user: any) => {
+          const createdAt = new Date(user.createdAt);
+          return createdAt >= prevStart && createdAt <= prevEnd;
+        }).length;
+      } else if (type === "activeUsers" || type === "sessions") {
+        return sessions.filter((session: any) => {
+          const sessionCreated = new Date(session.createdAt);
+          return sessionCreated >= prevStart && sessionCreated <= prevEnd;
+        }).length;
+      } else if (type === "organizations") {
+        return organizations.filter((org: any) => {
+          const createdAt = new Date(org.createdAt);
+          return createdAt >= prevStart && createdAt <= prevEnd;
+        }).length;
+      } else if (type === "teams") {
+        return teams.filter((team: any) => {
+          const createdAt = new Date(team.createdAt);
+          return createdAt >= prevStart && createdAt <= prevEnd;
+        }).length;
+      }
+      return 0;
+    };
+
+    if (period === "1D") {
+      const prevStart = new Date(startDate.getTime() - 24 * 60 * 60 * 1000);
+      previousTotal = getPreviousPeriodTotal(prevStart, startDate);
+    } else if (period === "1W") {
+      const prevStart = new Date(startDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+      previousTotal = getPreviousPeriodTotal(prevStart, startDate);
+    }
+
     return {
       data,
       labels: buckets.map((b) => b.label),
       total,
+      previousTotal,
       average: Math.round(average),
       percentageChange: Math.round(percentageChange * 10) / 10,
       period,
       type,
+      ...(uniqueUsers ? { uniqueUsers } : {}),
     };
   } catch (_error) {
     return {
       data: [],
       labels: [],
       total: 0,
+      previousTotal: 0,
       average: 0,
       percentageChange: 0,
       period: options.period,
