@@ -330,12 +330,17 @@ export default function Events() {
 
   const eventStats = serverEventStats ?? eventStatsFromLoaded;
 
-  const fetchEventCount = useCallback(async () => {
+  const fetchEventCount = useCallback(async (retryAttempt = 0): Promise<void> => {
+    const maxRetries = 3;
     try {
       const apiPath = buildApiUrl("/api/events/count");
       const response = await fetch(apiPath);
       if (response.ok) {
         const data = await response.json();
+        if (data.retryable && retryAttempt < maxRetries) {
+          await new Promise((r) => setTimeout(r, 800 * (retryAttempt + 1)));
+          return fetchEventCount(retryAttempt + 1);
+        }
         setTotalEventCount(typeof data.total === "number" ? data.total : null);
         if (
           typeof data.success === "number" &&
@@ -352,14 +357,27 @@ export default function Events() {
         } else {
           setServerEventStats(null);
         }
+        return;
       }
+      const errData = await response.json().catch(() => ({}));
+      if ((response.status === 503 || errData.retryable) && retryAttempt < maxRetries) {
+        await new Promise((r) => setTimeout(r, 800 * (retryAttempt + 1)));
+        return fetchEventCount(retryAttempt + 1);
+      }
+      setTotalEventCount(null);
+      setServerEventStats(null);
     } catch {
+      if (retryAttempt < maxRetries) {
+        await new Promise((r) => setTimeout(r, 800 * (retryAttempt + 1)));
+        return fetchEventCount(retryAttempt + 1);
+      }
       setTotalEventCount(null);
       setServerEventStats(null);
     }
   }, []);
 
-  const fetchAllEventsForActivity = useCallback(async () => {
+  const fetchAllEventsForActivity = useCallback(async (retryAttempt = 0): Promise<void> => {
+    const maxRetries = 3;
     try {
       const params = new URLSearchParams({
         limit: "10000",
@@ -368,13 +386,27 @@ export default function Events() {
       });
       const apiPath = buildApiUrl("/api/events");
       const response = await fetch(`${apiPath}?${params.toString()}`);
-      if (!response.ok) return;
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        if ((response.status === 503 || errData.retryable) && retryAttempt < maxRetries) {
+          await new Promise((r) => setTimeout(r, 800 * (retryAttempt + 1)));
+          return fetchAllEventsForActivity(retryAttempt + 1);
+        }
+        return;
+      }
       const data = await response.json();
+      if (data.retryable && retryAttempt < maxRetries) {
+        await new Promise((r) => setTimeout(r, 800 * (retryAttempt + 1)));
+        return fetchAllEventsForActivity(retryAttempt + 1);
+      }
       if (data.events && Array.isArray(data.events)) {
         setAllEventsForActivity(data.events);
       }
     } catch {
-      // Silently fail - heatmap will use whatever events are loaded
+      if (retryAttempt < maxRetries) {
+        await new Promise((r) => setTimeout(r, 800 * (retryAttempt + 1)));
+        return fetchAllEventsForActivity(retryAttempt + 1);
+      }
     }
   }, []);
 
@@ -411,13 +443,19 @@ export default function Events() {
           }
         }
 
-        const data = await response.json();
+        let data = await response.json();
+        if (data.retryable && isInitial) {
+          await new Promise((r) => setTimeout(r, 800));
+          const retryResp = await fetch(`${apiPath}?${params.toString()}`);
+          if (retryResp.ok) {
+            data = await retryResp.json();
+          }
+        }
         setIsConnected(true);
 
         if (data.events && Array.isArray(data.events)) {
           const list = data.events;
           const hasMoreFromApi = Boolean(data.hasMore);
-          const pageFull = list.length >= 50;
 
           if (list.length === 0 && isInitial) {
             setEvents([]);
@@ -430,7 +468,7 @@ export default function Events() {
           if (isInitial) {
             setEvents(list);
             setNextOffset(list.length);
-            setHasMore(pageFull && hasMoreFromApi);
+            setHasMore(hasMoreFromApi);
             setLastPollAt(Date.now());
             fetchEventCount();
             if (list.length > 0) {
@@ -471,7 +509,7 @@ export default function Events() {
             }
             if (!hadMoreThan50) {
               setNextOffset(list.length);
-              setHasMore(pageFull && hasMoreFromApi);
+              setHasMore(hasMoreFromApi);
             }
           }
         }
