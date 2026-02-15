@@ -42,7 +42,7 @@ const config: StudioConfig = {
     },
     liveMarquee: {
       enabled: true,
-      pollInterval: 2000,
+      pollInterval: 3000,
       speed: 1,
       sort: "desc",
       pauseOnHover: true,

@@ -223,7 +223,7 @@ export default function Events() {
   const pollTimeoutRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isPollingRef = useRef(false);
   const lastEventIdRef = useRef<string | null>(null);
-  const pollInterval = 2000; // 2 seconds
+  const pollInterval = getStudioConfig()?.liveMarquee?.pollInterval ?? 2000;
   const [isSelfHosted, setIsSelfHosted] = useState(false);
   const [eventsEnabled, setEventsEnabled] = useState<boolean | null>(null);
   const [checkingEvents, setCheckingEvents] = useState(true);
