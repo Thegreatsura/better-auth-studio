@@ -2407,14 +2407,14 @@ export default function OrganizationDetails() {
                   setEditFormData({ name: "", slug: "" });
                 }}
                 disabled={isUpdating}
-                className="border border-dashed border-white/20 text-white hover:bg-white/10 rounded-none"
+                className="border font-mono uppercase text-xs tracking-tight border-dashed border-white/20 text-white hover:bg-white/10 rounded-none"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleUpdateOrganization}
                 disabled={isUpdating}
-                className="bg-white hover:bg-white/90 text-black border border-white/20 rounded-none disabled:opacity-50"
+                className="bg-white hover:bg-white/90 font-mono uppercase text-xs tracking-tight text-black border border-white/20 rounded-none disabled:opacity-50"
               >
                 {isUpdating ? "Updating..." : "Update"}
               </Button>

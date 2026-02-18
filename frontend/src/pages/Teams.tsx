@@ -1,4 +1,4 @@
-import { Building2, Loader, Plus, Search, Users } from "lucide-react";
+import { Building2, ChevronLeft, ChevronRight, Loader, Plus, Search, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -364,27 +364,29 @@ export default function Teams() {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex flex-wrap items-center justify-center gap-2">
+        <div className="flex items-center justify-center gap-2">
           <Button
             variant="outline"
             size="sm"
             onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
             disabled={currentPage === 1}
-            className="border-dashed border-white/20 text-white hover:bg-white/10 disabled:opacity-50"
+            className="border-dashed border-white/20 text-white hover:bg-white/10 disabled:opacity-50 text-xs sm:text-sm h-8 sm:h-9 px-2 sm:px-3"
           >
-            Previous
+            <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-0.5 sm:mr-1" />
+            <span className="hidden sm:inline">Previous</span>
           </Button>
-          <span className="text-gray-400 text-sm">
-            Page {currentPage} of {totalPages}
+          <span className="text-gray-400 text-xs sm:text-sm">
+            {currentPage} / {totalPages}
           </span>
           <Button
             variant="outline"
             size="sm"
             onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
             disabled={currentPage === totalPages}
-            className="border-dashed border-white/20 text-white hover:bg-white/10 disabled:opacity-50"
+            className="border-dashed border-white/20 text-white hover:bg-white/10 disabled:opacity-50 text-xs sm:text-sm h-8 sm:h-9 px-2 sm:px-3"
           >
-            Next
+            <span className="hidden sm:inline">Next</span>
+            <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 ml-0.5 sm:ml-1" />
           </Button>
         </div>
       )}
