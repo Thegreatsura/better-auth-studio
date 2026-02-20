@@ -4,6 +4,7 @@ import {
   ArrowUpRight,
   Clock1,
   Computer,
+  Copy,
   Edit,
   Eye,
   Link2,
@@ -2499,8 +2500,23 @@ export default function UserDetails() {
                 {selectedUserEvent.metadata &&
                   Object.keys(selectedUserEvent.metadata).length > 0 && (
                     <div className="mt-4">
-                      <div className="text-[11px] font-mono uppercase text-gray-400 mb-2">
-                        Metadata
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="text-[11px] font-mono uppercase text-gray-400">
+                          Metadata
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 px-2 text-gray-400 hover:text-white rounded-none"
+                          onClick={() => {
+                            navigator.clipboard.writeText(
+                              JSON.stringify(selectedUserEvent.metadata, null, 2),
+                            );
+                            toast.success("Copied to clipboard");
+                          }}
+                        >
+                          <Copy className="w-3.5 h-3.5" />
+                        </Button>
                       </div>
                       <div className="border border-dashed border-white/15 bg-black/90 px-3 py-2 rounded-none">
                         <pre className="text-[10px] font-mono text-white overflow-x-auto">

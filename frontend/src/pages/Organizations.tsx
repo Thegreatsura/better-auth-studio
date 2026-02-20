@@ -87,6 +87,11 @@ export default function Organizations() {
   const [showViewModal, setShowViewModal] = useState(false);
   const [showSeedModal, setShowSeedModal] = useState(false);
   const [selectedOrganization, setSelectedOrganization] = useState<Organization | null>(null);
+  const [viewModalStats, setViewModalStats] = useState<{
+    members: number;
+    teams: number;
+    invitations: number;
+  } | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [seedingLogs, setSeedingLogs] = useState<
@@ -267,8 +272,43 @@ export default function Organizations() {
   };
   const openViewModal = (organization: Organization) => {
     setSelectedOrganization(organization);
+    setViewModalStats(null);
     setShowViewModal(true);
   };
+
+  useEffect(() => {
+    if (!showViewModal || !selectedOrganization) {
+      if (!showViewModal) setViewModalStats(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const [membersRes, teamsRes, invitationsRes] = await Promise.all([
+          fetch(`/api/organizations/${selectedOrganization.id}/members`),
+          fetch(`/api/organizations/${selectedOrganization.id}/teams`),
+          fetch(`/api/organizations/${selectedOrganization.id}/invitations`),
+        ]);
+        if (cancelled) return;
+        const [membersData, teamsResData, invitationsData] = await Promise.all([
+          membersRes.json(),
+          teamsRes.json(),
+          invitationsRes.json(),
+        ]);
+        if (cancelled) return;
+        setViewModalStats({
+          members: membersData.members?.length ?? 0,
+          teams: teamsResData.teams?.length ?? 0,
+          invitations: invitationsData.invitations?.length ?? 0,
+        });
+      } catch {
+        if (!cancelled) setViewModalStats({ members: 0, teams: 0, invitations: 0 });
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [showViewModal, selectedOrganization?.id]);
 
   const openEditModal = (organization: Organization) => {
     setSelectedOrganization(organization);
@@ -1322,21 +1362,38 @@ export default function Organizations() {
               </div>
 
               <div className="space-y-2 text-sm">
-                {[{ label: "Created", value: formatDateTime(selectedOrganization.createdAt) }].map(
-                  (item) => (
-                    <div
-                      key={item.label}
-                      className="flex items-center justify-between border border-dashed border-white/15 bg-black/90 px-3 py-2 rounded-none"
-                    >
-                      <div className="text-[11px] font-mono font-light uppercase tracking-wide text-gray-400">
-                        {item.label}
-                      </div>
-                      <div className="text-[10px] font-mono uppercase text-white text-right break-words max-w-[60%]">
-                        {item.value}
-                      </div>
+                {[
+                  { label: "Created", value: formatDateTime(selectedOrganization.createdAt) },
+                  {
+                    label: "Members",
+                    value:
+                      viewModalStats === null
+                        ? "..."
+                        : String(viewModalStats.members),
+                  },
+                  {
+                    label: "Teams",
+                    value:
+                      viewModalStats === null ? "..." : String(viewModalStats.teams),
+                  },
+                  {
+                    label: "Invitations",
+                    value:
+                      viewModalStats === null ? "..." : String(viewModalStats.invitations),
+                  },
+                ].map((item) => (
+                  <div
+                    key={item.label}
+                    className="flex items-center justify-between border border-dashed border-white/15 bg-black/90 px-3 py-2 rounded-none"
+                  >
+                    <div className="text-[11px] font-mono font-light uppercase tracking-wide text-gray-400">
+                      {item.label}
                     </div>
-                  ),
-                )}
+                    <div className="text-[10px] font-mono uppercase text-white text-right break-words max-w-[60%]">
+                      {item.value}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
 
