@@ -1366,20 +1366,15 @@ export default function Organizations() {
                   { label: "Created", value: formatDateTime(selectedOrganization.createdAt) },
                   {
                     label: "Members",
-                    value:
-                      viewModalStats === null
-                        ? "..."
-                        : String(viewModalStats.members),
+                    value: viewModalStats === null ? "..." : String(viewModalStats.members),
                   },
                   {
                     label: "Teams",
-                    value:
-                      viewModalStats === null ? "..." : String(viewModalStats.teams),
+                    value: viewModalStats === null ? "..." : String(viewModalStats.teams),
                   },
                   {
                     label: "Invitations",
-                    value:
-                      viewModalStats === null ? "..." : String(viewModalStats.invitations),
+                    value: viewModalStats === null ? "..." : String(viewModalStats.invitations),
                   },
                 ].map((item) => (
                   <div
