@@ -826,8 +826,8 @@ export const auth = betterAuth({
           <div className="flex flex-col items-center justify-center space-y-6">
             <div className="flex items-center space-x-3">
               <div className="text-left">
-                <h2 className="text-xl text-white font-mono font-light mb-2">
-                  Event Ingestion Not Enabled
+                <h2 className="text-xl uppercase text-white font-mono font-light mb-2">
+                  // Event Ingestion Not Enabled
                 </h2>
                 <p className="text-gray-400 text-sm font-mono">
                   {!isSelfHosted
@@ -1405,7 +1405,7 @@ export const auth = betterAuth({
               </Select>
             </div>
 
-            <div className="flex-1 sm:flex-none sm:w-[120px]">
+            <div className="flex-1 sm:flex-none sm:w-[150px]">
               <Select value="" onValueChange={addFilter}>
                 <SelectTrigger className="w-full font-mono uppercase sm:text-[11px] border border-dashed border-white/20 bg-black/30 text-white rounded-none">
                   <div className="flex items-center space-x-2">
