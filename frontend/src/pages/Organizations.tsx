@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import type { DateRange } from "react-day-picker";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { AnimatedNumber } from "../components/AnimatedNumber";
 import { CopyableId } from "../components/CopyableId";
@@ -64,6 +64,7 @@ const formatTimeAgo = (value?: string | null): string => {
 
 export default function Organizations() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { counts, refetchCounts } = useCounts();
 
   interface FilterConfig {
@@ -108,6 +109,15 @@ export default function Organizations() {
   const [createFormData, setCreateFormData] = useState({ name: "", slug: "" });
   const [editFormData, setEditFormData] = useState({ name: "", slug: "" });
   const [orgSortOrder, setOrgSortOrder] = useState<"newest" | "oldest">("newest");
+
+  useEffect(() => {
+    const state = location.state as { openModal?: string } | null;
+    if (state?.openModal) {
+      if (state.openModal === "create") setShowCreateModal(true);
+      if (state.openModal === "seed") setShowSeedModal(true);
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, navigate, location.pathname]);
 
   useEffect(() => {
     checkPluginStatus();

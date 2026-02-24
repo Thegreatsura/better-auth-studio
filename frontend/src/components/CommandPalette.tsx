@@ -5,11 +5,20 @@ import {
   BarChart3,
   Building2,
   Database,
+  Download,
+  ExternalLink,
+  Globe,
+  Key,
   Lock,
   Mail,
+  Monitor,
   Plus,
+  RefreshCw,
   Search,
   Settings,
+  Share2,
+  Shield,
+  Shuffle,
   UserPlus,
   Users,
   Wrench,
@@ -33,14 +42,14 @@ interface CommandItem {
 interface CommandPaletteProps {
   isOpen: boolean;
   onClose: () => void;
+  onAction?: (action: string) => void;
 }
 
-export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
+export default function CommandPalette({ isOpen, onClose, onAction }: CommandPaletteProps) {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [plugins, setPlugins] = useState<any>(null);
 
-  // Fetch plugins on mount
   useEffect(() => {
     const fetchPlugins = async () => {
       try {
@@ -52,13 +61,22 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
     fetchPlugins();
   }, []);
 
-  // Check if a plugin is enabled
   const isPluginEnabled = (pluginName: string) => {
     if (!plugins?.plugins) return false;
     return plugins.plugins.some((p: any) => p.id === pluginName);
   };
 
   const commands: CommandItem[] = [
+    // ─── Navigation ───
+    {
+      id: "dashboard",
+      title: "Dashboard",
+      description: "View overview and statistics",
+      icon: BarChart3,
+      action: () => navigate("/"),
+      category: "Navigation",
+      keywords: ["overview", "stats", "home", "analytics"],
+    },
     {
       id: "users",
       title: "Users",
@@ -66,7 +84,7 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
       icon: Users,
       action: () => navigate("/users"),
       category: "Navigation",
-      keywords: ["user", "account", "profile"],
+      keywords: ["user", "account", "profile", "members"],
     },
     {
       id: "organizations",
@@ -75,7 +93,7 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
       icon: Building2,
       action: () => navigate("/organizations"),
       category: "Navigation",
-      keywords: ["org", "company", "team"],
+      keywords: ["org", "company", "team", "workspace"],
       requiresPlugin: "organization",
       disabled: !isPluginEnabled("organization"),
       disabledMessage: "Enable organization plugin in settings",
@@ -84,10 +102,19 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
       id: "sessions",
       title: "Sessions",
       description: "View active user sessions",
-      icon: BarChart3,
+      icon: Globe,
       action: () => navigate("/sessions"),
       category: "Navigation",
-      keywords: ["session", "login", "active"],
+      keywords: ["session", "login", "active", "token"],
+    },
+    {
+      id: "emails",
+      title: "Emails",
+      description: "View email templates",
+      icon: Mail,
+      action: () => navigate("/emails"),
+      category: "Navigation",
+      keywords: ["email", "template", "notification", "message"],
     },
     {
       id: "tools",
@@ -96,17 +123,16 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
       icon: Wrench,
       action: () => navigate("/tools"),
       category: "Navigation",
-      keywords: ["utilities", "tools"],
+      keywords: ["utilities", "tools", "helpers"],
     },
     {
       id: "database",
       title: "Database",
-      description: "View database and schema",
+      description: "View database schema and tables",
       icon: Database,
-      disabled: true,
       action: () => navigate("/database"),
       category: "Navigation",
-      keywords: ["database", "schema"],
+      keywords: ["database", "schema", "tables", "models"],
     },
     {
       id: "settings",
@@ -115,49 +141,154 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
       icon: Settings,
       action: () => navigate("/settings"),
       category: "Navigation",
-      keywords: ["config", "setup", "preferences"],
+      keywords: ["config", "setup", "preferences", "configuration"],
     },
-    {
-      id: "dashboard",
-      title: "Dashboard",
-      description: "View overview and statistics",
-      icon: BarChart3,
-      action: () => navigate("/"),
-      category: "Navigation",
-      keywords: ["overview", "stats", "home"],
-    },
+
+    // ─── Actions ───
     {
       id: "create-user",
       title: "Create User",
       description: "Add a new user to the system",
       icon: UserPlus,
-      action: () => navigate("/users"),
+      action: () => navigate("/users", { state: { openModal: "create" } }),
       category: "Actions",
-      keywords: ["add", "new", "register"],
+      keywords: ["add", "new", "register", "signup", "user"],
     },
     {
       id: "create-organization",
       title: "Create Organization",
       description: "Create a new organization",
       icon: Plus,
-      action: () => navigate("/organizations"),
+      action: () => navigate("/organizations", { state: { openModal: "create" } }),
       category: "Actions",
-      keywords: ["add", "new", "org"],
+      keywords: ["add", "new", "org", "organization", "workspace"],
       requiresPlugin: "organization",
       disabled: !isPluginEnabled("organization"),
       disabledMessage: "Enable organization plugin in settings",
     },
     {
-      id: "invite-user",
-      title: "Invite User",
-      description: "Send invitation to join organization",
-      icon: Mail,
-      action: () => navigate("/organizations"),
+      id: "create-session",
+      title: "Create Session",
+      description: "Create a new user session",
+      icon: Monitor,
+      action: () => navigate("/sessions", { state: { openModal: "create" } }),
       category: "Actions",
-      keywords: ["invite", "email", "send"],
+      keywords: ["add", "new", "session", "login"],
+    },
+    {
+      id: "seed-users",
+      title: "Seed Users",
+      description: "Generate sample users for testing",
+      icon: Shuffle,
+      action: () => navigate("/users", { state: { openModal: "seed" } }),
+      category: "Actions",
+      keywords: ["seed", "generate", "test", "sample", "fake", "dummy"],
+    },
+    {
+      id: "seed-organizations",
+      title: "Seed Organizations",
+      description: "Generate sample organizations for testing",
+      icon: Shuffle,
+      action: () => navigate("/organizations", { state: { openModal: "seed" } }),
+      category: "Actions",
+      keywords: ["seed", "generate", "test", "sample", "fake", "dummy", "org"],
       requiresPlugin: "organization",
       disabled: !isPluginEnabled("organization"),
       disabledMessage: "Enable organization plugin in settings",
+    },
+    {
+      id: "seed-sessions",
+      title: "Seed Sessions",
+      description: "Generate sample sessions for testing",
+      icon: Shuffle,
+      action: () => navigate("/sessions", { state: { openModal: "seed" } }),
+      category: "Actions",
+      keywords: ["seed", "generate", "test", "sample", "fake", "dummy", "session"],
+    },
+    {
+      id: "export-analytics",
+      title: "Export Analytics",
+      description: "Generate shareable analytics image",
+      icon: Share2,
+      action: () => onAction?.("exportAnalytics"),
+      category: "Actions",
+      keywords: ["export", "share", "analytics", "screenshot", "image", "png"],
+    },
+    {
+      id: "refresh-studio",
+      title: "Refresh Studio",
+      description: "Hard refresh the studio data",
+      icon: RefreshCw,
+      action: () => onAction?.("hardRefresh"),
+      category: "Actions",
+      keywords: ["refresh", "reload", "sync", "update"],
+    },
+
+    // ─── Tools Quick Access ───
+    {
+      id: "tool-oauth",
+      title: "OAuth Tester",
+      description: "Test OAuth provider configuration",
+      icon: Shield,
+      action: () => navigate("/tools", { state: { openTool: "oauth" } }),
+      category: "Tools",
+      keywords: ["oauth", "provider", "google", "github", "social", "login"],
+    },
+    {
+      id: "tool-jwt",
+      title: "JWT Decoder",
+      description: "Decode and inspect JWT tokens",
+      icon: Key,
+      action: () => navigate("/tools", { state: { openTool: "jwt" } }),
+      category: "Tools",
+      keywords: ["jwt", "token", "decode", "inspect", "bearer"],
+    },
+    {
+      id: "tool-password",
+      title: "Password Strength Checker",
+      description: "Test password strength and security",
+      icon: Lock,
+      action: () => navigate("/tools", { state: { openTool: "password" } }),
+      category: "Tools",
+      keywords: ["password", "strength", "security", "hash"],
+    },
+    {
+      id: "tool-secret",
+      title: "Secret Generator",
+      description: "Generate secure random secrets",
+      icon: Key,
+      action: () => navigate("/tools", { state: { openTool: "secret" } }),
+      category: "Tools",
+      keywords: ["secret", "generate", "random", "key", "token"],
+    },
+    {
+      id: "tool-export",
+      title: "Export Data",
+      description: "Export users and data as JSON/CSV",
+      icon: Download,
+      action: () => navigate("/tools", { state: { openTool: "export" } }),
+      category: "Tools",
+      keywords: ["export", "download", "json", "csv", "data", "backup"],
+    },
+
+    // ─── Links ───
+    {
+      id: "open-docs",
+      title: "Documentation",
+      description: "Open Better Auth Studio documentation",
+      icon: ExternalLink,
+      action: () => window.open("https://better-auth-studio.vercel.app", "_blank"),
+      category: "Links",
+      keywords: ["docs", "documentation", "help", "guide", "reference"],
+    },
+    {
+      id: "open-support",
+      title: "Support",
+      description: "Get help and support",
+      icon: ExternalLink,
+      action: () => window.open("https://better-auth-studio.vercel.app", "_blank"),
+      category: "Links",
+      keywords: ["support", "help", "contact", "bug", "issue"],
     },
   ];
 
@@ -200,7 +331,6 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
     };
 
     if (isOpen) {
-      // Prevent background scroll when command palette is open
       document.body.style.overflow = "hidden";
       document.addEventListener("keydown", handleEscape);
 
@@ -210,6 +340,10 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
       };
     }
   }, [isOpen, onClose]);
+
+  useEffect(() => {
+    if (!isOpen) setSearch("");
+  }, [isOpen]);
 
   if (!isOpen) return null;
 

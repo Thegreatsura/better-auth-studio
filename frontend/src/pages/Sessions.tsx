@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { CopyableId } from "../components/CopyableId";
 import { Terminal } from "../components/Terminal";
@@ -47,6 +48,8 @@ interface Session {
 }
 
 export default function Sessions() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -72,6 +75,15 @@ export default function Sessions() {
   const [sessionSortOrder, setSessionSortOrder] = useState<"newest" | "oldest">("newest");
   const [sessionLocations, setSessionLocations] = useState<Record<string, LocationData>>({});
   const sessionLocationsRef = useRef<Record<string, LocationData>>({});
+
+  useEffect(() => {
+    const state = location.state as { openModal?: string } | null;
+    if (state?.openModal) {
+      if (state.openModal === "create") setShowCreateModal(true);
+      if (state.openModal === "seed") setShowSeedModal(true);
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, navigate, location.pathname]);
 
   const resolveIPLocation = useCallback(async (ipAddress: string): Promise<LocationData | null> => {
     try {

@@ -16,7 +16,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { CodeBlock } from "../components/CodeBlock";
 import { CodeEditor } from "../components/CodeEditor";
@@ -374,6 +374,8 @@ migrateFromClerk()
 
 export default function Tools() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const isSelfHosted = !!(window as any).__STUDIO_CONFIG__?.basePath;
   const [runningTool, setRunningTool] = useState<string | null>(null);
@@ -579,6 +581,21 @@ export default function Tools() {
   const [clientFramework, setClientFramework] = useState<
     "react" | "svelte" | "solid" | "vue" | "client"
   >("client");
+  useEffect(() => {
+    const state = location.state as { openTool?: string } | null;
+    if (state?.openTool) {
+      const toolMap: Record<string, () => void> = {
+        oauth: () => setShowOAuthModal(true),
+        jwt: () => setShowJwtModal(true),
+        password: () => setShowPasswordStrengthModal(true),
+        secret: () => setShowSecretGeneratorModal(true),
+        export: () => setShowExportModal(true),
+      };
+      toolMap[state.openTool]?.();
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, navigate, location.pathname]);
+
   useEffect(() => {
     if (showConfigValidator) {
       document.body.style.overflow = "hidden";

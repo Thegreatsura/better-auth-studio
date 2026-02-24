@@ -843,6 +843,10 @@ export default function Layout({ children }: LayoutProps) {
       <CommandPalette
         isOpen={isCommandPaletteOpen}
         onClose={() => setIsCommandPaletteOpen(false)}
+        onAction={(action) => {
+          if (action === "exportAnalytics") setShowExportAnalytics(true);
+          if (action === "hardRefresh") handleHardRefresh();
+        }}
       />
       {showExportAnalytics && (
         <ExportAnalyticsModal
