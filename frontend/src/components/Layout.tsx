@@ -523,7 +523,7 @@ export default function Layout({ children }: LayoutProps) {
                 </a>
               ) : (
                 <div className="mb-0 cursor-pointer min-w-0" onClick={() => navigate("/")}>
-                  <h1 className="text-sm md:text-md inline-flex mb-0 items-start font-light font-mono uppercase text-white gap-2 truncate">
+                  <h1 className="text-sm md:text-md inline-flex mb-0 items-start font-light pt-2 font-mono uppercase text-white gap-2 truncate">
                     <span className="truncate">{companyName}</span>
                     <sup className="text-xs text-gray-400 ml-1 mt-0 hidden md:flex items-center space-x-2">
                       <span className="inline-flex items-center">
