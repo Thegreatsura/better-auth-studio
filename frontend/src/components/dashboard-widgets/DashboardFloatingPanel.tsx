@@ -6,6 +6,7 @@ import { WIDGET_LABELS } from "@/contexts/DashboardWidgetsContext";
 import { WIDGET_TYPE_DRAG_KEY } from "./DropTargetSlot";
 
 export const PANEL_WIDTH = 300;
+const COLLAPSED_WIDTH = 36;
 
 /* ------------------------------------------------------------------ */
 /*  Static mini-preview for each widget type                          */
@@ -288,19 +289,20 @@ export function DashboardFloatingPanel() {
     setDropTargetIndex(null);
   }, []);
 
-  if (widgets.length === 0 && availableToAdd.length === 0) return null;
-
   return (
     <div
       className="fixed top-2 right-0 z-30 flex flex-col border-l border-white/10 bg-black/[.97] backdrop-blur-md transition-[width] duration-200 ease-out"
-      style={{ width: expanded ? PANEL_WIDTH : 0, height: "100vh" }}
+      style={{ width: expanded ? PANEL_WIDTH : COLLAPSED_WIDTH, height: "100vh" }}
     >
-      {/* Toggle tab */}
+      {/* Toggle tab - always visible so the panel can be opened in production/self-hosted */}
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
         className="absolute top-3 mt-12 z-10 flex h-8 items-center gap-1 px-1.5 py-1 border border-white/20 bg-black text-gray-400 hover:text-white hover:bg-white/5 transition-colors text-[10px] font-mono uppercase"
-        style={{ right: expanded ? PANEL_WIDTH - 1 : -1, borderRight: "none" }}
+        style={{
+          right: expanded ? PANEL_WIDTH - 1 : 0,
+          borderRight: "none",
+        }}
         title={expanded ? "Collapse panel" : "Expand widgets panel"}
       >
         {expanded ? (
