@@ -42,17 +42,18 @@ export function InvitationsWidget() {
         <span className="text-[10px] font-mono text-gray-600">{pending.length} pending</span>
       </div>
       <hr className="border-white/5 mb-2 -mx-2 shrink-0" />
-      {loading ? (
-        <div className="flex-1 flex items-center justify-center">
-          <p className="text-xs font-mono text-gray-600">Loading...</p>
-        </div>
-      ) : pending.length === 0 ? (
-        <div className="flex-1 flex items-center justify-center">
-          <p className="text-xs font-mono text-gray-600">No pending invitations</p>
-        </div>
-      ) : (
-        <div className="overflow-auto custom-scrollbar flex-1 min-h-0">
-          <table className="w-full text-[11px] border-collapse">
+      <div className="flex-1 flex flex-col min-h-[200px]">
+        {loading ? (
+          <div className="flex-1 flex items-center justify-center">
+            <p className="text-xs font-mono text-gray-600">Loading...</p>
+          </div>
+        ) : pending.length === 0 ? (
+          <div className="flex-1 flex items-center justify-center">
+            <p className="text-xs font-mono text-gray-600">No pending invitations</p>
+          </div>
+        ) : (
+          <div className="overflow-auto custom-scrollbar flex-1 min-h-0">
+            <table className="w-full text-[11px] border-collapse">
             <thead className="sticky top-0 bg-black/90 backdrop-blur-sm z-10">
               <tr className="border-b border-white/10">
                 <th className="text-left py-1.5 px-1.5 font-mono font-normal text-gray-500 uppercase text-[9px] tracking-wider">
@@ -67,7 +68,7 @@ export function InvitationsWidget() {
               </tr>
             </thead>
             <tbody>
-              {pending.slice(0, 10).map((i) => (
+              {pending.map((i) => (
                 <tr
                   key={i.id}
                   className="border-b border-white/5 hover:bg-white/[3%] transition-colors group"
@@ -90,8 +91,9 @@ export function InvitationsWidget() {
               ))}
             </tbody>
           </table>
-        </div>
-      )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

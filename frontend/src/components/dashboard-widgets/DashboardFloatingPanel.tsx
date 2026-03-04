@@ -6,7 +6,6 @@ import { WIDGET_LABELS } from "@/contexts/DashboardWidgetsContext";
 import { WIDGET_TYPE_DRAG_KEY } from "./DropTargetSlot";
 
 export const PANEL_WIDTH = 300;
-const COLLAPSED_WIDTH = 36;
 
 /* ------------------------------------------------------------------ */
 /*  Static mini-preview for each widget type                          */
@@ -292,7 +291,7 @@ export function DashboardFloatingPanel() {
   return (
     <div
       className="fixed top-2 right-0 z-30 flex flex-col border-l border-white/10 bg-black/[.97] backdrop-blur-md transition-[width] duration-200 ease-out"
-      style={{ width: expanded ? PANEL_WIDTH : COLLAPSED_WIDTH, height: "100vh" }}
+      style={{ width: expanded ? PANEL_WIDTH : 0, height: "100vh" }}
     >
       {/* Toggle tab - always visible so the panel can be opened in production/self-hosted */}
       <button
