@@ -136,30 +136,30 @@ export function WorldMapWidget() {
             </div>
           ) : (
             <div className="overflow-y-auto custom-scrollbar flex-1 min-h-0 space-y-0.5">
-                {distribution.slice(0, 20).map((d) => (
-                  <button
-                    key={d.countryCode}
-                    type="button"
-                    onClick={() => openCountryDetail(d)}
-                    className="flex items-center gap-2 py-1.5 px-1 w-full text-left hover:bg-white/5 transition-colors group rounded-none"
-                  >
-                    <span className="text-sm leading-none shrink-0" title={d.country}>
-                      {countryFlag(d.countryCode)}
-                    </span>
-                    <span className="text-[11px] text-gray-400 group-hover:text-gray-200 transition-colors truncate flex-1 min-w-0">
-                      {d.country || d.countryCode}
-                    </span>
-                    <div className="w-12 h-1 bg-white/5 overflow-hidden shrink-0">
-                      <div
-                        className="h-full bg-white/25 transition-all duration-300"
-                        style={{
-                          width: `${(d.uniqueUsers / Math.max(...distribution.map((x) => x.uniqueUsers), 1)) * 100}%`,
-                        }}
-                      />
-                    </div>
-                    <span className="text-[10px] font-mono text-gray-500 w-4 text-right shrink-0">
-                      {d.uniqueUsers}
-                    </span>
+              {distribution.slice(0, 20).map((d) => (
+                <button
+                  key={d.countryCode}
+                  type="button"
+                  onClick={() => openCountryDetail(d)}
+                  className="flex items-center gap-2 py-1.5 px-1 w-full text-left hover:bg-white/5 transition-colors group rounded-none"
+                >
+                  <span className="text-sm leading-none shrink-0" title={d.country}>
+                    {countryFlag(d.countryCode)}
+                  </span>
+                  <span className="text-[11px] text-gray-400 group-hover:text-gray-200 transition-colors truncate flex-1 min-w-0">
+                    {d.country || d.countryCode}
+                  </span>
+                  <div className="w-12 h-1 bg-white/5 overflow-hidden shrink-0">
+                    <div
+                      className="h-full bg-white/25 transition-all duration-300"
+                      style={{
+                        width: `${(d.uniqueUsers / Math.max(...distribution.map((x) => x.uniqueUsers), 1)) * 100}%`,
+                      }}
+                    />
+                  </div>
+                  <span className="text-[10px] font-mono text-gray-500 w-4 text-right shrink-0">
+                    {d.uniqueUsers}
+                  </span>
                 </button>
               ))}
             </div>

@@ -53,41 +53,41 @@ export function InvitationsWidget() {
       ) : (
         <div className="overflow-auto custom-scrollbar flex-1 min-h-0">
           <table className="w-full text-[11px] border-collapse">
-              <thead className="sticky top-0 bg-black/90 backdrop-blur-sm z-10">
-                <tr className="border-b border-white/10">
-                  <th className="text-left py-1.5 px-1.5 font-mono font-normal text-gray-500 uppercase text-[9px] tracking-wider">
-                    Email
-                  </th>
-                  <th className="text-left py-1.5 px-1.5 font-mono font-normal text-gray-500 uppercase text-[9px] tracking-wider">
-                    Role
-                  </th>
-                  <th className="text-right py-1.5 px-1.5 font-mono font-normal text-gray-500 uppercase text-[9px] tracking-wider">
-                    Created
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {pending.slice(0, 10).map((i) => (
-                  <tr
-                    key={i.id}
-                    className="border-b border-white/5 hover:bg-white/[3%] transition-colors group"
+            <thead className="sticky top-0 bg-black/90 backdrop-blur-sm z-10">
+              <tr className="border-b border-white/10">
+                <th className="text-left py-1.5 px-1.5 font-mono font-normal text-gray-500 uppercase text-[9px] tracking-wider">
+                  Email
+                </th>
+                <th className="text-left py-1.5 px-1.5 font-mono font-normal text-gray-500 uppercase text-[9px] tracking-wider">
+                  Role
+                </th>
+                <th className="text-right py-1.5 px-1.5 font-mono font-normal text-gray-500 uppercase text-[9px] tracking-wider">
+                  Created
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {pending.slice(0, 10).map((i) => (
+                <tr
+                  key={i.id}
+                  className="border-b border-white/5 hover:bg-white/[3%] transition-colors group"
+                >
+                  <td
+                    className="py-1.5 px-1.5 text-gray-300 group-hover:text-white truncate max-w-[120px] font-mono transition-colors"
+                    title={i.email}
                   >
-                    <td
-                      className="py-1.5 px-1.5 text-gray-300 group-hover:text-white truncate max-w-[120px] font-mono transition-colors"
-                      title={i.email}
-                    >
-                      {i.email}
-                    </td>
-                    <td className="py-1.5 px-1.5">
-                      <span className="text-[9px] px-1.5 py-0.5 border border-white/10 rounded-sm uppercase font-mono text-gray-500">
-                        {i.role || "member"}
-                      </span>
-                    </td>
-                    <td className="py-1.5 px-1.5 text-gray-600 whitespace-nowrap text-right font-mono">
-                      {i.createdAt ? format(new Date(i.createdAt), "MMM dd, HH:mm") : "—"}
-                    </td>
-                  </tr>
-                ))}
+                    {i.email}
+                  </td>
+                  <td className="py-1.5 px-1.5">
+                    <span className="text-[9px] px-1.5 py-0.5 border border-white/10 rounded-sm uppercase font-mono text-gray-500">
+                      {i.role || "member"}
+                    </span>
+                  </td>
+                  <td className="py-1.5 px-1.5 text-gray-600 whitespace-nowrap text-right font-mono">
+                    {i.createdAt ? format(new Date(i.createdAt), "MMM dd, HH:mm") : "—"}
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
