@@ -39,7 +39,9 @@ export function DatabaseWidget() {
                   <Icon className="w-3.5 h-3.5" />
                   <span className="font-mono uppercase tracking-wider text-[10px]">{label}</span>
                 </div>
-                <span className="text-white font-mono text-sm">{compactFmt.format(value ?? 0)}</span>
+                <span className="text-white font-mono text-sm">
+                  {compactFmt.format(value ?? 0)}
+                </span>
               </li>
             ))}
           </ul>

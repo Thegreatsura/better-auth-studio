@@ -58,40 +58,42 @@ export function RecentOrganizationsWidget() {
         ) : (
           <div className="overflow-auto custom-scrollbar flex-1 min-h-0">
             <table className="w-full text-[11px] border-collapse">
-            <thead className="sticky top-0 bg-black/90 backdrop-blur-sm z-10">
-              <tr className="border-b border-white/10">
-                <th className="text-left py-1.5 px-1.5 font-mono font-normal text-gray-500 uppercase text-[9px] tracking-wider">
-                  Name
-                </th>
-                <th className="text-left py-1.5 px-1.5 font-mono font-normal text-gray-500 uppercase text-[9px] tracking-wider">
-                  Members
-                </th>
-                <th className="text-right py-1.5 px-1.5 font-mono font-normal text-gray-500 uppercase text-[9px] tracking-wider">
-                  Created
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {orgs.map((o) => (
-                <tr
-                  key={o.id}
-                  onClick={() => navigate(`/organizations/${o.id}`)}
-                  className="border-b border-white/5 hover:bg-white/[3%] cursor-pointer transition-colors group"
-                >
-                  <td
-                    className="py-1.5 px-1.5 text-gray-300 group-hover:text-white truncate max-w-[140px] transition-colors"
-                    title={o.name || ""}
-                  >
-                    {o.name || o.slug || "—"}
-                  </td>
-                  <td className="py-1.5 px-1.5 text-gray-600 font-mono">{o.memberCount ?? "—"}</td>
-                  <td className="py-1.5 px-1.5 text-gray-600 whitespace-nowrap text-right font-mono">
-                    {o.createdAt ? format(new Date(o.createdAt), "MMM dd, HH:mm") : "—"}
-                  </td>
+              <thead className="sticky top-0 bg-black/90 backdrop-blur-sm z-10">
+                <tr className="border-b border-white/10">
+                  <th className="text-left py-1.5 px-1.5 font-mono font-normal text-gray-500 uppercase text-[9px] tracking-wider">
+                    Name
+                  </th>
+                  <th className="text-left py-1.5 px-1.5 font-mono font-normal text-gray-500 uppercase text-[9px] tracking-wider">
+                    Members
+                  </th>
+                  <th className="text-right py-1.5 px-1.5 font-mono font-normal text-gray-500 uppercase text-[9px] tracking-wider">
+                    Created
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {orgs.map((o) => (
+                  <tr
+                    key={o.id}
+                    onClick={() => navigate(`/organizations/${o.id}`)}
+                    className="border-b border-white/5 hover:bg-white/[3%] cursor-pointer transition-colors group"
+                  >
+                    <td
+                      className="py-1.5 px-1.5 text-gray-300 group-hover:text-white truncate max-w-[140px] transition-colors"
+                      title={o.name || ""}
+                    >
+                      {o.name || o.slug || "—"}
+                    </td>
+                    <td className="py-1.5 px-1.5 text-gray-600 font-mono">
+                      {o.memberCount ?? "—"}
+                    </td>
+                    <td className="py-1.5 px-1.5 text-gray-600 whitespace-nowrap text-right font-mono">
+                      {o.createdAt ? format(new Date(o.createdAt), "MMM dd, HH:mm") : "—"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>

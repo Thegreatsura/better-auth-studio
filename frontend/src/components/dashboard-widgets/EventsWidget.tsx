@@ -59,10 +59,7 @@ export function EventsWidget() {
         const listUrl = sinceParam
           ? `/api/events?limit=50&sort=desc&since=${encodeURIComponent(sinceParam)}`
           : "/api/events?limit=50&sort=desc";
-        const [listRes, countRes] = await Promise.all([
-          fetch(listUrl),
-          fetch("/api/events/count"),
-        ]);
+        const [listRes, countRes] = await Promise.all([fetch(listUrl), fetch("/api/events/count")]);
         if (cancelled) return;
         if (listRes.ok) {
           const data = await listRes.json();
@@ -83,7 +80,8 @@ export function EventsWidget() {
     };
   }, [selectedHours]);
 
-  const activeLabel = EVENT_RANGE_OPTIONS.find((o) => o.hours === selectedHours)?.label ?? "Last 24h";
+  const activeLabel =
+    EVENT_RANGE_OPTIONS.find((o) => o.hours === selectedHours)?.label ?? "Last 24h";
 
   return (
     <div className="flex flex-col min-h-0 h-full">
