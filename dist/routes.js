@@ -1626,6 +1626,12 @@ export function createRoutes(authConfig, configPath, geoDbPath, preloadedAdapter
     router.delete("/api/users/:userId", async (req, res) => {
         try {
             const { userId } = req.params;
+            const session = req.studioSession;
+            if (session && session.userId && session.userId === userId) {
+                return res
+                    .status(400)
+                    .json({ success: false, error: "You cannot delete the currently authenticated user" });
+            }
             const adapter = await getAuthAdapterWithConfig();
             if (!adapter || !adapter.delete) {
                 return res.status(500).json({ error: "Auth adapter not available" });
@@ -2569,6 +2575,12 @@ export function createRoutes(authConfig, configPath, geoDbPath, preloadedAdapter
     router.delete("/api/users/:id", async (req, res) => {
         try {
             const { id } = req.params;
+            const session = req.studioSession;
+            if (session && session.userId && session.userId === id) {
+                return res
+                    .status(400)
+                    .json({ success: false, error: "You cannot delete the currently authenticated user" });
+            }
             await getAuthData(authConfig, "deleteUser", { id }, configPath, preloadedAdapter);
             res.json({ success: true });
         }
