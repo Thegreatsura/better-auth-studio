@@ -8,7 +8,7 @@ import babelPresetTypeScript from "@babel/preset-typescript";
 // @ts-expect-error - No types available for current moduleResolution and bundler mode
 import { hex } from "@better-auth/utils/hex";
 import { scryptAsync } from "@noble/hashes/scrypt.js";
-import type { InternalAdapter } from "better-auth";
+import { type InternalAdapter } from "better-auth";
 import { createJiti } from "jiti";
 import { getPathAliases } from "./config.js";
 import { possibleConfigFiles } from "./utils.js";
@@ -136,11 +136,11 @@ export async function getAuthAdapter(configPath?: string): Promise<AuthAdapter |
           },
         });
         if (data.password) {
-          let hashedPassword = data.password
+          let hashedPassword = data.password;
           try {
             hashedPassword = await hashPassword(data.password);
           } catch (err) {
-            console.log({ err })
+            console.log({ err });
           }
           try {
             await adapter.create({
@@ -154,8 +154,8 @@ export async function getAuthAdapter(configPath?: string): Promise<AuthAdapter |
                 updatedAt: new Date(),
               },
             });
-          } catch (_accountError) { 
-            console.log({_accountError})
+          } catch (_accountError) {
+            console.log({ _accountError });
           }
         }
 
