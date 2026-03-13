@@ -8,7 +8,7 @@ A web-based studio interface for managing Better Auth applications. Better Auth 
 
 ## Demo Snapshot
 
-![Demo of Better Auth Studio](/docs/public/demo.png)
+![Demo of Better Auth Studio](https://gk6bju9ndq.ufs.sh/f/M5pOhOFFvHQJcwmo00jXSlBtbRHTF15ujAQLPx3VpcKgMOz0)
 
 ## ✨ Try Better Auth Studio Demo
 
