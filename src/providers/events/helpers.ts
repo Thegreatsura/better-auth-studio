@@ -1717,6 +1717,161 @@ export function createStorageProvider(options: {
 
   let tableEnsured = false;
   let tableEnsuringPromise: Promise<void> | null = null;
+  let resolvedModelName: string | null = null;
+
+  const isMissingModelError = (error: any) =>
+    error?.message?.includes("not found in schema") ||
+    error?.message?.includes("not found in model") ||
+    error?.message?.includes("Model") ||
+    error?.code === "P2025" ||
+    error?.code === "42P01";
+
+  const toCamelCase = (value: string) =>
+    value.replace(/[_-]([a-z])/g, (_match, char: string) => char.toUpperCase());
+
+  const getModelCandidates = () => {
+    const candidates = new Set<string>();
+    const addForms = (value?: string) => {
+      const normalized = value?.trim();
+      if (!normalized) return;
+
+      const snake = normalized.replace(/-/g, "_");
+      const singularSnake = snake.endsWith("s") ? snake.slice(0, -1) : snake;
+      const pluralSnake = snake.endsWith("s") ? snake : `${snake}s`;
+      const singularCamel = toCamelCase(singularSnake);
+      const pluralCamel = toCamelCase(pluralSnake);
+
+      [
+        normalized,
+        snake,
+        singularSnake,
+        pluralSnake,
+        singularCamel,
+        pluralCamel,
+        singularCamel.charAt(0).toUpperCase() + singularCamel.slice(1),
+        pluralCamel.charAt(0).toUpperCase() + pluralCamel.slice(1),
+      ].forEach((candidate) => {
+        if (candidate) {
+          candidates.add(candidate);
+        }
+      });
+    };
+
+    addForms(tableName);
+    addForms(tableName === "auth_events" ? "auth_event" : "auth_events");
+
+    return Array.from(candidates);
+  };
+
+  const withResolvedModel = async <T>(callback: (modelName: string) => Promise<T>): Promise<T> => {
+    const candidates = Array.from(
+      new Set([resolvedModelName, ...getModelCandidates()].filter(Boolean) as string[]),
+    );
+
+    let lastLookupError: any = null;
+
+    for (const modelName of candidates) {
+      try {
+        const result = await callback(modelName);
+        resolvedModelName = modelName;
+        return result;
+      } catch (error: any) {
+        if (isMissingModelError(error)) {
+          lastLookupError = error;
+          continue;
+        }
+        throw error;
+      }
+    }
+
+    if (lastLookupError) {
+      throw lastLookupError;
+    }
+
+    throw new Error(`No event model candidates available for "${tableName}"`);
+  };
+  const getFieldCandidates = (field?: string) => {
+    switch (field) {
+      case "userId":
+        return ["userId", "user_id"];
+      case "sessionId":
+        return ["sessionId", "session_id"];
+      case "organizationId":
+        return ["organizationId", "organization_id"];
+      case "ipAddress":
+        return ["ipAddress", "ip_address"];
+      case "userAgent":
+        return ["userAgent", "user_agent"];
+      case "displayMessage":
+        return ["displayMessage", "display_message"];
+      case "displaySeverity":
+        return ["displaySeverity", "display_severity"];
+      case "createdAt":
+        return ["createdAt", "created_at"];
+      default:
+        return field ? [field] : [];
+    }
+  };
+  const getWhereCandidates = (where?: Array<Record<string, any>>) => {
+    if (!Array.isArray(where) || where.length === 0) {
+      return {
+        whereCandidates: [undefined],
+        hasAliasedFields: false,
+      };
+    }
+
+    let hasAliasedFields = false;
+    let combinations: Array<Array<Record<string, any>>> = [[]];
+
+    for (const clause of where) {
+      const fieldCandidates = getFieldCandidates(clause?.field);
+      if (fieldCandidates.length > 1) {
+        hasAliasedFields = true;
+      }
+
+      const nextCombinations = fieldCandidates.flatMap((fieldName) =>
+        combinations.map((existing) => [...existing, { ...clause, field: fieldName }]),
+      );
+
+      if (nextCombinations.length > 0) {
+        combinations = nextCombinations;
+      }
+    }
+
+    return {
+      whereCandidates: combinations.length > 0 ? combinations : [where],
+      hasAliasedFields,
+    };
+  };
+  const findManyWithResolvedModel = async (options: Record<string, any>): Promise<any[]> => {
+    const { where, ...restOptions } = options;
+    const { whereCandidates, hasAliasedFields } = getWhereCandidates(where);
+    let lastSuccessfulEmptyResult: any[] | null = null;
+
+    for (let index = 0; index < whereCandidates.length; index += 1) {
+      const result = (await withResolvedModel((modelName) =>
+        adapter.findMany({
+          ...restOptions,
+          ...(whereCandidates[index] ? { where: whereCandidates[index] } : {}),
+          model: modelName,
+        }),
+      )) as any[];
+
+      if (
+        Array.isArray(result) &&
+        result.length === 0 &&
+        hasAliasedFields &&
+        index < whereCandidates.length - 1
+      ) {
+        lastSuccessfulEmptyResult = result;
+        continue;
+      }
+
+      return Array.isArray(result) ? result : [];
+    }
+
+    return lastSuccessfulEmptyResult ?? [];
+  };
 
   const ensureTable = async (): Promise<void> => {
     if (!adapter) return;
@@ -1727,10 +1882,12 @@ export function createStorageProvider(options: {
       try {
         if (adapter.findMany) {
           // Try to query the table to see if it exists
-          await adapter.findMany({
-            model: tableName,
-            limit: 1,
-          });
+          await withResolvedModel((modelName) =>
+            adapter.findMany({
+              model: modelName,
+              limit: 1,
+            }),
+          );
           tableEnsured = true;
           return;
         }
@@ -1806,24 +1963,26 @@ export function createStorageProvider(options: {
   return {
     async ingest(event: AuthEvent) {
       if (adapter.create) {
-        await adapter.create({
-          model: tableName,
-          data: {
-            id: event.id,
-            type: event.type,
-            timestamp: event.timestamp,
-            status: event.status || "success",
-            userId: event.userId,
-            sessionId: event.sessionId,
-            organizationId: event.organizationId,
-            metadata: event.metadata || {},
-            ipAddress: event.ipAddress,
-            userAgent: event.userAgent,
-            source: event.source,
-            displayMessage: event.display?.message,
-            displaySeverity: event.display?.severity,
-          },
-        });
+        await withResolvedModel((modelName) =>
+          adapter.create({
+            model: modelName,
+            data: {
+              id: event.id,
+              type: event.type,
+              timestamp: event.timestamp,
+              status: event.status || "success",
+              userId: event.userId,
+              sessionId: event.sessionId,
+              organizationId: event.organizationId,
+              metadata: event.metadata || {},
+              ipAddress: event.ipAddress,
+              userAgent: event.userAgent,
+              source: event.source,
+              displayMessage: event.display?.message,
+              displaySeverity: event.display?.severity,
+            },
+          }),
+        );
       } else if (adapter.insert) {
         await adapter.insert({
           table: tableName,
@@ -1851,24 +2010,26 @@ export function createStorageProvider(options: {
       await ensureTable();
 
       if (adapter.createMany) {
-        await adapter.createMany({
-          model: tableName,
-          data: events.map((event) => ({
-            id: event.id,
-            type: event.type,
-            timestamp: event.timestamp,
-            status: event.status || "success",
-            userId: event.userId,
-            sessionId: event.sessionId,
-            organizationId: event.organizationId,
-            metadata: event.metadata || {},
-            ipAddress: event.ipAddress,
-            userAgent: event.userAgent,
-            source: event.source,
-            displayMessage: event.display?.message,
-            displaySeverity: event.display?.severity,
-          })),
-        });
+        await withResolvedModel((modelName) =>
+          adapter.createMany({
+            model: modelName,
+            data: events.map((event) => ({
+              id: event.id,
+              type: event.type,
+              timestamp: event.timestamp,
+              status: event.status || "success",
+              userId: event.userId,
+              sessionId: event.sessionId,
+              organizationId: event.organizationId,
+              metadata: event.metadata || {},
+              ipAddress: event.ipAddress,
+              userAgent: event.userAgent,
+              source: event.source,
+              displayMessage: event.display?.message,
+              displaySeverity: event.display?.severity,
+            })),
+          }),
+        );
       } else {
         await Promise.all(events.map((event) => this.ingest(event)));
       }
@@ -1907,7 +2068,6 @@ export function createStorageProvider(options: {
           }
 
           const findManyOptions: any = {
-            model: tableName,
             where,
             orderBy: [{ field: "timestamp", direction: sort === "desc" ? "desc" : "asc" }],
             limit: limit + 1,
@@ -1915,7 +2075,7 @@ export function createStorageProvider(options: {
           if (offset != null && offset > 0) {
             findManyOptions.offset = offset;
           }
-          const events = await adapter.findMany(findManyOptions);
+          const events = await findManyWithResolvedModel(findManyOptions);
 
           const hasMore = events.length > limit;
           const paginatedEvents = events.slice(0, limit).map((event: any) => ({

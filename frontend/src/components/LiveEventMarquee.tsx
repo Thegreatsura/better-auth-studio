@@ -91,6 +91,23 @@ function checkIsSelfHosted(): boolean {
   return !!cfg.basePath;
 }
 
+function isEventModelLookupError(value: unknown): boolean {
+  const text =
+    typeof value === "string"
+      ? value
+      : value && typeof value === "object"
+        ? JSON.stringify(value)
+        : String(value ?? "");
+
+  return (
+    text.includes("not found in schema") ||
+    text.includes("not found in model") ||
+    text.includes("Model") ||
+    text.includes("auth_event") ||
+    text.includes("auth_events")
+  );
+}
+
 export function LiveEventMarquee({
   maxEvents: propMaxEvents,
   pollInterval = 2000,
@@ -112,7 +129,9 @@ export function LiveEventMarquee({
   const [isConnected, setIsConnected] = useState(false);
   const [_, setLastEventId] = useState<string | null>(null);
   const [eventsEnabled, setEventsEnabled] = useState<boolean | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const singleSetRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number | null>(null);
   const pollTimeoutRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isPollingRef = useRef(false);
@@ -121,6 +140,7 @@ export function LiveEventMarquee({
   const singleSetWidthRef = useRef(0);
   const isAnimatingRef = useRef(false);
   const isPausedRef = useRef(false);
+  const [repeatCount, setRepeatCount] = useState(3);
 
   useEffect(() => {
     const checkEventsStatus = async () => {
@@ -142,13 +162,13 @@ export function LiveEventMarquee({
     checkEventsStatus();
   }, []);
 
-  const pollEvents = useCallback(async () => {
+  const pollEvents = useCallback(async (): Promise<boolean> => {
     // Don't poll if events are not enabled
     if (eventsEnabled !== true) {
-      return;
+      return false;
     }
 
-    if (isPollingRef.current) return;
+    if (isPollingRef.current) return false;
     isPollingRef.current = true;
 
     try {
@@ -181,11 +201,12 @@ export function LiveEventMarquee({
           try {
             const errorData = await response.json();
             if (
-              errorData.details?.includes("not found in schema") ||
-              errorData.details?.includes("Model")
+              isEventModelLookupError(errorData?.details) ||
+              isEventModelLookupError(errorData?.error) ||
+              isEventModelLookupError(errorData)
             ) {
               setIsConnected(true);
-              return;
+              return true;
             }
           } catch {
             // Continue with error
@@ -231,9 +252,15 @@ export function LiveEventMarquee({
         // If response doesn't have events array, log for debugging
         console.warn("Events API response missing events array:", data);
       }
+      return true;
     } catch (error) {
       console.error("Failed to poll events:", error);
+      if (isEventModelLookupError(error)) {
+        setIsConnected(true);
+        return true;
+      }
       setIsConnected(false);
+      return false;
     } finally {
       isPollingRef.current = false;
     }
@@ -281,8 +308,8 @@ export function LiveEventMarquee({
       }
 
       const retryPoll = () => {
-        pollEvents().then(() => {
-          if (isConnected) {
+        pollEvents().then((connected) => {
+          if (connected) {
             // Success, resume normal polling
             pollTimeoutRef.current = setInterval(pollEvents, pollInterval);
           } else {
@@ -297,120 +324,118 @@ export function LiveEventMarquee({
     }
   }, [isConnected, pollEvents, pollInterval, eventsEnabled]);
 
+  const updateTrackMetrics = useCallback(() => {
+    const viewport = viewportRef.current;
+    const track = trackRef.current;
+    const singleSet = singleSetRef.current;
+
+    if (!viewport || !track || !singleSet || events.length === 0) {
+      return;
+    }
+
+    const singleSetWidth = singleSet.getBoundingClientRect().width;
+    if (!singleSetWidth || !Number.isFinite(singleSetWidth)) {
+      return;
+    }
+
+    singleSetWidthRef.current = singleSetWidth;
+    const normalizedOffset = Math.abs(positionRef.current) % singleSetWidth;
+    positionRef.current = normalizedOffset === 0 ? 0 : -normalizedOffset;
+    track.style.transform = `translate3d(${positionRef.current}px, 0, 0)`;
+
+    // Keep enough repeated sets rendered so the viewport stays fully covered
+    // while we animate through one full set before wrapping.
+    const nextRepeatCount = Math.max(3, Math.ceil(viewport.clientWidth / singleSetWidth) + 2);
+    setRepeatCount((current) => (current === nextRepeatCount ? current : nextRepeatCount));
+  }, [events]);
+
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container || events.length === 0) {
+    if (events.length === 0) {
+      setRepeatCount(3);
+      singleSetWidthRef.current = 0;
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
         animationRef.current = null;
         isAnimatingRef.current = false;
         positionRef.current = 0;
       }
-      return;
-    }
-
-    // Calculate the width of one set of events
-    const calculateSingleSetWidth = () => {
-      if (!container || events.length === 0) return 0;
-
-      const totalWidth = container.scrollWidth;
-      const setsCount = events.length === 1 ? 6 : 3; // More duplicates for single event
-      const singleSetWidth = totalWidth / setsCount;
-
-      if (events.length > 0 && container.children.length >= events.length) {
-        const firstSetEnd = container.children[events.length - 1] as HTMLElement;
-        const firstSetStart = container.children[0] as HTMLElement;
-        if (firstSetEnd && firstSetStart) {
-          const measuredWidth =
-            firstSetEnd.offsetLeft + firstSetEnd.offsetWidth - firstSetStart.offsetLeft;
-          // Use measured width if it's reasonable (within 10% of calculated)
-          if (
-            measuredWidth > 0 &&
-            measuredWidth > 0 &&
-            Math.abs(measuredWidth - singleSetWidth) / singleSetWidth < 0.1
-          ) {
-            return measuredWidth;
-          }
-        }
+      if (trackRef.current) {
+        trackRef.current.style.transform = "translate3d(0px, 0, 0)";
       }
-
-      return singleSetWidth;
-    };
-
-    if (!isAnimatingRef.current) {
-      isAnimatingRef.current = true;
-      positionRef.current = 0;
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          if (container) {
-            const width = calculateSingleSetWidth();
-            if (width > 0) {
-              singleSetWidthRef.current = width;
-            }
-          }
-        });
-      });
-    } else {
-      requestAnimationFrame(() => {
-        if (container) {
-          const newWidth = calculateSingleSetWidth();
-          if (
-            singleSetWidthRef.current > 0 &&
-            newWidth !== singleSetWidthRef.current &&
-            newWidth > 0
-          ) {
-            const ratio = newWidth / singleSetWidthRef.current;
-            positionRef.current = positionRef.current * ratio;
-          }
-          singleSetWidthRef.current = newWidth;
-        }
-      });
       return;
     }
+
+    updateTrackMetrics();
+
+    if (typeof ResizeObserver === "undefined") {
+      window.addEventListener("resize", updateTrackMetrics);
+      return () => {
+        window.removeEventListener("resize", updateTrackMetrics);
+      };
+    }
+
+    const resizeObserver = new ResizeObserver(() => {
+      updateTrackMetrics();
+    });
+
+    if (viewportRef.current) {
+      resizeObserver.observe(viewportRef.current);
+    }
+    if (singleSetRef.current) {
+      resizeObserver.observe(singleSetRef.current);
+    }
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [events, updateTrackMetrics, repeatCount]);
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track || events.length === 0) {
+      return;
+    }
+
+    isAnimatingRef.current = true;
 
     const animate = () => {
-      if (!container || !isAnimatingRef.current || isPausedRef.current) {
-        if (isAnimatingRef.current && !isPausedRef.current) {
-          animationRef.current = requestAnimationFrame(animate);
-        }
+      if (!isAnimatingRef.current) {
         return;
       }
 
-      const currentSpeed = speedRef.current;
+      if (!isPausedRef.current) {
+        const currentSpeed = speedRef.current;
+        const validSpeed =
+          typeof currentSpeed === "number" &&
+          !isNaN(currentSpeed) &&
+          isFinite(currentSpeed) &&
+          currentSpeed > 0
+            ? currentSpeed
+            : 0.5;
 
-      const validSpeed =
-        typeof currentSpeed === "number" &&
-        !isNaN(currentSpeed) &&
-        isFinite(currentSpeed) &&
-        currentSpeed > 0
-          ? currentSpeed
-          : 0.5;
+        positionRef.current -= validSpeed;
 
-      positionRef.current -= validSpeed;
-
-      let currentSingleSetWidth = singleSetWidthRef.current;
-      if (!currentSingleSetWidth || currentSingleSetWidth <= 0) {
-        currentSingleSetWidth = calculateSingleSetWidth();
-        if (currentSingleSetWidth > 0) {
-          singleSetWidthRef.current = currentSingleSetWidth;
-        }
-      }
-
-      if (currentSingleSetWidth > 0) {
-        if (Math.abs(positionRef.current) >= currentSingleSetWidth) {
+        const currentSingleSetWidth = singleSetWidthRef.current;
+        if (currentSingleSetWidth > 0 && Math.abs(positionRef.current) >= currentSingleSetWidth) {
           positionRef.current = positionRef.current + currentSingleSetWidth;
         }
-      }
 
-      container.style.transform = `translate3d(${positionRef.current}px, 0, 0)`;
+        track.style.transform = `translate3d(${positionRef.current}px, 0, 0)`;
+      }
 
       animationRef.current = requestAnimationFrame(animate);
     };
 
     animationRef.current = requestAnimationFrame(animate);
 
-    return () => {};
-  }, [events.length]);
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+        animationRef.current = null;
+      }
+      isAnimatingRef.current = false;
+    };
+  }, [events, repeatCount]);
 
   useEffect(() => {
     return () => {
@@ -493,67 +518,6 @@ export function LiveEventMarquee({
   const handleMouseLeave = () => {
     if (pauseOnHover) {
       isPausedRef.current = false;
-      // Resume animation if it was running
-      if (isAnimatingRef.current && containerRef.current) {
-        const animate = () => {
-          if (!containerRef.current || !isAnimatingRef.current || isPausedRef.current) {
-            if (isAnimatingRef.current && !isPausedRef.current) {
-              animationRef.current = requestAnimationFrame(animate);
-            }
-            return;
-          }
-
-          // Get current speed from ref (updated reactively)
-          const currentSpeed = speedRef.current;
-          // Ensure speed is a valid positive number
-          const validSpeed =
-            typeof currentSpeed === "number" &&
-            !isNaN(currentSpeed) &&
-            isFinite(currentSpeed) &&
-            currentSpeed > 0
-              ? currentSpeed
-              : 0.5;
-          positionRef.current -= validSpeed;
-
-          // Recalculate single set width
-          const calculateSingleSetWidth = () => {
-            if (!containerRef.current || events.length === 0) return 0;
-            const totalWidth = containerRef.current.scrollWidth;
-            const setsCount = events.length === 1 ? 6 : 3; // Match the duplication logic
-            const singleSetWidth = totalWidth / setsCount;
-
-            // Try to measure the first set directly for accuracy
-            if (containerRef.current.children.length >= events.length) {
-              const firstSetEnd = containerRef.current.children[events.length - 1] as HTMLElement;
-              const firstSetStart = containerRef.current.children[0] as HTMLElement;
-              if (firstSetEnd && firstSetStart) {
-                const measuredWidth =
-                  firstSetEnd.offsetLeft + firstSetEnd.offsetWidth - firstSetStart.offsetLeft;
-                if (
-                  measuredWidth > 0 &&
-                  Math.abs(measuredWidth - singleSetWidth) / singleSetWidth < 0.1
-                ) {
-                  return measuredWidth;
-                }
-              }
-            }
-
-            return singleSetWidth;
-          };
-
-          const currentSingleSetWidth = singleSetWidthRef.current || calculateSingleSetWidth();
-
-          // When position goes beyond one set width, wrap it back seamlessly
-          if (currentSingleSetWidth > 0 && Math.abs(positionRef.current) >= currentSingleSetWidth) {
-            // Add the width back to create seamless loop (no visible jump)
-            positionRef.current = positionRef.current + currentSingleSetWidth;
-          }
-
-          containerRef.current.style.transform = `translate3d(${positionRef.current}px, 0, 0)`;
-          animationRef.current = requestAnimationFrame(animate);
-        };
-        animationRef.current = requestAnimationFrame(animate);
-      }
     }
   };
 
@@ -565,19 +529,17 @@ export function LiveEventMarquee({
     >
       <div className="absolute -top-1 right-4 z-10 flex items-center gap-1 py-1">
         <div
-          className={`w-1 h-1 rounded-full ${
-            isConnected ? "bg-green-400 animate-pulse" : "bg-red-400"
-          }`}
+          className={`h-1 w-1 rounded-none ${isConnected ? "bg-green-400 animate-pulse" : "bg-red-400"}`}
         />
         <span className="text-[9px] font-mono animate-pulse text-muted-foreground">
           {isConnected ? "LIVE" : "CONNECTING..."}
         </span>
       </div>
 
-      <div className="flex items-center h-full overflow-hidden">
+      <div ref={viewportRef} className="flex items-center h-full overflow-hidden">
         <div
-          ref={containerRef}
-          className="flex items-center gap-8 whitespace-nowrap"
+          ref={trackRef}
+          className="flex items-center whitespace-nowrap"
           style={{
             willChange: "transform",
             transform: "translate3d(0px, 0, 0)", // Initial transform to prevent layout shift, use translate3d for GPU acceleration
@@ -590,18 +552,14 @@ export function LiveEventMarquee({
               Waiting for events...
             </span>
           ) : (
-            // Duplicate events multiple times to ensure smooth continuous scrolling
-            // Use more duplicates for single event to prevent glitches, fewer for multiple events
-            (() => {
-              const duplicatedEvents =
-                events.length === 1
-                  ? [...events, ...events, ...events, ...events, ...events, ...events] // 6 sets for single event
-                  : [...events, ...events, ...events]; // 3 sets for multiple events (original behavior)
-
-              return duplicatedEvents.map((event, index) => {
-                const setIndex = Math.floor(index / events.length);
-                const eventIndex = index % events.length;
-                return (
+            Array.from({ length: repeatCount }, (_, setIndex) => (
+              <div
+                key={`event-set-${setIndex}`}
+                ref={setIndex === 0 ? singleSetRef : undefined}
+                aria-hidden={setIndex > 0}
+                className="flex items-center gap-8 flex-shrink-0 pr-8"
+              >
+                {events.map((event, eventIndex) => (
                   <div
                     key={`set-${setIndex}-event-${event.id}-${eventIndex}`}
                     className="flex items-center gap-2 flex-shrink-0"
@@ -617,9 +575,9 @@ export function LiveEventMarquee({
                     </span>
                     <span className="text-border">•</span>
                   </div>
-                );
-              });
-            })()
+                ))}
+              </div>
+            ))
           )}
         </div>
       </div>
