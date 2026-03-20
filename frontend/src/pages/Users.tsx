@@ -12,7 +12,6 @@ import {
   HelpCircle,
   Loader,
   MoreVertical,
-  Plus,
   Search,
   Trash2,
   User,
@@ -822,13 +821,13 @@ export default function Users() {
 
           <div className="flex items-center space-x-2">
             <Select value="" onValueChange={addFilter}>
-              <SelectTrigger className="w-full sm:w-[180px]">
-                <div className="flex mr-3 items-center space-x-2">
-                  <Plus className="w-4 h-4" />
-                  <span>Add Filter</span>
+              <SelectTrigger className="w-full sm:w-[200px] font-mono uppercase sm:text-[11px] border border-dashed border-white/20 bg-black/30 text-white rounded-none">
+                <div className="flex items-center space-x-2">
+                  <Filter className="w-4 h-4 text-gray-400" />
+                  <SelectValue placeholder="Add Filter" className="pr-2" />
                 </div>
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="font-mono uppercase text-[11px]">
                 {!activeFilters.some((f) => f.type === "emailVerified") && (
                   <SelectItem value="emailVerified">Email Verified</SelectItem>
                 )}

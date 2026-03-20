@@ -28,7 +28,13 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Pagination } from "../components/ui/pagination";
 import { Popover, PopoverContent, PopoverTrigger } from "../components/ui/popover";
-import { Select, SelectContent, SelectItem, SelectTrigger } from "../components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/select";
 import { useCounts } from "../contexts/CountsContext";
 
 interface Organization {
@@ -726,13 +732,13 @@ export default function Organizations() {
 
           <div className="flex items-center space-x-2">
             <Select value="" onValueChange={addFilter}>
-              <SelectTrigger className="w-full sm:w-[180px]">
-                <div className="flex mr-3 items-center space-x-2">
-                  <Plus className="w-4 h-4" />
-                  <span>Add Filter</span>
+              <SelectTrigger className="w-full sm:w-[200px] font-mono uppercase sm:text-[11px] border border-dashed border-white/20 bg-black/30 text-white rounded-none">
+                <div className="flex items-center space-x-2">
+                  <Filter className="w-4 h-4 text-gray-400" />
+                  <SelectValue placeholder="Add Filter" className="pr-2" />
                 </div>
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="font-mono uppercase text-[11px]">
                 {!activeFilters.some((f) => f.type === "createdAt") && (
                   <SelectItem value="createdAt">Created Date</SelectItem>
                 )}

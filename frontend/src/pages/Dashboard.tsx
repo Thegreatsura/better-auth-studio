@@ -1629,7 +1629,7 @@ export default function Dashboard() {
                   <WidgetContent item={slotWidgetItem("activity", slotOverrides["activity"])} />
                 </OverviewSlotCard>
               ) : (
-                <div className="bg-gradient-to-b from-white/[4%] to-white/[2.5%] border border-white/10 rounded-none p-3 md:p-6 relative flex flex-col overflow-hidden">
+                <div className="bg-gradient-to-b from-white/[4%] to-white/[2.5%] border border-white/10 rounded-none p-3 md:p-6 relative h-full min-h-0 flex flex-col overflow-hidden">
                   <div className="absolute top-0 left-0 w-[12px] h-[0.5px] bg-white/20" />
                   <div className="absolute top-0 left-0 w-[0.5px] h-[12px] bg-white/20" />
                   <div className="absolute top-0 right-0 w-[12px] h-[0.5px] bg-white/20" />

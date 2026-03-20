@@ -465,13 +465,15 @@ export default function Sessions() {
           />
         </div>
 
-        <div className="flex items-center space-x-2">
-          <Filter className="w-4 h-4 text-gray-400" />
+        <div className="flex-1 md:flex-none md:w-[130px]">
           <Select value={filter} onValueChange={setFilter}>
-            <SelectTrigger>
-              <SelectValue />
+            <SelectTrigger className="w-full font-mono uppercase sm:text-[11px] border border-dashed border-white/20 bg-black/30 text-white rounded-none">
+              <div className="flex items-center space-x-2">
+                <Filter className="w-4 h-4 text-gray-400" />
+                <SelectValue className="pr-2" />
+              </div>
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="font-mono uppercase text-[11px]">
               <SelectItem value="all">All</SelectItem>
               <SelectItem value="active">Active</SelectItem>
               <SelectItem value="expired">Expired</SelectItem>
