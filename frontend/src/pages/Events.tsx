@@ -240,6 +240,16 @@ function mergeEventsById(current: AuthEvent[], incoming: AuthEvent[]): AuthEvent
   return sortEventsByTimestamp(Array.from(merged.values()));
 }
 
+function getSafeEventCount(
+  total: number | null | undefined,
+  loadedCount: number,
+  previousCount?: number | null,
+): number {
+  const safeTotal = typeof total === "number" ? total : 0;
+  const safePrevious = typeof previousCount === "number" ? previousCount : 0;
+  return Math.max(safeTotal, loadedCount, safePrevious);
+}
+
 export default function Events() {
   const navigate = useNavigate();
   const [events, setEvents] = useState<AuthEvent[]>([]);
@@ -356,7 +366,7 @@ export default function Events() {
       limit: number,
       retryable: boolean,
       offset = 0,
-    ): Promise<{ events: AuthEvent[]; total: number | null; hasMore: boolean }> => {
+    ): Promise<{ events: AuthEvent[]; total: number | null; hasMore: boolean; ready: boolean }> => {
       const params = new URLSearchParams({
         limit: String(limit),
         sort: "desc",
@@ -379,6 +389,7 @@ export default function Events() {
               events: list,
               total: typeof data.total === "number" ? data.total : null,
               hasMore: Boolean(data.hasMore),
+              ready: data?.ready !== false,
             };
           }
 
@@ -401,7 +412,7 @@ export default function Events() {
         }
       }
 
-      return { events: [], total: null, hasMore: false };
+      return { events: [], total: null, hasMore: false, ready: true };
     },
     [],
   );
@@ -409,18 +420,30 @@ export default function Events() {
   const fetchAllEvents = useCallback(async (): Promise<{
     events: AuthEvent[];
     total: number | null;
+    ready: boolean;
   }> => {
     let allEvents: AuthEvent[] = [];
     let total: number | null = null;
     let offset = 0;
+    let ready = true;
 
     while (true) {
       const page = await fetchEventsPage(EVENTS_INITIAL_FETCH_BATCH_SIZE, true, offset);
+      ready = page.ready;
+
+      if (!page.ready) {
+        return {
+          events: allEvents,
+          total: total ?? page.total ?? allEvents.length,
+          ready: false,
+        };
+      }
 
       if (page.events.length === 0) {
         return {
           events: allEvents,
           total: total ?? page.total ?? allEvents.length,
+          ready,
         };
       }
 
@@ -432,6 +455,7 @@ export default function Events() {
         return {
           events: allEvents,
           total: total ?? allEvents.length,
+          ready,
         };
       }
     }
@@ -462,7 +486,7 @@ export default function Events() {
       isPollingRef.current = true;
 
       try {
-        const { events: fetchedEvents, total } = isInitial
+        const { events: fetchedEvents, total, ready } = isInitial
           ? await fetchAllEvents()
           : await fetchEventsPage(EVENTS_POLL_LIMIT, false);
 
@@ -471,19 +495,23 @@ export default function Events() {
 
         if (isInitial) {
           setEvents(fetchedEvents);
-          setTotalEventCount(total ?? fetchedEvents.length);
+          setTotalEventCount(getSafeEventCount(total, fetchedEvents.length));
           setVisibleCount(EVENTS_PAGE_SIZE);
+          return;
+        }
+
+        const currentEvents = eventsRef.current;
+        if (!ready) {
           return;
         }
 
         if (fetchedEvents.length === 0) {
           if (typeof total === "number") {
-            setTotalEventCount(total);
+            setTotalEventCount((prevTotal) => getSafeEventCount(total, currentEvents.length, prevTotal));
           }
           return;
         }
 
-        const currentEvents = eventsRef.current;
         const existingIds = new Set(currentEvents.map((event) => event.id));
         const uniqueNewEvents = fetchedEvents.filter((event) => !existingIds.has(event.id));
         const merged = mergeEventsById(currentEvents, fetchedEvents);
@@ -494,13 +522,11 @@ export default function Events() {
 
         setEvents(merged);
         setTotalEventCount((prevTotal) => {
-          if (typeof total === "number") {
-            return total;
-          }
-          if (prevTotal == null) {
-            return merged.length;
-          }
-          return prevTotal + uniqueNewEvents.length;
+          const optimisticLiveCount =
+            uniqueNewEvents.length > 0
+              ? (prevTotal ?? currentEvents.length) + uniqueNewEvents.length
+              : prevTotal;
+          return getSafeEventCount(total ?? optimisticLiveCount, merged.length, prevTotal);
         });
       } catch (error) {
         console.error("Failed to fetch events:", error);
