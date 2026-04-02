@@ -36,6 +36,9 @@ function sendExpressResponse(res, universal) {
     Object.entries(universal.headers).forEach(([key, value]) => {
         res.setHeader(key, value);
     });
+    if (universal.setCookies?.length) {
+        res.setHeader("Set-Cookie", universal.setCookies);
+    }
     if (Buffer.isBuffer(universal.body)) {
         res.end(universal.body);
     }

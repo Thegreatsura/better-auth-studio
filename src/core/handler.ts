@@ -323,24 +323,27 @@ async function handleApiRoute(
     });
 
     const headers: Record<string, string> = { "Content-Type": "application/json" };
+    const setCookies: string[] = [];
 
     if (result.cookies && result.cookies.length > 0) {
-      const cookieStrings = result.cookies.map((c) => {
-        let cookie = `${c.name}=${c.value}`;
-        if (c.options.httpOnly) cookie += "; HttpOnly";
-        if (c.options.secure) cookie += "; Secure";
-        if (c.options.sameSite) cookie += `; SameSite=${c.options.sameSite}`;
-        if (c.options.maxAge !== undefined)
-          cookie += `; Max-Age=${Math.floor(c.options.maxAge / 1000)}`;
-        if (c.options.path) cookie += `; Path=${c.options.path}`;
-        return cookie;
-      });
-      headers["Set-Cookie"] = cookieStrings.join(", ");
+      setCookies.push(
+        ...result.cookies.map((c) => {
+          let cookie = `${c.name}=${c.value}`;
+          if (c.options.httpOnly) cookie += "; HttpOnly";
+          if (c.options.secure) cookie += "; Secure";
+          if (c.options.sameSite) cookie += `; SameSite=${c.options.sameSite}`;
+          if (c.options.maxAge !== undefined)
+            cookie += `; Max-Age=${Math.floor(c.options.maxAge / 1000)}`;
+          if (c.options.path) cookie += `; Path=${c.options.path}`;
+          return cookie;
+        }),
+      );
     }
 
     return {
       status: result.status,
       headers,
+      ...(setCookies.length > 0 ? { setCookies } : {}),
       body: JSON.stringify(result.data),
     };
   } catch (error) {

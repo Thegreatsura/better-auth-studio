@@ -269,8 +269,9 @@ async function handleApiRoute(request, path, config) {
             studioConfig: config,
         });
         const headers = { "Content-Type": "application/json" };
+        const setCookies = [];
         if (result.cookies && result.cookies.length > 0) {
-            const cookieStrings = result.cookies.map((c) => {
+            setCookies.push(...result.cookies.map((c) => {
                 let cookie = `${c.name}=${c.value}`;
                 if (c.options.httpOnly)
                     cookie += "; HttpOnly";
@@ -283,12 +284,12 @@ async function handleApiRoute(request, path, config) {
                 if (c.options.path)
                     cookie += `; Path=${c.options.path}`;
                 return cookie;
-            });
-            headers["Set-Cookie"] = cookieStrings.join(", ");
+            }));
         }
         return {
             status: result.status,
             headers,
+            ...(setCookies.length > 0 ? { setCookies } : {}),
             body: JSON.stringify(result.data),
         };
     }

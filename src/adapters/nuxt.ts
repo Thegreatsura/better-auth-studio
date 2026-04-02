@@ -125,8 +125,13 @@ function getRequestURL(event: any): URL {
 function universalToResponse(res: UniversalResponse): Response {
   // Simply return a Response object - Nuxt/h3 will handle it properly
   // Nuxt will handle client disconnections automatically
+  const headers = new Headers(res.headers);
+  res.setCookies?.forEach((cookie) => {
+    headers.append("Set-Cookie", cookie);
+  });
+
   return new Response(res.body, {
     status: res.status,
-    headers: res.headers,
+    headers,
   });
 }

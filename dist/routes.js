@@ -759,6 +759,18 @@ export function createRoutes(authConfig, configPath, geoDbPath, preloadedAdapter
                 return res.status(400).json({ success: false, message: "Email and password required" });
             }
             const adapter = await getAuthAdapterWithConfig();
+            if (isSelfHosted && adapter?.findMany) {
+                const manualResult = await attemptManualCredentialStudioSignIn(email, password, adapter);
+                if (manualResult.ok) {
+                    return finalizeStudioSignIn(res, manualResult.user);
+                }
+                if (manualResult.status && manualResult.message) {
+                    return res.status(manualResult.status).json({
+                        success: false,
+                        message: manualResult.message,
+                    });
+                }
+            }
             let signInResult = null;
             let signInError = null;
             try {

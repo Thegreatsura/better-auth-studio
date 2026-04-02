@@ -8,6 +8,7 @@ export type UniversalRequest = {
 export type UniversalResponse = {
   status: number;
   headers: Record<string, string>;
+  setCookies?: string[];
   body: string | Buffer;
 };
 export type TimeWindowPreset =

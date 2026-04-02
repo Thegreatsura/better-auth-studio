@@ -78,35 +78,13 @@ async function convertElysiaToUniversal(context: Context): Promise<UniversalRequ
 }
 
 function sendElysiaResponse(context: Context, universal: UniversalResponse): Response | any {
-  context.set.status = universal.status;
-
-  Object.entries(universal.headers).forEach(([key, value]) => {
-    context.set.headers[key] = value;
+  const headers = new Headers(universal.headers);
+  universal.setCookies?.forEach((cookie) => {
+    headers.append("Set-Cookie", cookie);
   });
 
-  if (Buffer.isBuffer(universal.body)) {
-    return new Response(universal.body, {
-      status: universal.status,
-      headers: universal.headers,
-    });
-  } else if (typeof universal.body === "string") {
-    const contentType =
-      universal.headers["content-type"] || universal.headers["Content-Type"] || "";
-    if (contentType.includes("application/json")) {
-      try {
-        return JSON.parse(universal.body);
-      } catch {
-        return universal.body;
-      }
-    } else if (contentType.includes("text/html")) {
-      return new Response(universal.body, {
-        status: universal.status,
-        headers: universal.headers,
-      });
-    } else {
-      return universal.body;
-    }
-  } else {
-    return String(universal.body);
-  }
+  return new Response(universal.body as any, {
+    status: universal.status,
+    headers,
+  });
 }

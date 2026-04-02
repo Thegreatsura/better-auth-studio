@@ -96,9 +96,13 @@ async function convertRemixToUniversal({ request }, config) {
     };
 }
 function universalToResponse(res) {
+    const headers = new Headers(res.headers);
+    res.setCookies?.forEach((cookie) => {
+        headers.append("Set-Cookie", cookie);
+    });
     return new Response(res.body, {
         status: res.status,
-        headers: res.headers,
+        headers,
     });
 }
 //# sourceMappingURL=remix.js.map

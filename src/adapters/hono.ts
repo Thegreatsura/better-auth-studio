@@ -61,29 +61,13 @@ async function convertHonoToUniversal(c: Context): Promise<UniversalRequest> {
 }
 
 function sendHonoResponse(c: Context, universal: UniversalResponse): Response {
-  c.status(universal.status as StatusCode);
-
-  Object.entries(universal.headers).forEach(([key, value]) => {
-    c.header(key, value);
+  const headers = new Headers(universal.headers);
+  universal.setCookies?.forEach((cookie) => {
+    headers.append("Set-Cookie", cookie);
   });
 
-  if (Buffer.isBuffer(universal.body)) {
-    return c.body(universal.body as any);
-  } else if (typeof universal.body === "string") {
-    const contentType =
-      universal.headers["content-type"] || universal.headers["Content-Type"] || "";
-    if (contentType.includes("application/json")) {
-      try {
-        return c.json(JSON.parse(universal.body));
-      } catch {
-        return c.text(universal.body);
-      }
-    } else if (contentType.includes("text/html")) {
-      return c.html(universal.body);
-    } else {
-      return c.text(universal.body);
-    }
-  } else {
-    return c.text(String(universal.body));
-  }
+  return new Response(universal.body as any, {
+    status: universal.status as StatusCode,
+    headers,
+  });
 }
