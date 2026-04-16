@@ -28,6 +28,7 @@ function convertExpressToUniversal(req) {
         url: req.originalUrl,
         method: req.method,
         headers: req.headers,
+        ip: req.ip,
         body: req.body,
     };
 }

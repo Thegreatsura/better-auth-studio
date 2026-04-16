@@ -5,6 +5,7 @@ import { createClickHouseProvider, createHttpProvider, createNodeSqliteProvider,
 import { initializeEventIngestion, isEventIngestionInitialized } from "../utils/event-ingestion.js";
 import { injectEventHooks, injectLastSeenAtHooks } from "../utils/hook-injector.js";
 import { serveIndexHtml as getIndexHtml } from "../utils/html-injector.js";
+import { evaluateRequestAccess } from "../utils/access-rules.js";
 import { decryptSession, isSessionValid, STUDIO_COOKIE_NAME } from "../utils/session.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -131,6 +132,23 @@ export async function handleStudioRequest(request, config) {
         }
         if (path === "" || path === "/") {
             path = "/";
+        }
+        if (isSelfHosted) {
+            const accessDecision = evaluateRequestAccess({
+                accessConfig: config.access,
+                path,
+                method: request.method,
+                headers: request.headers,
+                ip: request.ip,
+            });
+            if (!accessDecision.allowed) {
+                return jsonResponse(403, {
+                    success: false,
+                    message: accessDecision.message,
+                    reason: accessDecision.reason,
+                    ...(accessDecision.ipAddress ? { ipAddress: accessDecision.ipAddress } : {}),
+                });
+            }
         }
         if (path.startsWith("/assets/") ||
             path === "/vite.svg" ||
@@ -262,6 +280,7 @@ async function handleApiRoute(request, path, config) {
             path: path,
             method: request.method,
             headers: request.headers,
+            ip: request.ip,
             body: request.body,
             auth: config.auth,
             basePath: config.basePath || "/api/studio",

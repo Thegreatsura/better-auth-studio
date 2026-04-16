@@ -1,3 +1,4 @@
+import type { StudioAccessConfig } from "../types/handler.js";
 export interface StudioMetadata {
     title?: string;
     logo?: string;
@@ -8,12 +9,6 @@ export interface StudioMetadata {
     };
     theme?: "light" | "dark";
     customStyles?: string;
-}
-export interface StudioAccessConfig {
-    roles?: string[];
-    allowEmails?: string[];
-    sessionDuration?: number;
-    secret?: string;
 }
 export interface StudioConfig {
     basePath?: string;
