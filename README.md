@@ -29,7 +29,7 @@ For the hosted version: **[better-auth.build](https://better-auth.build)**
 
 ### Installation
 
-📖 **[Documentation](https://better-auth-studio.vercel.app)**
+📖 **[Documentation](https://better-auth.studio)**
 
 **Recommended: Install as a dev dependency** (for project-specific versions):
 

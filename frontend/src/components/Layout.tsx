@@ -589,7 +589,7 @@ export default function Layout({ children }: LayoutProps) {
           </div>
           <div className="flex items-center space-x-3 md:space-x-4 flex-shrink-0">
             <a
-              href="https://better-auth-studio.vercel.app"
+              href="https://better-auth.studio"
               target="_blank"
               rel="noopener"
               className="group hidden md:flex items-center"
@@ -603,7 +603,7 @@ export default function Layout({ children }: LayoutProps) {
               </span>
             </a>
             <a
-              href="https://better-auth-studio.vercel.app"
+              href="https://better-auth.studio"
               target="_blank"
               rel="noopener"
               className="group hidden md:flex items-center"
@@ -777,7 +777,7 @@ export default function Layout({ children }: LayoutProps) {
             })}
             <div className="flex items-center gap-3 px-4 py-3 border-b border-white/5">
               <a
-                href="https://better-auth-studio.vercel.app/docs"
+                href="https://better-auth.studio/docs"
                 target="_blank"
                 rel="noopener"
                 className="text-white/80 font-mono text-xs uppercase hover:text-white"
