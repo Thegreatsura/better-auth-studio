@@ -151,7 +151,7 @@ export default function VercelPage() {
             <BetterAuthParticleLogo />
           </div>
           <div className="group/announcement">
-            <h1 className="mx-auto mt-0 max-w-[21rem] text-[1.7rem] font-light uppercase leading-[1.08] text-white min-[390px]:text-xl sm:max-w-5xl sm:text-3xl md:text-[2.6rem] md:leading-[1.04]">
+            <h1 className="mx-auto mt-0 max-w-[21rem] text-[1.7rem] font-light uppercase leading-[1.08] text-white min-[390px]:text-xl sm:max-w-5xl sm:text-3xl md:text-[2.48rem] md:leading-[1.04]">
               <span className="inline-flex items-center gap-[0.24em]">
                 <BetterAuthIcon />
                 <span>Better-Auth</span>
