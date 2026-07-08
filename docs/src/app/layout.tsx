@@ -16,6 +16,10 @@ export const metadata: Metadata = {
   title: "Better Auth Studio",
   description:
     "An admin dashboard for Better Auth. Manage users, sessions, organizations, and more with an intuitive interface.",
+  icons: {
+    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+    shortcut: "/favicon.svg",
+  },
   openGraph: {
     title: "Better Auth Studio",
     description:
