@@ -113,7 +113,7 @@ interface Session {
   token: string;
   expiresAt: string;
   ipAddress: string;
-  userAgent: string;
+  userAgent?: string | null;
   activeOrganizationId?: string;
   activeTeamId?: string;
   createdAt: string;
